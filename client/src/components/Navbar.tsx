@@ -23,13 +23,13 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-lg px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Logo />
+            <div id="brand" className="flex items-center">
               <Link
                 href="/"
-                className="text-2xl font-heading font-bold text-slate-900"
+                className="flex items-center gap-2 text-2xl font-heading font-semibold text-slate-900"
               >
-                DOMARI
+                <Logo />
+                Domari
               </Link>
             </div>
 
@@ -98,11 +98,6 @@ const Navbar = () => {
                   onClick={closeMobileMenu}
                 >
                   About
-                </Link>
-                <Link href="/landing#cta" onClick={closeMobileMenu}>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-medium mt-2 w-fit">
-                    Join Now
-                  </Button>
                 </Link>
               </div>
             </nav>

@@ -41,6 +41,10 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  --font-heading: var(--font-outfit);
+  --font-body: var(--font-dm-sans);
+  --font-poppins: var(--font-poppins);
 }
 
 .dark {
@@ -110,8 +114,16 @@
 
 body {
   @apply bg-background text-foreground;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', sans-serif;
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
 }
 
 html {
@@ -123,6 +135,10 @@ html {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+
+#brand {
+  font-family: var(--font-heading);
 }
 
 .card {

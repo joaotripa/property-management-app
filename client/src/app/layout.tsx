@@ -1,7 +1,7 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { Outfit, DM_Sans } from "next/font/google";
+import { Outfit, DM_Sans, Poppins } from "next/font/google";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -17,9 +17,19 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${dmSans.variable}`}>
+    <html
+      lang="en"
+      className={`${outfit.variable} ${dmSans.variable} ${poppins.variable}`}
+    >
       <body className="font-body" suppressHydrationWarning>
         <Toaster />
         {children}
