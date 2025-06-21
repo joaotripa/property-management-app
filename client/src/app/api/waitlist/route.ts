@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface BeehiivError {
+  message?: string;
+  error?: string;
+  status?: number;
+}
+
+interface BeehiivSubscriber {
+  id: string;
+  email: string;
+  status: string;
+  created: number;
+}
+
+interface BeehiivResponse {
+  data: BeehiivSubscriber;
+}
+
 const baseUrl = "https://api.beehiiv.com/v2/publications";
 
 function validateEnvironment(): { isValid: boolean; error?: NextResponse } {
@@ -32,7 +49,7 @@ function validateEmail(email: string): { isValid: boolean; error?: NextResponse 
   return { isValid: true };
 }
 
-async function checkSubscriberExists(email: string): Promise<{ exists: boolean; data?: any }> {
+async function checkSubscriberExists(email: string): Promise<{ exists: boolean; data?: BeehiivSubscriber }> {
   
   const encodedEmail = encodeURIComponent(email);
   const response = await fetch(
@@ -45,8 +62,8 @@ async function checkSubscriberExists(email: string): Promise<{ exists: boolean; 
   );
 
   if (response.ok) {
-    const data = await response.json();
-    return { exists: true, data };
+    const data: BeehiivResponse = await response.json();
+    return { exists: true, data: data.data };
   }
 
   if (response.status === 404) {
@@ -56,7 +73,7 @@ async function checkSubscriberExists(email: string): Promise<{ exists: boolean; 
   throw new Error(`Unexpected response when checking subscriber: ${response.status}`);
 }
 
-async function createSubscriber(email: string): Promise<{ success: boolean; data?: any; error?: NextResponse }> {
+async function createSubscriber(email: string): Promise<{ success: boolean; data?: BeehiivSubscriber; error?: NextResponse }> {
   
   const response = await fetch(
     `${baseUrl}/${process.env.BEEHIIV_PUBLICATION_ID}/subscriptions`,
@@ -77,7 +94,7 @@ async function createSubscriber(email: string): Promise<{ success: boolean; data
   console.log("Beehiiv API response status:", response.status);
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorData: BeehiivError = await response.json().catch(() => ({}));
     console.error("Beehiiv API error:", {
       status: response.status,
       statusText: response.statusText,
@@ -99,13 +116,13 @@ async function createSubscriber(email: string): Promise<{ success: boolean; data
     };
   }
 
-  const result = await response.json();
+  const result: BeehiivResponse = await response.json();
   console.log("Successfully added subscriber:", result);
   
-  return { success: true, data: result };
+  return { success: true, data: result.data };
 }
 
-function getErrorMessage(status: number, errorData: any): string {
+function getErrorMessage(status: number, errorData: BeehiivError): string {
   if (status === 422 || (errorData.message && errorData.message.includes("invalid"))) {
     return "Please enter a valid email address.";
   } else if (status >= 500) {

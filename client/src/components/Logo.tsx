@@ -8,6 +8,7 @@ const Logo = () => {
         alt="domari-logo"
         src="/Domari-Logo-NoBackground.png"
         fill
+        sizes="(max-width: 640px) 120px, (max-width: 768px) 140px, 168px"
         className="object-contain"
       />
     </div>
