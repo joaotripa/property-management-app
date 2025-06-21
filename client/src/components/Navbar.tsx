@@ -29,7 +29,6 @@ const Navbar = () => {
                 className="flex items-center gap-2 text-2xl font-heading font-semibold text-slate-900"
               >
                 <Logo />
-                Domari
               </Link>
             </div>
 

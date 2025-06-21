@@ -10,7 +10,7 @@ const WhyDomariSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Here’s Why Landlords Like You Will Love Domari
+            Here&apos;s Why Landlords Like You Will Love Domari
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             Built for small landlords and property managers
@@ -28,7 +28,7 @@ const WhyDomariSection = () => {
                   Designed for independent landlords
                 </h3>
                 <p className="text-slate-600">
-                  No complex enterprise features you don't need. Just the
+                  No complex enterprise features you don&apos;t need. Just the
                   essentials to manage your rentals effectively.
                 </p>
               </div>
@@ -45,8 +45,8 @@ const WhyDomariSection = () => {
                   Mobile-friendly, always
                 </h3>
                 <p className="text-slate-600">
-                  Track everything on the go — whether you're at a property or
-                  in line for coffee.
+                  Track everything on the go — whether you&apos;re at a property
+                  or in line for coffee.
                 </p>
               </div>
             </div>

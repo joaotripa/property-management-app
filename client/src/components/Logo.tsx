@@ -3,10 +3,10 @@ import Image from "next/image";
 
 const Logo = () => {
   return (
-    <div className="size-10 relative">
+    <div className="h-12 w-42 relative">
       <Image
         alt="domari-logo"
-        src="/Domari-Logo-Icon.png"
+        src="/Domari-Logo-NoBackground.png"
         fill
         className="object-contain"
       />

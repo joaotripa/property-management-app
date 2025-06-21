@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${outfit.variable} ${dmSans.variable} ${poppins.variable}`}
     >
       <body className="font-body" suppressHydrationWarning>
-        <Toaster />
+        <Toaster richColors closeButton theme="light" />
         {children}
       </body>
     </html>

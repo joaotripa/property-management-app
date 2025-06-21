@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  ChartNoAxesCombined,
-  Euro,
-  FileText,
-  PieChart,
-  Puzzle,
-} from "lucide-react";
+import { ChartNoAxesCombined, FileText, Puzzle } from "lucide-react";
 
 const HowItWorksSection = () => {
   return (

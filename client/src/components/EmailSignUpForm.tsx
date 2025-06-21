@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ const EmailSignUpForm = ({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes("@")) {
       toast.error("Please enter a valid email address");
@@ -26,20 +25,42 @@ const EmailSignUpForm = ({
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Email signup:", email);
-      toast.success("Welcome to Domari! You're on the list for early access.");
-      setEmail("");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
       setIsLoading(false);
-    }, 1000);
+
+      if (res.ok && data.success) {
+        toast.success(
+          "Welcome to Domari! You're on the list for early access."
+        );
+        setEmail("");
+      } else if (data.status >= 400 && data.status < 500) {
+        toast.warning(
+          data.message || "Something went wrong. Please try again later."
+        );
+      } else {
+        toast.error(
+          data.message || "Something went wrong. Please try again later."
+        );
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+      toast.error("Network error. Please try again later.");
+    }
   };
 
   const isPrimary = variant === "primary";
 
   return (
     <form
-      onSubmit={handleEmailSubmit}
+      onSubmit={handleSubmit}
       className={`flex flex-col sm:flex-row gap-3 max-w-md ${
         isPrimary ? "mx-auto lg:mx-0" : "mx-auto"
       } ${className}`}

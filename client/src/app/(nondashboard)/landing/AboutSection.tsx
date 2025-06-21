@@ -9,12 +9,12 @@ const AboutSection = () => {
             Making Rentals Easier — for Everyone
           </h2>
           <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-            We started Domari because we've been there — managing a few rentals
-            while juggling everything else. Spreadsheets worked... until they
-            didn't. Tracking expenses, figuring out profitability, and staying
-            organized became a constant headache. Domari is our way of fixing
-            that. A clean, smart, and actually enjoyable tool — built for small
-            landlords who want clarity without complexity.
+            We started Domari because we&apos;ve been there — managing a few
+            rentals while juggling everything else. Spreadsheets worked... until
+            they didn&apos;t. Tracking expenses, figuring out profitability, and
+            staying organized became a constant headache. Domari is our way of
+            fixing that. A clean, smart, and actually enjoyable tool — built for
+            small landlords who want clarity without complexity.
           </p>
         </div>
       </div>

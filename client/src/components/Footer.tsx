@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { Building, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const Footer = () => {
@@ -12,7 +11,6 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div id="brand" className="flex items-center gap-2 mb-6 md:mb-0">
             <Logo />
-            <span className="text-2xl font-semibold">Domari</span>
           </div>
           <div className="flex flex-row text-xs gap-6">
             <nav className="flex flex-wrap items-center gap-6 mb-6 md:mb-0">
