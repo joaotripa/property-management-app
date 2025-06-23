@@ -1,35 +1,25 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { Outfit, DM_Sans, Poppins } from "next/font/google";
+import { Montserrat, Nunito_Sans } from "next/font/google";
 
-const outfit = Outfit({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-outfit",
+  variable: "--font-montserrat",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const poppins = Poppins({
+const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  variable: "--font-nunito-sans",
   display: "swap",
 });
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${outfit.variable} ${dmSans.variable} ${poppins.variable}`}
-    >
+    <html lang="en" className={`${montserrat.variable} ${nunitoSans.variable}`}>
       <body className="font-body" suppressHydrationWarning>
         <Toaster richColors closeButton theme="light" />
         {children}

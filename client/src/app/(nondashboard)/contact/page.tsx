@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const ContactPage = () => {
     subject: "",
     message: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -25,10 +27,33 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // TODO: Connect with backend/email API
-    // await fetch('/api/contact', { method: 'POST', body: JSON.stringify(formData) });
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(data.message);
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        toast.error(
+          data.message || "Failed to send message. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Contact form error:", error);
+      toast.error("Network error. Please check your connection and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,6 +86,8 @@ const ContactPage = () => {
                   onChange={handleInputChange}
                   required
                   className="mt-2"
+                  disabled={isLoading}
+                  placeholder="Your full name"
                 />
               </div>
 
@@ -74,6 +101,8 @@ const ContactPage = () => {
                   onChange={handleInputChange}
                   required
                   className="mt-2"
+                  disabled={isLoading}
+                  placeholder="your.email@example.com"
                 />
               </div>
 
@@ -87,6 +116,8 @@ const ContactPage = () => {
                   onChange={handleInputChange}
                   required
                   className="mt-2"
+                  disabled={isLoading}
+                  placeholder="What's this about?"
                 />
               </div>
 
@@ -99,15 +130,18 @@ const ContactPage = () => {
                   onChange={handleInputChange}
                   required
                   rows={6}
-                  className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                  disabled={isLoading}
+                  placeholder="Tell us more about your question or feedback..."
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-300 disabled:opacity-50 resize-none"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 h-12 text-base font-medium"
               >
-                Send Message
+                {isLoading ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>

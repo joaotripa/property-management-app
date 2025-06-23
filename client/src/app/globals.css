@@ -42,9 +42,8 @@
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 
-  --font-heading: var(--font-outfit);
-  --font-body: var(--font-dm-sans);
-  --font-poppins: var(--font-poppins);
+  --font-heading: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-nunito-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
