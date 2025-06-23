@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import ContactForm from "@/app/(nondashboard)/contact/ContactForm";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -57,7 +55,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
       <main className="flex-grow pt-42 pb-16">
         <section className="max-w-2xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -74,76 +72,12 @@ const ContactPage = () => {
             <h2 className="text-2xl font-semibold text-slate-900 mb-6">
               Send us a Message
             </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-2"
-                  disabled={isLoading}
-                  placeholder="Your full name"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-2"
-                  disabled={isLoading}
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  type="text"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-2"
-                  disabled={isLoading}
-                  placeholder="What's this about?"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="message">Message</Label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  required
-                  rows={6}
-                  disabled={isLoading}
-                  placeholder="Tell us more about your question or feedback..."
-                  className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-300 disabled:opacity-50 resize-none"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 h-12 text-base font-medium"
-              >
-                {isLoading ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
+            <ContactForm
+              formData={formData}
+              isLoading={isLoading}
+              onChange={handleInputChange}
+              onSubmit={handleSubmit}
+            />
           </div>
         </section>
       </main>

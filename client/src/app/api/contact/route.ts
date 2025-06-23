@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createContactEmailTemplate } from "@/lib/email-templates/contact-form";
+import { createContactEmailTemplate, createPlainContactEmail } from "@/lib/email-templates/contact-form";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
       to: [process.env.EMAIL_TO!],
       subject: `New Message from ${formData.name} — ${formData.subject}`,
       html: createContactEmailTemplate(formData),
+      text: createPlainContactEmail(formData),
       replyTo: formData.email,
     });
 

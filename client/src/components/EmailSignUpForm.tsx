@@ -51,7 +51,7 @@ const EmailSignUpForm = ({
       }
     } catch (error) {
       setIsLoading(false);
-      console.log(error);
+      console.log("Waitlist Subscription Error:" + error);
       toast.error("Network error. Please try again later.");
     }
   };

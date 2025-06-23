@@ -35,24 +35,24 @@ const Navbar = () => {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <Link
-                href="/landing#how-it-works"
+                href="#how-it-works"
                 className="font-body text-slate-600 hover:text-blue-600 transition-colors font-medium"
               >
                 How it works
               </Link>
               <Link
-                href="/landing#benefits"
+                href="#benefits"
                 className="text-slate-600 hover:text-blue-600 transition-colors font-medium"
               >
                 Benefits
               </Link>
               <Link
-                href="/landing#about"
+                href="#about"
                 className="text-slate-600 hover:text-blue-600 transition-colors font-medium"
               >
                 About
               </Link>
-              <Link href="/landing#cta">
+              <Link href="#cta">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
                   Join Now
                 </Button>
@@ -78,21 +78,21 @@ const Navbar = () => {
             <nav className="md:hidden mt-4 pt-4 border-t border-slate-200/50 animate-fade-in">
               <div className="flex flex-col gap-4">
                 <Link
-                  href="/landing#how-it-works"
+                  href="#how-it-works"
                   className="text-slate-600 hover:text-blue-600 transition-colors py-2 font-medium"
                   onClick={closeMobileMenu}
                 >
                   How it works
                 </Link>
                 <Link
-                  href="/landing#benefits"
+                  href="#benefits"
                   className="text-slate-600 hover:text-blue-600 transition-colors py-2 font-medium"
                   onClick={closeMobileMenu}
                 >
                   Benefits
                 </Link>
                 <Link
-                  href="/landing#about"
+                  href="#about"
                   className="text-slate-600 hover:text-blue-600 transition-colors py-2 font-medium"
                   onClick={closeMobileMenu}
                 >
