@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: [process.env.EMAIL_TO!],
-      subject: `New Message from ${formData.name} — ${formData.subject}`,
+      subject: `New Message from ${formData.name} - ${formData.subject}`,
       html: createContactEmailTemplate(formData),
       text: createPlainContactEmail(formData),
       replyTo: formData.email,

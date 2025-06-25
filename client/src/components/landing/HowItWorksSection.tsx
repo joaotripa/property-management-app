@@ -7,7 +7,7 @@ const HowItWorksSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Managing Rentals Doesn’t Have to Be Messy
+            Managing Rentals Doesn&apos;t Have to Be Messy
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             Three simple steps to take control of your rental finances
@@ -23,7 +23,7 @@ const HowItWorksSection = () => {
               Add your properties
             </h3>
             <p className="text-slate-600">
-              Quickly set up long-term or short-term rentals in minutes — no
+              Quickly set up long-term or short-term rentals in minutes, no
               complex setup or accounting required.
             </p>
           </div>

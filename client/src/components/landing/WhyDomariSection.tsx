@@ -45,7 +45,7 @@ const WhyDomariSection = () => {
                   Mobile-friendly, always
                 </h3>
                 <p className="text-slate-600">
-                  Track everything on the go — whether you&apos;re at a property
+                  Track everything on the go, whether you&apos;re at a property
                   or in line for coffee.
                 </p>
               </div>

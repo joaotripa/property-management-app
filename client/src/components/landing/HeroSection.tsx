@@ -16,7 +16,7 @@ const HeroSection = () => {
             </h1>
             <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto lg:mx-0">
               Domari is a modern, lightweight platform that helps small property
-              owners track income, expenses, and occupancy—all in one clean,
+              owners track income, expenses, and occupancy, all in one clean and
               mobile-friendly dashboard.
             </p>
             <EmailSignUpForm />
