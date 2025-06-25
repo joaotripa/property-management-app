@@ -12,7 +12,7 @@ const CallToActionSection = () => {
           Spreadsheets aren&apos;t cutting it?
         </h2>
         <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-          Domari is almost here — join the waitlist and we&apos;ll let you know
+          Domari is almost here! Join the waitlist and we&apos;ll let you know
           when it&apos;s ready.
         </p>
         <EmailSignUpForm variant="secondary" />
