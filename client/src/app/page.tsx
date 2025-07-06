@@ -1,10 +1,10 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HeroSection from "@/components/landing/HeroSection";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import WhyDomariSection from "@/components/landing/WhyDomariSection";
-import AboutSection from "@/components/landing/AboutSection";
-import CallToActionSection from "@/components/landing/CallToActionSection";
+import HeroSection from "@/app/(nondashboard)/(landing)/HeroSection";
+import HowItWorksSection from "@/app/(nondashboard)/(landing)/HowItWorksSection";
+import WhyDomariSection from "@/app/(nondashboard)/(landing)/WhyDomariSection";
+import AboutSection from "@/app/(nondashboard)/(landing)/AboutSection";
+import CallToActionSection from "@/app/(nondashboard)/(landing)/CallToActionSection";
 
 export default function Home() {
   return (

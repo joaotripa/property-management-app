@@ -4,7 +4,6 @@ import React from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 
 const Navbar = () => {
@@ -33,10 +32,10 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center space-x-8">
               <Link
                 href="#how-it-works"
-                className="font-body text-slate-600 hover:text-blue-600 transition-colors font-medium"
+                className="text-slate-600 hover:text-blue-600 transition-colors font-medium"
               >
                 How it works
               </Link>
@@ -52,10 +51,17 @@ const Navbar = () => {
               >
                 About
               </Link>
-              <Link href="#cta">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
-                  Join Now
-                </Button>
+              <Link
+                href="/login"
+                className="text-slate-600 hover:text-blue-600 transition-colors font-medium"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-3xl font-medium inline-block text-center transition-colors"
+              >
+                Get Started
               </Link>
             </nav>
 
