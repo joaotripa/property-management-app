@@ -7,67 +7,92 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signup } from "../actions";
-import type { AuthResult } from "../actions";
-import { handleGoogleAuth } from "@/lib/auth/google-auth";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { useSignUp } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
+import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
+import { handleGoogleAuth } from "@/lib/utils";
 
-const RegisterPage = () => {
+const SignupPage = () => {
+  useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const { signUp, isLoaded } = useSignUp();
+  const [error, setError] = useState("");
 
-  function isSignupError(result: AuthResult): result is { error: string } {
-    return "error" in result;
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
+      </div>
+    );
   }
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
-
-    if (password !== confirmPassword) {
-      setError("Passwords don't match");
+    setError(""); // Clear previous error
+    if (!signUp) {
+      const msg = "Sign up is not ready. Please try again in a moment.";
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
       return;
     }
-
-    const result: AuthResult = await signup({ email, password });
-    setLoading(false);
-    if (isSignupError(result)) {
-      setError(result.error);
-    } else {
-      router.push("/dashboard");
+    if (password !== confirmPassword) {
+      const msg = "The passwords you entered do not match. Please try again.";
+      setError(msg);
+      toast.error(msg);
+      setLoading(false);
+      return;
+    }
+    try {
+      await signUp.create({
+        emailAddress: email,
+        password,
+      });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      toast.success(
+        "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
+      );
+      router.push(`/verify-code?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      const msg =
+        err.errors?.[0]?.message || err.message || "Could not create account.";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleGoogleRegister = async () => {
-    setError(null);
-    try {
-      await handleGoogleAuth("/dashboard");
-    } catch (error) {
-      console.error(error);
-      setError("Failed to sign up with Google");
-    }
+  const handleGoogleSignup = async () => {
+    await handleGoogleAuth({ signIn: signUp, setLoading, toast });
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="text-center">
+      <Card className="rounded-2xl">
+        <CardHeader className="text-center mt-6">
           <CardTitle className="text-3xl font-bold">
             Start tracking your rental finances
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleRegister}>
-            <div className="grid gap-6">
+        <CardContent className="mb-4">
+          <div className="grid gap-4">
+            {error && (
+              <p className="text-red-500 text-center" role="alert">
+                {error}
+              </p>
+            )}
+            <form onSubmit={handleSignup}>
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
@@ -79,6 +104,7 @@ const RegisterPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="rounded-2xl"
                   />
                 </div>
                 <div className="grid gap-3">
@@ -91,6 +117,7 @@ const RegisterPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="rounded-2xl"
                     />
                     <button
                       type="button"
@@ -115,6 +142,7 @@ const RegisterPage = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
+                      className="rounded-2xl"
                     />
                     <button
                       type="button"
@@ -134,7 +162,7 @@ const RegisterPage = () => {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-start">
+                  <div className="flex items-center justify-center">
                     <div className="flex h-5 items-center">
                       <input
                         id="terms"
@@ -142,7 +170,7 @@ const RegisterPage = () => {
                         type="checkbox"
                         checked={acceptedTerms}
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        className="h-4 w-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -167,11 +195,6 @@ const RegisterPage = () => {
                     </div>
                   </div>
                 </div>
-                {error && (
-                  <span className="bg-red-100 text-red-700 text-sm p-2 rounded-md block mt-2">
-                    {error}
-                  </span>
-                )}
                 <Button
                   type="submit"
                   disabled={
@@ -181,28 +204,28 @@ const RegisterPage = () => {
                     !password ||
                     !confirmPassword
                   }
-                  className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors"
                 >
                   {loading ? "Signing Up..." : "Sign Up"}
                 </Button>
-              </div>
-              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                <span className="bg-card text-muted-foreground relative z-10 px-2">
-                  Or continue with
-                </span>
-              </div>
-              <div className="flex flex-col gap-4">
+                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-card text-muted-foreground relative z-10 px-2">
+                    Or
+                  </span>
+                </div>
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full rounded-2xl"
                   type="button"
-                  onClick={handleGoogleRegister}
+                  disabled={loading}
+                  onClick={handleGoogleSignup}
                 >
                   <svg
                     viewBox="-3 0 262 262"
                     xmlns="http://www.w3.org/2000/svg"
                     preserveAspectRatio="xMidYMid"
                     fill="#000000"
+                    className="mr-2 h-5 w-5"
                   >
                     <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                     <g
@@ -232,28 +255,21 @@ const RegisterPage = () => {
                   Continue with Google
                 </Button>
               </div>
-            </div>
-          </form>
-          <div className="grid gap-6 mt-6">
-            <div className="text-muted-foreground *:[a]:text-blue-600 *:[a]:hover:text-blue-800 text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
-              By signing up, you acknowledge that you have read and understood,
-              and agree to our <Link href="#">Terms of Service</Link> and{" "}
-              <Link href="#">Privacy Policy</Link>.
-            </div>
+            </form>
           </div>
         </CardContent>
       </Card>
       <div className="text-center text-sm">
-        <span className="text-gray-600">Already have an account?</span>{" "}
+        Already have an account?{" "}
         <Link
           href="/login"
           className="underline underline-offset-4 text-blue-700 hover:text-blue-500 transition-colors"
         >
-          Sign in
+          Log in
         </Link>
       </div>
     </div>
   );
 };
 
-export default RegisterPage;
+export default SignupPage;

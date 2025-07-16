@@ -73,3 +73,6 @@ client/.env.*
 .cache/
 .temp/
 .tmp/ 
+
+# clerk configuration (can include secrets)
+/client/.clerk/ 

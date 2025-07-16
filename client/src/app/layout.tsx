@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { Montserrat, Nunito_Sans } from "next/font/google";
 import Script from "next/script";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -20,18 +21,25 @@ const nunitoSans = Nunito_Sans({
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${nunitoSans.variable}`}>
-      <head>
-        <Script
-          defer
-          src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
-          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-        ></Script>
-      </head>
-      <body className="font-body" suppressHydrationWarning>
-        <Toaster richColors closeButton theme="light" />
-        {children}
-      </body>
-    </html>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
+      <html
+        lang="en"
+        className={`${montserrat.variable} ${nunitoSans.variable}`}
+      >
+        <head>
+          <Script
+            defer
+            src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          ></Script>
+        </head>
+        <body className="font-body" suppressHydrationWarning>
+          <Toaster richColors closeButton theme="light" />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

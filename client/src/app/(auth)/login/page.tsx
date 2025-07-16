@@ -6,56 +6,123 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { login, AuthResult } from "../actions";
-import { handleGoogleAuth } from "@/lib/auth/google-auth";
-import { Eye, EyeOff } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useSignIn } from "@clerk/nextjs";
+import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
+import { handleGoogleAuth } from "@/lib/utils";
 
 export default function LoginPage() {
+  useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(""); // NEW
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const message = searchParams.get("message");
+  const { signIn, setActive, isLoaded } = useSignIn();
 
-  function isError(result: AuthResult): result is { error: string } {
-    return "error" in result;
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
+      </div>
+    );
+  }
+
+  function renderAlertMessage(message: string | null) {
+    if (!message) return null;
+    if (message === "password-updated") {
+      return (
+        <div
+          className="bg-green-100 text-green-800 border border-green-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
+          role="status"
+        >
+          Your password has been updated. Please log in with your new password.
+        </div>
+      );
+    }
+    if (message === "oauth-error") {
+      return (
+        <div
+          className="bg-red-100 text-red-800 border border-red-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
+          role="alert"
+        >
+          Google sign-in failed. Please try again or use another login method.
+        </div>
+      );
+    }
+    return (
+      <div
+        className="bg-blue-100 text-blue-800 border border-blue-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
+        role="status"
+      >
+        {message}
+      </div>
+    );
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
-    const result: AuthResult = await login({ email, password });
-    setLoading(false);
-    if (isError(result)) {
-      setError(result.error);
-    } else {
-      router.push("/dashboard");
+    setError(""); // Clear previous error
+    if (!signIn) {
+      const msg = "Login is not ready. Please try again in a moment.";
+      setError(msg);
+      toast.error(msg);
+      setLoading(false);
+      return;
+    }
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        toast.success("Welcome back! Redirecting to your dashboard.");
+        router.push("/dashboard");
+      } else {
+        const msg = "Invalid email or password. Please try again.";
+        setError(msg);
+        toast.error(msg);
+      }
+    } catch (err: any) {
+      const msg =
+        err.errors?.[0]?.message ||
+        err.message ||
+        "Something went wrong. Please try again later.";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      await handleGoogleAuth("/dashboard");
-    } catch (error) {
-      console.error(error);
-      setError("Failed to sign in with Google");
-    }
+    await handleGoogleAuth({ signIn, setLoading, toast });
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="font-bold font-heading text-3xl">
+      <Card className="rounded-2xl">
+        <CardHeader className="text-center mt-6">
+          <CardTitle className="font-bold text-3xl">
             Welcome to Domari
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="grid gap-6">
+        <CardContent className="mb-4">
+          <div className="grid gap-4">
+            {renderAlertMessage(message)}
+            {error && (
+              <p className="text-red-500 text-center" role="alert">
+                {error}
+              </p>
+            )}
+            <form onSubmit={handleLogin}>
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
@@ -67,6 +134,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     required
+                    className="rounded-2xl"
                   />
                 </div>
                 <div className="grid gap-3">
@@ -87,6 +155,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="rounded-2xl"
                     />
                     <button
                       type="button"
@@ -100,30 +169,24 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  {error && (
-                    <span className="bg-red-100 text-red-700 text-sm p-2 rounded-md block mt-2">
-                      {error}
-                    </span>
-                  )}
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors"
                   disabled={loading || !email || !password}
                 >
                   {loading ? "Signing in..." : "Sign in"}
                 </Button>
-              </div>
-              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                <span className="bg-card text-muted-foreground relative z-10 px-2">
-                  Or
-                </span>
-              </div>
-              <div className="flex flex-col gap-4">
+                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-card text-muted-foreground relative z-10 px-2">
+                    Or
+                  </span>
+                </div>
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full rounded-2xl"
                   type="button"
+                  disabled={loading}
                   onClick={handleGoogleLogin}
                 >
                   <svg
@@ -160,8 +223,8 @@ export default function LoginPage() {
                   Continue with Google
                 </Button>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
           <div className="grid gap-6 mt-6">
             <div className="text-muted-foreground *:[a]:text-blue-600 *:[a]:hover:text-blue-800 text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
               By signing up, you acknowledge that you have read and understood,
