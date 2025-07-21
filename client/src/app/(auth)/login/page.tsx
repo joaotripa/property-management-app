@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useSignIn } from "@clerk/nextjs";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
 import { handleGoogleAuth } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 export default function LoginPage() {
   useRedirectIfSignedIn();
@@ -24,11 +25,12 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
   const { signIn, setActive, isLoaded } = useSignIn();
+  const pathname = usePathname();
 
-  if (!isLoaded) {
+  if (pathname === "/login" && !isLoaded) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
+      <div className="flex flex-col items-center justify-center h-96">
+        <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
       </div>
     );
   }

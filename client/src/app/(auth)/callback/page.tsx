@@ -29,7 +29,6 @@ export default function CallbackPage() {
   return (
     <div className="flex flex-col items-center justify-center h-96">
       <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
-      <span className="text-blue-600 mb-4">Signing you in with Google...</span>
     </div>
   );
 }

@@ -29,8 +29,8 @@ const SignupPage = () => {
 
   if (!isLoaded) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
+      <div className="flex flex-col items-center justify-center h-96">
+        <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
       </div>
     );
   }
