@@ -29,9 +29,14 @@ export function CodeVerification({
   const [codeDigits, setCodeDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const codeInputs = Array.from({ length: 6 }, () =>
-    useRef<HTMLInputElement>(null)
-  );
+  const codeInputs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
 
   const [internalResendTimer, setInternalResendTimer] = useState(30);
 

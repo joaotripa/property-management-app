@@ -14,8 +14,10 @@ import Link from "next/link";
 import { getClerkErrorMessage } from "@/lib/utils";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
 import { CodeVerification } from "@/components/auth/CodeVerification";
+import { Suspense } from "react";
+import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   useRedirectIfSignedIn();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -116,12 +118,8 @@ export default function ResetPasswordPage() {
         identifier: email,
       });
       toast.success("Verification code resent to your email.");
-    } catch (err: any) {
-      toast.error(
-        err.errors?.[0]?.longMessage ||
-          err.message ||
-          "We couldn't process your request. Please try again later."
-      );
+    } catch (err: unknown) {
+      toast.error(getClerkErrorMessage(err));
     }
   };
 
@@ -220,5 +218,13 @@ export default function ResetPasswordPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<AuthPageSkeleton />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

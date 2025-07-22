@@ -13,8 +13,11 @@ import { useSignIn } from "@clerk/nextjs";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
 import { handleGoogleAuth } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { getClerkErrorMessage } from "@/lib/utils";
+import { Suspense } from "react";
+import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 
-export default function LoginPage() {
+function LoginContent() {
   useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,10 +95,9 @@ export default function LoginPage() {
         setError(msg);
         toast.error(msg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err.errors?.[0]?.message ||
-        err.message ||
+        getClerkErrorMessage(err) ||
         "Something went wrong. Please try again later.";
       setError(msg);
       toast.error(msg);
@@ -246,5 +248,13 @@ export default function LoginPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<AuthPageSkeleton />}>
+      <LoginContent />
+    </Suspense>
   );
 }

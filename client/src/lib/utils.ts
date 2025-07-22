@@ -1,33 +1,38 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { SignInResource } from "@clerk/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 export function getClerkErrorMessage(err: unknown): string {
+  interface ClerkError {
+    errors?: { message?: string }[];
+    message?: string;
+  }
   if (
     typeof err === "object" &&
     err !== null &&
     "errors" in err &&
-    Array.isArray((err as any).errors) &&
-    (err as any).errors[0]?.message
+    Array.isArray((err as ClerkError).errors) &&
+    (err as ClerkError).errors?.[0]?.message
   ) {
-    return (err as any).errors[0].message;
+    return (err as ClerkError).errors![0].message!;
   }
   if (
     typeof err === "object" &&
     err !== null &&
     "message" in err &&
-    typeof (err as any).message === "string"
+    typeof (err as ClerkError).message === "string"
   ) {
-    return (err as any).message;
+    return (err as ClerkError).message!;
   }
   return "An unknown error occurred. Please try again.";
 }
 
 export async function handleGoogleAuth({ signIn, setLoading, toast }: {
-  signIn: any;
+  signIn?: SignInResource | null;
   setLoading: (loading: boolean) => void;
   toast: { error: (msg: string) => void };
 }) {

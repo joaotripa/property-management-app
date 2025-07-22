@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
+import { getClerkErrorMessage } from "@/lib/utils";
 
 const ForgotPasswordPage = () => {
   useRedirectIfSignedIn();
@@ -33,12 +34,8 @@ const ForgotPasswordPage = () => {
         "We've sent a password reset code to your email. Please check your inbox."
       );
       router.push(`/reset-password?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      setError(
-        err.errors?.[0]?.longMessage ||
-          err.message ||
-          "We couldn't process your request. Please try again later."
-      );
+    } catch (err: unknown) {
+      setError(getClerkErrorMessage(err));
     } finally {
       setLoading(false);
     }

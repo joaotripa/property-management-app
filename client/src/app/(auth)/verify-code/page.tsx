@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { useSignUp } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { getClerkErrorMessage } from "@/lib/utils";
+import { Suspense } from "react";
+import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 
-export default function VerifyCodePage() {
+function VerifyCodeContent() {
   useRedirectIfSignedIn();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,10 +24,8 @@ export default function VerifyCodePage() {
     try {
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       toast.success("A new verification code has been sent to your email.");
-    } catch (err: any) {
-      toast.error(
-        err?.errors?.[0]?.message || err.message || "Failed to resend code."
-      );
+    } catch (err: unknown) {
+      toast.error(getClerkErrorMessage(err) || "Failed to resend code.");
     }
   };
 
@@ -39,5 +40,13 @@ export default function VerifyCodePage() {
         onResendCode={handleResendCode}
       />
     </div>
+  );
+}
+
+export default function VerifyCodePage() {
+  return (
+    <Suspense fallback={<AuthPageSkeleton />}>
+      <VerifyCodeContent />
+    </Suspense>
   );
 }
