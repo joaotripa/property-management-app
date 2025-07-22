@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
           ></Script>
         </head>
-        <body className="font-body" suppressHydrationWarning>
+        <body suppressHydrationWarning>
           <Toaster richColors closeButton theme="light" />
           {children}
         </body>
