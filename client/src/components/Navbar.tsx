@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const navItems = [
   { label: "How It Works", href: "#how-it-works" },
@@ -17,13 +18,12 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
+    <nav className="sticky top-0 z-50 bg-background backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+        <div className="flex justify-between items-center h-22">
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-foreground">
-              Domari
+              <Logo />
             </Link>
           </div>
 
@@ -50,9 +50,10 @@ const Navbar = () => {
             >
               Login
             </Link>
-            <Link href="/dashboard">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2">
-                Get Started
+            <Link href="/dashboard" passHref>
+              <Button className="bg-primary text-md hover:bg-primary/90 hover-scale text-primary-foreground !px-8 !py-6 rounded-full group shadow-xl shadow-primary/30 hover:!shadow-2xl hover:!shadow-primary/60 transition-shadow duration-200">
+                Sign Up
+                <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
             </Link>
           </div>
@@ -66,8 +67,8 @@ const Navbar = () => {
               Login
             </Link>
             <Link href="/dashboard">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm">
-                Get Started
+              <Button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm rounded-full">
+                Sign Up
               </Button>
             </Link>
           </div>
@@ -88,7 +89,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-border">
+        <div className="md:hidden bg-background border-t border-border/20">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Link
@@ -100,16 +101,22 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            <div className="flex flex-col space-y-2 pt-4">
+            <div className="flex flex-row pt-4 gap-2 w-full items-center justify-center">
               <Link
                 href="/dashboard"
-                className="text-foreground hover:text-primary px-3 py-2 text-base font-medium transition-colors duration-200"
+                className="w-1/2 text-foreground hover:text-primary text-base font-medium transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                Login
+                <Button className="w-full bg-background hover:bg-primary border border-primary text-primary hover:text-primary-foreground rounded-full">
+                  Login
+                </Button>
               </Link>
-              <Link href="/dashboard" onClick={() => setIsOpen(false)}>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full">
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="w-1/2"
+              >
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                   Get Started
                 </Button>
               </Link>

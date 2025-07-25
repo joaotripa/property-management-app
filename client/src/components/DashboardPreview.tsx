@@ -4,17 +4,8 @@ import { ArrowRight, TrendingUp } from "lucide-react";
 
 const DashboardPreview = () => {
   return (
-    <section className="hidden md:block bg-background py-16">
+    <section className="hidden md:block bg-primary-light/60 pt-2 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            See Domari in Action
-          </h2>
-          <p className="text-lg text-dark">
-            Experience the power of intelligent property management
-          </p>
-        </div>
-
         <div className="relative animate-fade-in">
           <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-3xl blur-3xl opacity-20 scale-105"></div>
           <div className="relative bg-white rounded-3xl shadow-2xl border border-border overflow-hidden">
@@ -26,19 +17,14 @@ const DashboardPreview = () => {
                     <div className="h-3 w-3 bg-yellow-400 rounded-full"></div>
                     <div className="h-3 w-3 bg-green-400 rounded-full"></div>
                   </div>
-                  <div className="text-sm text-dark font-medium">
-                    Domari Dashboard
-                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Enhanced Dashboard Preview Content */}
             <div className="p-6 md:p-8 lg:p-12">
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    Welcome back, Sarah
+                    Welcome back,
                   </h3>
                   <p className="text-dark mt-1">
                     Here's what's happening with your properties today
@@ -53,8 +39,6 @@ const DashboardPreview = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                 <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 md:p-6 rounded-xl border border-primary/20">
                   <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
@@ -97,10 +81,7 @@ const DashboardPreview = () => {
                   <div className="text-xs text-success mt-2">156 reviews</div>
                 </div>
               </div>
-
-              {/* Enhanced Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
-                {/* Revenue Chart */}
                 <div className="bg-white border border-border rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-foreground">
