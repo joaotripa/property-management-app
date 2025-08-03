@@ -6,7 +6,7 @@ const Problem = () => {
       icon: FileStack,
       title: "Spreadsheet Hell",
       description:
-        "You're juggling multiple Excel files, losing data, and spending weekends fixing formulas instead of growing your portfolio.",
+        "You're wrestling with multiple Excel files, losing data, and spending weekends fixing formulas instead of growing your portfolio.",
       color: "from-destructive/70 to-rose-500",
       bgColor: "bg-destructive/10",
     },
