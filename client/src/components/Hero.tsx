@@ -20,7 +20,7 @@ const Hero = () => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
             Ditch the spreadsheets,{" "}
             <span className="text-primary text-shadow-sm text-shadow-primary">
-              keep the profits
+              maximize your profits
             </span>
           </h1>
 

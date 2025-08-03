@@ -1,28 +1,40 @@
-import { BarChart3, TrendingUp, Building2 } from "lucide-react";
+import { BarChart3, TrendingUp, Building2, ReceiptText } from "lucide-react";
 
 const Solution = () => {
   const features = [
     {
-      icon: TrendingUp,
-      title: "Income & Expense Tracking",
+      icon: ReceiptText,
+      title: "Financial Transaction Tracking",
+      subheadline: "Every dollar, perfectly organized",
       description:
-        "Log rental income, maintenance costs, repairs, and all property expenses in one organized system.",
+        "Log rent, expenses, maintenance costs, repairs, and more in seconds. Built-in categories mean no more guessing where that repair bill should go.",
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-success/10",
     },
     {
       icon: Building2,
-      title: "Multi-Property Management",
+      title: "Property Portfolio Management",
+      subheadline: "All your properties in one place",
       description:
-        "Add your properties and keep each one's finances completely separate and organized.",
+        "Add your properties and see performance at a glance. Switch between properties instantly and track what matters most.",
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-success/10",
     },
     {
       icon: BarChart3,
-      title: "Financial Reports",
+      title: "Essential Reporting",
+      subheadline: "Tax-ready reports in one click",
       description:
-        "Generate monthly summaries, profit/loss statements, and expense breakdowns with one click.",
+        "Generate profit & loss statements, export everything for your accountant, and see exactly which properties make you money.",
+      color: "from-green-500 to-emerald-600",
+      bgColor: "bg-success/10",
+    },
+    {
+      icon: TrendingUp,
+      title: "Cash Flow Summary",
+      subheadline: "Know your numbers instantly",
+      description:
+        "See total income, expenses, and profit across your entire portfolio. Monthly, yearly, or property-by-property views.",
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-success/10",
     },
@@ -37,18 +49,18 @@ const Solution = () => {
               <span className="text-sm font-medium text-primary">Solution</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-snug">
+              Everything you need to track your{" "}
               <span className="text-primary text-shadow-sm text-shadow-primary">
-                Take completly control
-              </span>{" "}
-              of your property finances.
+                property finances.
+              </span>
             </h2>
             <p className="text-xl text-muted">
-              Track every transaction, generate instant reports, and scale your
-              portfolio effortlessly.
+              Track income, manage expenses, generate tax-ready reports from one
+              simple dashboard and scale your portfolio effortlessly.
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -64,6 +76,7 @@ const Solution = () => {
               <h3 className="text-xl font-semibold text-foreground mb-4">
                 {feature.title}
               </h3>
+
               <p className="text-dark leading-relaxed">{feature.description}</p>
             </div>
           ))}

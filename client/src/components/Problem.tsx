@@ -1,20 +1,12 @@
-import { FileStack, Target, CalendarClock } from "lucide-react";
+import { FileStack, Target, CalendarClock, EyeOff } from "lucide-react";
 
 const Problem = () => {
   const features = [
     {
       icon: FileStack,
-      title: "Financial Chaos",
+      title: "Spreadsheet Hell",
       description:
-        "Spreadsheets, receipts, and guesswork. Expenses scattered everywhere. No clear view of actual profitability.",
-      color: "from-destructive/70 to-rose-500",
-      bgColor: "bg-destructive/10",
-    },
-    {
-      icon: Target,
-      title: "Missed Opportunities",
-      description:
-        "Money left on the table. Overlooked deductions and poor decisions due to incomplete data.",
+        "You're juggling multiple Excel files, losing data, and spending weekends fixing formulas instead of growing your portfolio.",
       color: "from-destructive/70 to-rose-500",
       bgColor: "bg-destructive/10",
     },
@@ -22,7 +14,23 @@ const Problem = () => {
       icon: CalendarClock,
       title: "Tax Season Nightmare",
       description:
-        "Panic and overpaying. Scrambling through receipts, missing thousands in deductions annually.",
+        'Scrambling through receipts and bank statements because your "system" is actually just a folder of random documents.',
+      color: "from-destructive/70 to-rose-500",
+      bgColor: "bg-destructive/10",
+    },
+    {
+      icon: Target,
+      title: "Missing Money",
+      description:
+        "Without clear tracking, you're losing track of expenses, making poor investment decisions and leaving deductions on the table.",
+      color: "from-destructive/70 to-rose-500",
+      bgColor: "bg-destructive/10",
+    },
+    {
+      icon: EyeOff,
+      title: "Zero Visibility",
+      description:
+        "No idea which properties are actually profitable or where your money is going each month.",
       color: "from-destructive/70 to-rose-500",
       bgColor: "bg-destructive/10",
     },
@@ -37,14 +45,19 @@ const Problem = () => {
               <span className="text-sm font-medium text-primary">Problem</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-snug">
-              Most landlords are flying blind.
+              <span className="text-primary text-shadow-sm text-shadow-primary">
+                Rental finances{" "}
+              </span>
+              shouldn't be this hard
             </h2>
             <p className="text-xl text-muted">
-              73% of landlords lose money they don't even know about.
+              Most landlords are drowning in spreadsheet chaos, missing
+              deductions, and wasting hours on basic bookkeeping that should
+              take minutes.
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}

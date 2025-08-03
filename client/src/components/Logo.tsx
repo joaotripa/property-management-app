@@ -1,10 +1,15 @@
 import React from "react";
 import Image from "next/image";
 
-const Logo = () => {
+interface LogoProps {
+  size?: string;
+  className?: string;
+}
+
+const Logo = ({ size = "32px", className = "" }: LogoProps) => {
   return (
-    <div className="flex flex-row items-center gap-2">
-      <div className="size-8 relative">
+    <div className={`flex flex-row items-center gap-2 ${className}`}>
+      <div className="relative" style={{ width: size, height: size }}>
         <Image
           alt="domari-logo"
           src="/Domari-Logo-Icon.png"
