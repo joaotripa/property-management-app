@@ -1,0 +1,39 @@
+{
+  "name": "property-management-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "client:dev": "cd client && npm run dev",
+    "client:build": "cd client && npm run build",
+    "client:start": "cd client && npm run start",
+    "install:all": "npm install && cd client && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joaotripa/property-management-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/joaotripa/property-management-app/issues"
+  },
+  "homepage": "https://github.com/joaotripa/property-management-app#readme",
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "prisma": "^6.11.1",
+    "tsx": "^4.20.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.11.1"
+  }
+}
