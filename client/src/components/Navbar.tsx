@@ -45,12 +45,12 @@ const Navbar = () => {
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             <Link
-              href="/dashboard"
+              href="/login"
               className="text-foreground hover:text-primary px-3 py-2 font-medium transition-colors duration-200"
             >
               Login
             </Link>
-            <Link href="/dashboard" passHref>
+            <Link href="/signup" passHref>
               <Button className="bg-primary text-md hover:bg-primary/90 hover-scale text-primary-foreground !px-8 !py-6 rounded-full group shadow-xl shadow-primary/30 hover:!shadow-2xl hover:!shadow-primary/60 transition-shadow duration-200">
                 Sign Up
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -61,12 +61,12 @@ const Navbar = () => {
           {/* Medium screens - simplified nav */}
           <div className="hidden md:flex lg:hidden items-center space-x-6">
             <Link
-              href="/dashboard"
+              href="/login"
               className="text-domari-dark hover:text-primary text-sm font-medium transition-colors duration-200"
             >
               Login
             </Link>
-            <Link href="/dashboard">
+            <Link href="/signup">
               <Button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm rounded-full">
                 Sign Up
               </Button>
@@ -103,7 +103,7 @@ const Navbar = () => {
             ))}
             <div className="flex flex-row pt-4 gap-2 w-full items-center justify-center">
               <Link
-                href="/dashboard"
+                href="/login"
                 className="w-1/2 text-foreground hover:text-primary text-base font-medium transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
@@ -112,7 +112,7 @@ const Navbar = () => {
                 </Button>
               </Link>
               <Link
-                href="/dashboard"
+                href="/signup"
                 onClick={() => setIsOpen(false)}
                 className="w-1/2"
               >

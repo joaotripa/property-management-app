@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useSignIn, useSignUp } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
-import { handleGoogleAuth } from "@/lib/utils";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
 const SignupPage = () => {
   useRedirectIfSignedIn();
@@ -26,30 +25,14 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const router = useRouter();
-  const { signUp, isLoaded } = useSignUp();
-  const { signIn } = useSignIn();
   const [error, setError] = useState("");
-
-  if (!isLoaded) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
-      </div>
-    );
-  }
+  const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); // Clear previous error
-    if (!signUp) {
-      const msg = "Sign up is not ready. Please try again in a moment.";
-      setError(msg);
-      toast.error(msg);
-      setLoading(false);
-      return;
-    }
+    setError("");
+
     if (password !== confirmPassword) {
       const msg = "The passwords you entered do not match. Please try again.";
       setError(msg);
@@ -57,18 +40,28 @@ const SignupPage = () => {
       setLoading(false);
       return;
     }
+
     try {
-      await signUp.create({
-        emailAddress: email,
-        password,
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create account");
+      }
+
       toast.success(
         "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
       );
       router.push(`/verify-code?email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
-      const msg = getClerkErrorMessage(err) || "Could not create account.";
+      const msg = getAuthErrorMessage(err);
       setError(msg);
       toast.error(msg);
     } finally {
@@ -77,7 +70,14 @@ const SignupPage = () => {
   };
 
   const handleGoogleSignup = async () => {
-    await handleGoogleAuth({ signIn, setLoading, toast });
+    setLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (err) {
+      console.error("Google sign-up error:", err);
+      toast.error("Google sign-up failed. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,9 +92,11 @@ const SignupPage = () => {
           <CardContent className="mb-4">
             <div className="grid gap-4">
               {error && (
-                <p className="text-red-500 text-center" role="alert">
-                  {error}
-                </p>
+                <ErrorMessage
+                  type="error"
+                  message={error}
+                  className="mb-4"
+                />
               )}
               <form onSubmit={handleSignup}>
                 <div className="grid gap-6">
@@ -126,7 +128,7 @@ const SignupPage = () => {
                       <button
                         type="button"
                         tabIndex={-1}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
@@ -155,7 +157,7 @@ const SignupPage = () => {
                       <button
                         type="button"
                         tabIndex={-1}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                        className="absolute right-2 top-1/2 -translate-y-1/2  text-muted-foreground hover:text-muted focus:outline-none"
                         onClick={() => setShowConfirmPassword((v) => !v)}
                         aria-label={
                           showConfirmPassword
@@ -180,15 +182,15 @@ const SignupPage = () => {
                           type="checkbox"
                           checked={acceptedTerms}
                           onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          className="h-4 w-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500"
+                          className="h-4 w-4"
                         />
                       </div>
                       <div className="ml-3 text-sm">
-                        <label htmlFor="terms" className="text-gray-600">
+                        <label htmlFor="terms" className="text-muted">
                           I agree to the{" "}
                           <Link
                             href="/legal/terms"
-                            className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                            className="font-medium text-accent hover:text-accent/70 transition-colors"
                             target="_blank"
                           >
                             Terms of Service
@@ -196,7 +198,7 @@ const SignupPage = () => {
                           and{" "}
                           <Link
                             href="/legal/privacy"
-                            className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                            className="font-medium text-accent hover:text-accent/70 transition-colors"
                             target="_blank"
                           >
                             Privacy Policy
@@ -214,7 +216,7 @@ const SignupPage = () => {
                       !password ||
                       !confirmPassword
                     }
-                    className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors"
+                    className="w-full rounded-2xl bg-primary/80 hover:bg-primary transition-colors"
                   >
                     {loading ? "Signing Up..." : "Sign Up"}
                   </Button>
@@ -273,7 +275,7 @@ const SignupPage = () => {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="underline underline-offset-4 text-blue-700 hover:text-blue-500 transition-colors"
+            className="underline underline-offset-4 text-accent hover:text-accent/70 transition-colors"
           >
             Log in
           </Link>

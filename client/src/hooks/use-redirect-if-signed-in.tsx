@@ -1,15 +1,15 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 
 export function useRedirectIfSignedIn() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if (status === "authenticated" && session) {
       router.replace("/dashboard");
     }
-  }, [isLoaded, isSignedIn, router]);
+  }, [status, session, router]);
 }

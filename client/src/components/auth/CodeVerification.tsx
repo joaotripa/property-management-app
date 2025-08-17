@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CircleCheckBig } from "lucide-react";
 import { toast } from "sonner";
-import { useSignUp, useSignIn } from "@clerk/nextjs";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils";
+import { ErrorMessage } from "./ErrorMessage";
 
 interface CodeVerificationProps {
   email: string;
@@ -24,8 +24,6 @@ export function CodeVerification({
   onResendCode,
   resendLoading = false,
 }: CodeVerificationProps) {
-  const { signUp, setActive, isLoaded: signUpLoaded } = useSignUp();
-  const { isLoaded: signInLoaded } = useSignIn();
   const [codeDigits, setCodeDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -87,17 +85,6 @@ export function CodeVerification({
 
   const code = codeDigits.join("");
 
-  if (
-    (mode === "reset" && !signInLoaded) ||
-    (mode !== "reset" && !signUpLoaded)
-  ) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <div className="animate-spin h-8 w-8 text-blue-600" />
-      </div>
-    );
-  }
-
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -108,25 +95,11 @@ export function CodeVerification({
       onSuccess(code);
       return;
     }
-    if (!signUp) {
-      toast.error("Sign up is not ready. Please try again in a moment.");
-      setLoading(false);
-      return;
-    }
+
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        toast.success(
-          "Your email has been verified! Welcome to your dashboard."
-        );
-        onSuccess(code);
-      } else {
-        toast.error("Invalid code. Please try again.");
-      }
+      await onSuccess(code);
     } catch (err: unknown) {
-      const errorMessage = getClerkErrorMessage(err);
-      toast.error(errorMessage);
+      const errorMessage = getAuthErrorMessage(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -180,24 +153,32 @@ export function CodeVerification({
               />
             ))}
           </div>
-          {error && <p className="text-red-500 text-center">{error}</p>}
+          {error && (
+            <ErrorMessage
+              type="error"
+              message={error}
+              className="mb-4"
+            />
+          )}
           <Button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+            className="w-full bg-primary/80 hover:bg-primary transition-colors"
             disabled={loading || code.length !== 6}
           >
             {loading ? "Verifying..." : "Verify"}
           </Button>
           <div className="text-center">
             {effectiveResendLoading ? (
-              <span className="text-sm text-gray-500">Resending...</span>
+              <span className="text-sm text-muted-foreground">
+                Resending...
+              </span>
             ) : effectiveResendTimer > 0 ? (
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 Resend code ({effectiveResendTimer})
               </span>
             ) : (
               <span
-                className="text-sm text-blue-600 hover:underline cursor-pointer"
+                className="text-sm text-accent hover:underline cursor-pointer"
                 role="button"
                 tabIndex={0}
                 onClick={handleResend}

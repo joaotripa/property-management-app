@@ -114,8 +114,8 @@ export async function POST(req: NextRequest) {
     });
 
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
-      to: [process.env.EMAIL_TO!],
+      from: process.env.RESEND_EMAIL_FROM!,
+      to: [process.env.RESEND_EMAIL_TO!],
       subject: `New Message from ${formData.name} - ${formData.subject}`,
       html: createContactEmailTemplate(formData),
       text: createPlainContactEmail(formData),
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error("Contact form error:", error);
-    
+      
     if (error instanceof Error) {
       if (error.message.includes("JSON")) {
         return NextResponse.json(

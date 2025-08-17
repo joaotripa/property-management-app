@@ -9,13 +9,13 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useSignIn } from "@clerk/nextjs";
+import { signIn } from "next-auth/react";
+import { getAuthErrorMessage } from "@/lib/utils";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
-import { handleGoogleAuth } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { AuthLogger } from "@/lib/auth-logger";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { ErrorMessage, getErrorMessageConfig } from "@/components/auth/ErrorMessage";
 
 function LoginContent() {
   useRedirectIfSignedIn();
@@ -23,82 +23,46 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(""); // NEW
+  const [error, setError] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
-  const { signIn, setActive, isLoaded } = useSignIn();
-  const pathname = usePathname();
-
-  if (pathname === "/login" && !isLoaded) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
-      </div>
-    );
-  }
 
   function renderAlertMessage(message: string | null) {
-    if (!message) return null;
-    if (message === "password-updated") {
-      return (
-        <div
-          className="bg-green-100 text-green-800 border border-green-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
-          role="status"
-        >
-          Your password has been updated. Please log in with your new password.
-        </div>
-      );
-    }
-    if (message === "oauth-error") {
-      return (
-        <div
-          className="bg-red-100 text-red-800 border border-red-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
-          role="alert"
-        >
-          Google sign-in failed. Please try again or use another login method.
-        </div>
-      );
-    }
+    const config = getErrorMessageConfig(message);
+    if (!config) return null;
+    
     return (
-      <div
-        className="bg-blue-100 text-blue-800 border border-blue-300 rounded-lg px-4 py-2 text-center text-sm mb-2"
-        role="status"
-      >
-        {message}
-      </div>
+      <ErrorMessage
+        type={config.type}
+        message={config.message}
+        className="mb-4"
+      />
     );
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); // Clear previous error
-    if (!signIn) {
-      const msg = "Login is not ready. Please try again in a moment.";
-      setError(msg);
-      toast.error(msg);
-      setLoading(false);
-      return;
-    }
+    setError("");
+
     try {
-      const result = await signIn.create({
-        identifier: email,
+      const result = await signIn("credentials", {
+        email,
         password,
+        redirect: false,
       });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        toast.success("Welcome back! Redirecting to your dashboard.");
-        router.push("/dashboard");
-      } else {
+
+      if (result?.error) {
         const msg = "Invalid email or password. Please try again.";
         setError(msg);
         toast.error(msg);
+      } else if (result?.ok) {
+        toast.success("Welcome back! Redirecting to your dashboard.");
+        router.push("/dashboard");
       }
     } catch (err: unknown) {
-      const msg =
-        getClerkErrorMessage(err) ||
-        "Something went wrong. Please try again later.";
+      const msg = getAuthErrorMessage(err);
       setError(msg);
       toast.error(msg);
     } finally {
@@ -107,7 +71,14 @@ function LoginContent() {
   };
 
   const handleGoogleLogin = async () => {
-    await handleGoogleAuth({ signIn, setLoading, toast });
+    setLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      toast.error("Google sign-in failed. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -122,9 +93,11 @@ function LoginContent() {
           <div className="grid gap-4">
             {renderAlertMessage(message)}
             {error && (
-              <p className="text-red-500 text-center" role="alert">
-                {error}
-              </p>
+              <ErrorMessage
+                type="error"
+                message={error}
+                className="mb-4"
+              />
             )}
             <form onSubmit={handleLogin}>
               <div className="grid gap-6">
@@ -146,7 +119,7 @@ function LoginContent() {
                     <Label htmlFor="password">Password</Label>
                     <Link
                       href="/forgot-password"
-                      className="ml-auto text-sm underline-offset-4 hover:underline hover:text-blue-600 transition-colors"
+                      className="ml-auto text-sm underline-offset-4 hover:underline hover:text-accent/70 transition-colors"
                     >
                       Forgot your password?
                     </Link>
@@ -164,7 +137,7 @@ function LoginContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
@@ -176,7 +149,7 @@ function LoginContent() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="w-full rounded-2xl bg-primary/80 hover:bg-primary transition-colors"
                   disabled={loading || !email || !password}
                 >
                   {loading ? "Signing in..." : "Sign in"}
@@ -188,7 +161,7 @@ function LoginContent() {
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full rounded-2xl"
+                  className="w-full rounded-2xl hover:bg-primary"
                   type="button"
                   disabled={loading}
                   onClick={handleGoogleLogin}
@@ -230,7 +203,7 @@ function LoginContent() {
             </form>
           </div>
           <div className="grid gap-6 mt-6">
-            <div className="text-muted-foreground *:[a]:text-blue-600 *:[a]:hover:text-blue-800 text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
+            <div className="text-muted-foreground *:[a]:text-accent/70 *:[a]:hover:text-accent text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
               By signing up, you acknowledge that you have read and understood,
               and agree to our <Link href="#">Terms of Service</Link> and{" "}
               <Link href="#">Privacy Policy</Link>.
@@ -242,7 +215,7 @@ function LoginContent() {
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="underline underline-offset-4 text-blue-700 hover:text-blue-500 transition-colors"
+          className="underline underline-offset-4 text-accent hover:text-accent/70 transition-colors"
         >
           Sign up
         </Link>

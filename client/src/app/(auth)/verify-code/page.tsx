@@ -3,9 +3,8 @@
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CodeVerification } from "@/components/auth/CodeVerification";
-import { useSignUp } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 
@@ -14,18 +13,26 @@ function VerifyCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-  const { signUp, isLoaded } = useSignUp();
 
   const handleResendCode = async () => {
-    if (!isLoaded || !signUp) {
-      toast.error("Sign up is not ready. Please try again in a moment.");
-      return;
-    }
     try {
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      toast.success("A new verification code has been sent to your email.");
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success("A new verification code has been sent to your email.");
+      } else {
+        toast.error(data.error || "Failed to resend code.");
+      }
     } catch (err: unknown) {
-      toast.error(getClerkErrorMessage(err) || "Failed to resend code.");
+      toast.error(getAuthErrorMessage(err) || "Failed to resend code.");
     }
   };
 
@@ -34,8 +41,27 @@ function VerifyCodeContent() {
       <CodeVerification
         email={email}
         mode="signup"
-        onSuccess={() => {
-          router.push("/dashboard");
+        onSuccess={async (code) => {
+          try {
+            const response = await fetch('/api/auth/verify-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email, code }),
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+              throw new Error(data.error || 'Verification failed');
+            }
+            
+            toast.success("Email verified successfully! You can now sign in.");
+            router.push("/login?message=email-verified");
+          } catch (err: unknown) {
+            toast.error(getAuthErrorMessage(err));
+          }
         }}
         onResendCode={handleResendCode}
       />

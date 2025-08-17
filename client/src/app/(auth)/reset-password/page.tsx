@@ -8,10 +8,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { useSignIn } from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { Suspense } from "react";
@@ -29,16 +27,6 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-  const { signIn, isLoaded } = useSignIn();
-  const { signOut } = useAuth();
-
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
-      </div>
-    );
-  }
 
   if (!email) {
     return (
@@ -57,7 +45,7 @@ function ResetPasswordContent() {
             </p>
             <Button
               asChild
-              className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+              className="w-full bg-primary/80 hover:bg-primary transition-colors"
             >
               <Link href="/forgot-password">Restart Password Reset</Link>
             </Button>
@@ -71,55 +59,53 @@ function ResetPasswordContent() {
     e.preventDefault();
     setLoading(true);
     if (password !== confirmPassword) {
-      toast.error("Passwords don&apos;t match");
+      toast.error("Passwords don't match");
       setLoading(false);
       return;
     }
     try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code: verifiedCode,
-        password,
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, code: verifiedCode, password }),
       });
 
-      if (result.status === "complete") {
-        try {
-          await signOut();
-        } catch (signOutErr) {
-          // Log or toast sign out error, but continue
-          console.error("Sign out error after password reset", signOutErr);
-        }
-        toast.success(
-          "Password updated successfully! Please log in with your new password."
-        );
-        router.push("/login?message=password-updated");
-      } else if (result.status === "needs_second_factor") {
-        toast.error(
-          "Two-factor authentication is required but not supported in this flow."
-        );
-      } else {
-        toast.error("An error occurred. Please check your code and try again.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to reset password");
       }
+
+      toast.success(
+        "Password updated successfully! Please log in with your new password."
+      );
+      router.push("/login?message=password-updated");
     } catch (err: unknown) {
-      toast.error(getClerkErrorMessage(err));
+      toast.error(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    if (!signIn) {
-      toast.error("Password reset is not ready. Please try again in a moment.");
-      return;
-    }
     try {
-      await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
-      toast.success("Verification code resent to your email.");
+
+      if (response.ok) {
+        toast.success("Verification code resent to your email.");
+      } else {
+        toast.error("Failed to resend code. Please try again.");
+      }
     } catch (err: unknown) {
-      toast.error(getClerkErrorMessage(err));
+      toast.error(getAuthErrorMessage(err));
     }
   };
 
@@ -159,7 +145,7 @@ function ResetPasswordContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
@@ -183,7 +169,7 @@ function ResetPasswordContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
                       onClick={() => setShowConfirmPassword((v) => !v)}
                       aria-label={
                         showConfirmPassword ? "Hide password" : "Show password"
@@ -199,7 +185,7 @@ function ResetPasswordContent() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="w-full bg-primary/80 hover:bg-primary transition-colors"
                   disabled={loading}
                 >
                   {loading ? "Resetting..." : "Set New Password"}
@@ -212,7 +198,7 @@ function ResetPasswordContent() {
       <div className="text-center text-sm">
         <Link
           href="/login"
-          className="underline underline-offset-4 text-blue-700 hover:text-blue-500 transition-colors"
+          className="underline underline-offset-4 text-accent hover:text-accent/70 transition-colors"
         >
           Back to login
         </Link>

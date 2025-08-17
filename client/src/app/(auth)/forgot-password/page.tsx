@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
-import { getClerkErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils";
+import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
 const ForgotPasswordPage = () => {
   useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { signIn, isLoaded } = useSignIn();
   const router = useRouter();
 
   async function handleSendResetEmail(e: React.FormEvent) {
@@ -25,28 +24,31 @@ const ForgotPasswordPage = () => {
     setError("");
 
     try {
-      await signIn?.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send reset email");
+      }
 
       toast.success(
         "We've sent a password reset code to your email. Please check your inbox."
       );
       router.push(`/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
-      setError(getClerkErrorMessage(err));
+      const errorMessage = getAuthErrorMessage(err);
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <div className="animate-spin h-8 w-8 text-blue-600" />
-      </div>
-    );
   }
   return (
     <div className="flex flex-col gap-6">
@@ -72,14 +74,20 @@ const ForgotPasswordPage = () => {
                   className="rounded-2xl"
                 />
               </div>
+              {error && (
+                <ErrorMessage
+                  type="error"
+                  message={error}
+                  className="mb-4"
+                />
+              )}
               <Button
                 type="submit"
-                className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors"
+                className="w-full rounded-2xl bg-primary/80 hover:bg-primary transition-colors"
                 disabled={loading}
               >
                 {loading ? "Sending Reset Email..." : "Send Reset Email"}
               </Button>
-              {error && <p className="text-red-500 text-center">{error}</p>}
             </div>
           </form>
         </CardContent>
@@ -87,7 +95,7 @@ const ForgotPasswordPage = () => {
       <div className="text-center text-sm">
         <Link
           href="/login"
-          className="underline underline-offset-4 text-blue-700 hover:text-blue-500 transition-colors"
+          className="underline underline-offset-4 text-accent hover:text-accent/70 transition-colors"
         >
           Back to login
         </Link>
