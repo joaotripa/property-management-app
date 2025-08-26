@@ -7,15 +7,17 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { getAuthErrorMessage } from "@/lib/utils";
-import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
-import { AuthLogger } from "@/lib/auth-logger";
+import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
-import { ErrorMessage, getErrorMessageConfig } from "@/components/auth/ErrorMessage";
+import {
+  ErrorMessage,
+  getErrorMessageConfig,
+} from "@/components/auth/ErrorMessage";
 
 function LoginContent() {
   useRedirectIfSignedIn();
@@ -31,7 +33,7 @@ function LoginContent() {
   function renderAlertMessage(message: string | null) {
     const config = getErrorMessageConfig(message);
     if (!config) return null;
-    
+
     return (
       <ErrorMessage
         type={config.type}
@@ -93,11 +95,7 @@ function LoginContent() {
           <div className="grid gap-4">
             {renderAlertMessage(message)}
             {error && (
-              <ErrorMessage
-                type="error"
-                message={error}
-                className="mb-4"
-              />
+              <ErrorMessage type="error" message={error} className="mb-4" />
             )}
             <form onSubmit={handleLogin}>
               <div className="grid gap-6">

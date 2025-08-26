@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CircleCheckBig } from "lucide-react";
-import { toast } from "sonner";
 import { getAuthErrorMessage } from "@/lib/utils";
 import { ErrorMessage } from "./ErrorMessage";
 
@@ -154,11 +153,7 @@ export function CodeVerification({
             ))}
           </div>
           {error && (
-            <ErrorMessage
-              type="error"
-              message={error}
-              className="mb-4"
-            />
+            <ErrorMessage type="error" message={error} className="mb-4" />
           )}
           <Button
             type="submit"

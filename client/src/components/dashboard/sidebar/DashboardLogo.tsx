@@ -8,19 +8,18 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 
-export function DashboardLogo({}: {}) {
+export function DashboardLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className="hover:cursor-pointer hover:!bg-transparent"
         >
           <Link
-            href="/dashbaord"
+            href="/dashboard"
             className="text-2xl font-bold text-foreground"
           >
             <Logo size="32px" />

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
+import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { getAuthErrorMessage } from "@/lib/utils";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
@@ -75,11 +75,7 @@ const ForgotPasswordPage = () => {
                 />
               </div>
               {error && (
-                <ErrorMessage
-                  type="error"
-                  message={error}
-                  className="mb-4"
-                />
+                <ErrorMessage type="error" message={error} className="mb-4" />
               )}
               <Button
                 type="submit"

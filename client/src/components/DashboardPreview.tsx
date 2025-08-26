@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 const DashboardPreview = () => {
   return (
@@ -27,7 +27,7 @@ const DashboardPreview = () => {
                     Welcome back,
                   </h3>
                   <p className="text-dark mt-1">
-                    Here's what's happening with your properties today
+                    Here&apos;s what&apos;s happening with your properties today
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">

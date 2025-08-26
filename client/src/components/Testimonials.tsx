@@ -1,4 +1,4 @@
-import { Star, Quote } from "lucide-react";
+import Image from "next/image";
 
 const Testimonials = () => {
   const testimonials = [
@@ -65,8 +65,8 @@ const Testimonials = () => {
               <span className="italic"> Domari</span>
             </h2>
             <p className="text-xl text-muted max-w-3xl mx-auto">
-              Don't just take our word for it, hear from property owners who've
-              transformed their business
+              Don&apos;t just take our word for it, hear from property owners
+              who&apos;ve transformed their business
             </p>
           </div>
         </div>
@@ -78,9 +78,11 @@ const Testimonials = () => {
             >
               <div className="flex flex-row items-center mb-6">
                 <div className="relative">
-                  <img
+                  <Image
                     src={testimonial.image}
                     alt={testimonial.name}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-2xl object-cover mr-4 shadow-lg"
                   />
                 </div>
@@ -93,7 +95,7 @@ const Testimonials = () => {
               </div>
 
               <blockquote className="text-dark leading-relaxed text-lg relative z-10">
-                "{testimonial.content}"
+                &quot;{testimonial.content}&quot;
               </blockquote>
             </div>
           ))}

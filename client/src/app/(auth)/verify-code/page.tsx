@@ -1,6 +1,6 @@
 "use client";
 
-import { useRedirectIfSignedIn } from "@/hooks/use-redirect-if-signed-in";
+import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { toast } from "sonner";
@@ -16,16 +16,16 @@ function VerifyCodeContent() {
 
   const handleResendCode = async () => {
     try {
-      const response = await fetch('/api/auth/resend-verification', {
-        method: 'POST',
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         toast.success("A new verification code has been sent to your email.");
       } else {
@@ -43,20 +43,20 @@ function VerifyCodeContent() {
         mode="signup"
         onSuccess={async (code) => {
           try {
-            const response = await fetch('/api/auth/verify-email', {
-              method: 'POST',
+            const response = await fetch("/api/auth/verify-email", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({ email, code }),
             });
-            
+
             const data = await response.json();
-            
+
             if (!response.ok) {
-              throw new Error(data.error || 'Verification failed');
+              throw new Error(data.error || "Verification failed");
             }
-            
+
             toast.success("Email verified successfully! You can now sign in.");
             router.push("/login?message=email-verified");
           } catch (err: unknown) {

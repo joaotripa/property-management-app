@@ -48,7 +48,7 @@ const Problem = () => {
               <span className="text-primary text-shadow-sm text-shadow-primary">
                 Rental finances{" "}
               </span>
-              shouldn't be this hard
+              shouldn&apos;t be this hard
             </h2>
             <p className="text-xl text-muted">
               Most landlords are drowning in spreadsheet chaos, missing

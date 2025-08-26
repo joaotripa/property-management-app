@@ -3,7 +3,7 @@ interface AuthLogData {
   email?: string;
   provider?: string;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class AuthLogger {

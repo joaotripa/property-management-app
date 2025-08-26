@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp } from "lucide-react";
-import DashboardPreview from "./DashboardPreview";
 
 const Hero = () => {
   return (

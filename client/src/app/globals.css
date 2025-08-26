@@ -4,8 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.9842 0.0034 247.86); /* #F8FAFC - Page background */
+  --background: oklch(0.98 0.0034 247.86); /* F8FAFC - Page background */
   --foreground: oklch(0.3138 0.0217 220.36); /* #253439 - Brand name text */
+
+  --dashboard-background: oklch(0.99 0 0); /* Dashboard background */
 
   --card: oklch(1 0 none);
   --card-foreground: var(--foreground);
@@ -41,15 +43,15 @@
 
   --radius: 0.5rem;
 
-  --sidebar-background: oklch(0.9742 0.0028 247.86);
+  --sidebar-background: oklch(0.955 0.003 247.86);
   --sidebar-foreground: oklch(0.3138 0.0217 220.36);
   --sidebar-primary: oklch(0.5854 0.2041 277.12);
   --sidebar-primary-foreground: oklch(1 0 none);
-  --sidebar-accent: oklch(0.9588 0.0078 255.51);
-  --sidebar-accent-foreground: oklch(0.3138 0.0217 220.36);
+  --sidebar-accent: oklch(0.5854 0.2041 277.12);
+  --sidebar-accent-foreground: oklch(1 0 none);
   --sidebar-border: oklch(0.9088 0.0156 255.51);
   --sidebar-ring: oklch(0.5854 0.2041 277.12);
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: oklch(0.955 0.003 247.86);
 }
 
 .dark {
@@ -88,6 +90,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-dashboard-background: var(--dashboard-background);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -116,6 +119,7 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-background: var(--sidebar-background);
   --color-sidebar: var(--sidebar);
 }
 
@@ -167,7 +171,10 @@
     @apply bg-background text-foreground;
   }
 
-  /* Custom checkbox styling - only colors */
+  html {
+    scroll-behavior: smooth;
+  }
+
   input[type="checkbox"] {
     accent-color: var(--color-primary);
     opacity: 1;
@@ -176,5 +183,9 @@
 
   input[type="checkbox"]:hover {
     opacity: 0.7;
+  }
+
+  [data-slot="dialog-close"] {
+    @apply hover:bg-primary !rounded-sm hover:text-dashboard-background hover:cursor-pointer;
   }
 }
