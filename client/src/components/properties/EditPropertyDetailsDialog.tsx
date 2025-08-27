@@ -91,9 +91,10 @@ export function EditPropertyDetailsDialog({
             <Select
               value={formData.type}
               onValueChange={(value) => handleInputChange("type", value)}
+              defaultValue="Residential"
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Residential" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Residential">Residential</SelectItem>

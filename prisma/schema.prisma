@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
-// Enums - SCREAMING_SNAKE_CASE
+// Enums 
 enum TransactionType {
   INCOME
   EXPENSE

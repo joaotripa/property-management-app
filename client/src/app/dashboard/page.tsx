@@ -8,7 +8,7 @@ export default function DashboardPage() {
   /*useRedirectIfSignedOut();
   const { data: session, status } = useSession();
 
-  if (status === "loading" || status === "unauthenticated") {
+  if (status === "loading") {
     return (
       <div className="flex justify-center items-center h-96">
         <Loader2 className="animate-spin h-8 w-8 text-primary" />

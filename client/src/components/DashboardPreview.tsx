@@ -185,7 +185,7 @@ const DashboardPreview = () => {
                       <span className="text-dark">Revenue</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 bg-accent rounded-full mr-2"></div>
+                      <div className="w-3 h-3 bg-highlights rounded-full mr-2"></div>
                       <span className="text-dark">Expenses</span>
                     </div>
                   </div>
@@ -220,8 +220,8 @@ const DashboardPreview = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                          <div className="w-4 h-4 bg-accent rounded"></div>
+                        <div className="w-10 h-10 bg-highlights/10 rounded-lg flex items-center justify-center">
+                          <div className="w-4 h-4 bg-highlights rounded"></div>
                         </div>
                         <div>
                           <div className="font-medium text-foreground">
@@ -304,8 +304,8 @@ const DashboardPreview = () => {
                     <div className="text-xs text-dark">2 min ago</div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-accent rounded-full"></div>
+                    <div className="w-8 h-8 bg-highlights/10 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-highlights rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium text-foreground">

@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function toCamelCase(str: string): string {
+  return str.toLowerCase().split('_').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+}
+
 export function getAuthErrorMessage(err: unknown): string {
   if (typeof err === "string") {
     return err;

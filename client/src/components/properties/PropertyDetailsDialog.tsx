@@ -22,12 +22,18 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { PropertyEditForm } from "./PropertyEditForm";
+import { PropertyType } from "@prisma/client";
+import { TransactionTable } from "@/components/transactions/TransactionTable";
+import { TransactionFilters } from "@/components/filters/TransactionFilters";
+import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
+import { useTransactionFilters } from "@/hooks/useTransactionFilters";
+import { CategoryOption } from "@/types/transactions";
 
 interface Property {
-  id: number;
+  id: string;
   name: string;
   address: string;
-  type: string;
+  type: PropertyType;
   rent: number;
   occupancy: string;
   tenants: number;
@@ -49,14 +55,47 @@ export function PropertyDetailsDialog({
 }: PropertyDetailsDialogProps) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<
+    CategoryOption[]
+  >([]);
 
-  // Reset to view mode when dialog is closed or property changes
+  // Transaction filtering and data fetching
+  const { filters, setFilters } = useTransactionFilters({
+    propertyId: property?.id,
+  });
+
+  const { transactions, loading, error, totalCount } = usePropertyTransactions(
+    property?.id,
+    filters
+  );
+
   useEffect(() => {
     if (!isOpen) {
       setMode("view");
       setEditProperty(null);
     }
   }, [isOpen, property?.id]);
+
+  // Load categories for filtering
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        setAvailableCategories(data.categories);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+        setAvailableCategories([]);
+      }
+    };
+
+    if (isOpen && property) {
+      loadCategories();
+    }
+  }, [isOpen, property]);
 
   if (!property) return null;
 
@@ -90,7 +129,7 @@ export function PropertyDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="!max-w-[80vw] w-[90vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="!max-w-[80vw] max-h-[90vh] overflow-y-auto">
         <div className="flex flex-col p-6 gap-6">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
@@ -139,126 +178,179 @@ export function PropertyDetailsDialog({
 
           {/* Content based on active mode */}
           {mode === "view" ? (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Image */}
-              <div className="flex flex-row justify-between gap-2">
+              <div className="flex flex-col gap-4">
                 <Image
                   src={currentProperty.image}
                   alt={currentProperty.name}
-                  width={200}
-                  height={100}
-                  className="w-2xl aspect-video rounded-lg object-cover"
+                  width={400}
+                  height={300}
+                  className="w-full aspect-video rounded-lg object-cover"
                 />
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Property Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Address</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          {currentProperty.address}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">City</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          {city}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Country</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          {country}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Home className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">
-                            Property Type
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          {currentProperty.type}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
 
-              {/* Financial & Occupancy Information */}
+              {/* Property Information Card */}
               <Card>
+                <CardHeader>
+                  <CardTitle>Property Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted" />
+                        <span className="text-sm font-medium">Address</span>
+                      </div>
+                      <p className="text-sm text-muted ml-6">
+                        {currentProperty.address}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">City</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">
+                        {city}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Country</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">
+                        {country}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Home className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">
+                          Property Type
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">
+                        {currentProperty.type}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Financial & Occupancy Information */}
+              <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Rental Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex justify-center gap-2">
                         <Euro className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
                           Monthly Rent
                         </span>
                       </div>
-                      <p className="text-lg font-semibold ml-6">
+                      <p className="text-lg font-semibold text-center">
                         €{currentProperty.rent}
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex justify-center gap-2">
                         <Users className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
                           Current Tenants
                         </span>
                       </div>
-                      <p className="text-lg font-semibold ml-6">
+                      <p className="text-lg font-semibold text-center">
                         {currentProperty.tenants}
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex justify-center gap-2">
                         <Percent className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
                           Occupancy Rate
                         </span>
                       </div>
-                      <p className="text-lg font-semibold">{occupancyRate}%</p>
+                      <p className="text-lg font-semibold text-center">
+                        {occupancyRate}%
+                      </p>
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-sm font-medium">Availability</span>
-                      <Badge
-                        variant={
-                          currentProperty.occupancy === "Available"
-                            ? "secondary"
-                            : "default"
-                        }
-                        className={`ml-2 ${
-                          currentProperty.occupancy === "Available"
-                            ? "bg-green-100 text-success"
-                            : "bg-red-100 text-destructive"
-                        }`}
-                      >
-                        {currentProperty.occupancy}
-                      </Badge>
+                      <div className="flex justify-center gap-2">
+                        <span className="text-sm font-medium">
+                          Availability
+                        </span>
+                      </div>
+                      <div className="flex justify-center">
+                        <Badge
+                          variant={
+                            currentProperty.occupancy === "Available"
+                              ? "secondary"
+                              : "default"
+                          }
+                          className={`${
+                            currentProperty.occupancy === "Available"
+                              ? "bg-green-100 text-success"
+                              : "bg-red-100 text-destructive"
+                          }`}
+                        >
+                          {currentProperty.occupancy}
+                        </Badge>
+                      </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Transaction Details */}
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Transaction Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Transaction Filters */}
+                  <TransactionFilters
+                    onFiltersChange={setFilters}
+                    showPropertyFilter={false}
+                    initialPropertyId={property.id}
+                    availableCategories={availableCategories}
+                    initialFilters={filters}
+                  />
+
+                  {/* Transaction Table */}
+                  <div className="mt-4">
+                    {error ? (
+                      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4">
+                        <p className="text-sm text-destructive">{error}</p>
+                      </div>
+                    ) : (
+                      <TransactionTable
+                        transactions={transactions}
+                        loading={loading}
+                        showPropertyColumn={false}
+                        emptyMessage={`No transactions found for ${currentProperty.name}`}
+                      />
+                    )}
+
+                    {/* Transaction Summary */}
+                    {!loading && transactions.length > 0 && (
+                      <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>
+                          Showing {transactions.length} of {totalCount}{" "}
+                          transactions
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -13,12 +13,13 @@ import { Plus, MapPin, Euro, Users } from "lucide-react";
 import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDialog";
 import Image from "next/image";
 import PropertiesStats from "@/components/properties/PropertiesStats";
+import { PropertyType } from "@prisma/client";
 
 interface Property {
   id: number;
   name: string;
   address: string;
-  type: string;
+  type: PropertyType;
   rent: number;
   occupancy: string;
   tenants: number;
@@ -30,7 +31,7 @@ const initialProperties: Property[] = [
     id: 1,
     name: "Downtown Apartment",
     address: "123 Main St, City Center",
-    type: "Residential",
+    type: PropertyType.APARTMENT,
     rent: 2500,
     occupancy: "Occupied",
     tenants: 2,
@@ -40,7 +41,7 @@ const initialProperties: Property[] = [
     id: 2,
     name: "Beachfront Villa",
     address: "456 Ocean Drive, Coastal Area",
-    type: "Vacation",
+    type: PropertyType.VILLA,
     rent: 4200,
     occupancy: "Available",
     tenants: 0,
@@ -50,7 +51,7 @@ const initialProperties: Property[] = [
     id: 3,
     name: "Office Complex",
     address: "789 Business Blvd, Commercial District",
-    type: "Commercial",
+    type: PropertyType.OFFICE,
     rent: 8500,
     occupancy: "Occupied",
     tenants: 15,
@@ -60,7 +61,7 @@ const initialProperties: Property[] = [
     id: 4,
     name: "Suburban House",
     address: "321 Elm Street, Suburbs",
-    type: "Residential",
+    type: PropertyType.HOUSE,
     rent: 3200,
     occupancy: "Occupied",
     tenants: 4,
@@ -96,7 +97,7 @@ export default function PropertiesPage() {
           <Card
             key={property.id}
             onClick={() => openPropertyDialog(property)}
-            className="overflow-hidden pt-0"
+            className="overflow-hidden pt-0 hover:cursor-pointer"
           >
             <div className="aspect-video h-60 bg-muted/30">
               <Image
