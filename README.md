@@ -9,8 +9,9 @@
 
 ### Development
 
-1. Push schema updates: `npx prisma db push`
-2. Update the client: `npx prisma generate`
+1. Generate new migration: `npx prisma migrate dev --name add_new_column`
+2. Push schema updates: `npx prisma db push`
+3. Update the client: `npx prisma generate`
 
 ### Production
 

@@ -10,7 +10,6 @@ export const mockProperties: Property[] = [
     rent: 2500,
     occupancy: "Occupied",
     tenants: 2,
-    image: "/properties/house1-template.jpg",
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440002",
@@ -20,7 +19,6 @@ export const mockProperties: Property[] = [
     rent: 4200,
     occupancy: "Available",
     tenants: 0,
-    image: "/properties/house2-template.jpg",
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440003",
@@ -30,7 +28,6 @@ export const mockProperties: Property[] = [
     rent: 8500,
     occupancy: "Occupied",
     tenants: 15,
-    image: "/properties/house3-template.jpg",
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440004",
@@ -40,6 +37,5 @@ export const mockProperties: Property[] = [
     rent: 3200,
     occupancy: "Occupied",
     tenants: 4,
-    image: "/properties/house4-template.jpg",
   },
 ];

@@ -9,6 +9,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { useRedirectIfSignedOut } from "@/hooks/useRedirectIfSignedOut";
+import { useSession } from "next-auth/react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,6 +36,8 @@ const getPageTitle = (pathname: string): string => {
 };
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+  useRedirectIfSignedOut();
+  const { status } = useSession();
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
 
@@ -42,6 +46,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     email: "john@example.com",
     avatar: "",
   };
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-40 animate-pulse rounded bg-muted/40" />
+          <div className="h-10 w-64 animate-pulse rounded bg-muted/40" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

@@ -20,7 +20,7 @@ import {
   ArrowLeft,
   ChevronRight,
 } from "lucide-react";
-import Image from "next/image";
+import { PropertyImage } from "./PropertyImage";
 import { PropertyEditForm } from "./PropertyEditForm";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters } from "@/components/filters/TransactionFilters";
@@ -168,12 +168,12 @@ export function PropertyDetailsDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Image */}
               <div className="flex flex-col gap-4">
-                <Image
-                  src={currentProperty.image}
-                  alt={currentProperty.name}
+                <PropertyImage
+                  propertyId={currentProperty.id}
+                  propertyName={currentProperty.name}
+                  className="w-full aspect-video rounded-lg object-cover"
                   width={400}
                   height={300}
-                  className="w-full aspect-video rounded-lg object-cover"
                 />
               </div>
 

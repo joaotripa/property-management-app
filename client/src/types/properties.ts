@@ -8,5 +8,4 @@ export interface Property {
   rent: number;
   occupancy: string;
   tenants: number;
-  image: string;
 }

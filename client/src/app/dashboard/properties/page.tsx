@@ -11,9 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Euro, Users } from "lucide-react";
 import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDialog";
-import Image from "next/image";
+import { PropertyAddDialog } from "@/components/properties/PropertyAddDialog";
+import { PropertyImage } from "@/components/properties/PropertyImage";
 import PropertiesStats from "@/components/properties/PropertiesStats";
-import { PropertyType } from "@prisma/client";
 import { Property } from "@/types/properties";
 import { mockProperties } from "@/lib/mock-data";
 
@@ -25,6 +25,7 @@ export default function PropertiesPage() {
     null
   );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const openPropertyDialog = (property: Property) => {
     setSelectedProperty(property);
@@ -39,6 +40,18 @@ export default function PropertiesPage() {
     );
   };
 
+  const handleAddProperty = (newProperty: Property) => {
+    setProperties((prev) => [newProperty, ...prev]);
+  };
+
+  const openAddDialog = () => {
+    setIsAddDialogOpen(true);
+  };
+
+  const closeAddDialog = () => {
+    setIsAddDialogOpen(false);
+  };
+
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
       <PropertiesStats />
@@ -50,12 +63,12 @@ export default function PropertiesPage() {
             className="overflow-hidden"
           >
             <div className="aspect-video h-60 bg-muted/30">
-              <Image
-                src={property.image}
-                alt={property.name}
+              <PropertyImage
+                propertyId={property.id}
+                propertyName={property.name}
+                className="w-full h-full object-cover"
                 width={400}
                 height={225}
-                className="w-full h-full object-cover"
               />
             </div>
             <CardHeader>
@@ -105,6 +118,7 @@ export default function PropertiesPage() {
       {/* Floating Add Button */}
       <Button
         size="lg"
+        onClick={openAddDialog}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
       >
         <Plus className="h-6 w-6" />
@@ -116,6 +130,13 @@ export default function PropertiesPage() {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         onSave={handleSaveProperty}
+      />
+
+      {/* Property Add Dialog */}
+      <PropertyAddDialog
+        isOpen={isAddDialogOpen}
+        onClose={closeAddDialog}
+        onPropertyAdded={handleAddProperty}
       />
     </div>
   );
