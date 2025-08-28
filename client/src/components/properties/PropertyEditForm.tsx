@@ -214,14 +214,14 @@ export function PropertyEditForm({
         <Button
           variant="outline"
           onClick={onCancel}
-          className="hover:bg-destructive hover:border-destructive hover:cursor-pointer"
+          className="hover:bg-destructive hover:border-destructive"
         >
           <X className="w-4 h-4 mr-2" />
           Cancel
         </Button>
         <Button
           onClick={handleSave}
-          className="hover:bg-primary/90 hover:border-primary hover:cursor-pointer"
+          className="hover:bg-primary/90 hover:border-primary"
         >
           <Save className="w-4 h-4 mr-2" />
           Save Changes

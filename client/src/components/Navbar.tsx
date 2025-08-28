@@ -51,7 +51,7 @@ const Navbar = () => {
               Login
             </Link>
             <Link href="/signup" passHref>
-              <Button className="bg-primary text-md hover:bg-primary/90 hover-scale text-primary-foreground !px-8 !py-6 rounded-full group shadow-xl shadow-primary/30 hover:!shadow-2xl hover:!shadow-primary/60 transition-shadow duration-200 hover:cursor-pointer">
+              <Button className="bg-primary text-md hover:bg-primary/90 hover-scale text-primary-foreground !px-8 !py-6 rounded-full group shadow-xl shadow-primary/30 hover:!shadow-2xl hover:!shadow-primary/60 transition-shadow duration-200">
                 Sign Up
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
@@ -92,7 +92,7 @@ const Navbar = () => {
                 className="w-1/2 text-foreground hover:text-primary text-base font-medium transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                <Button className="w-full bg-background hover:bg-primary border border-primary text-primary hover:text-primary-foreground rounded-full hover:cursor-pointer">
+                <Button className="w-full bg-background hover:bg-primary border border-primary text-primary hover:text-primary-foreground rounded-full">
                   Login
                 </Button>
               </Link>
@@ -101,7 +101,7 @@ const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 className="w-1/2"
               >
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full hover:cursor-pointer">
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                   Sign Up
                 </Button>
               </Link>

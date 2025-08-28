@@ -154,7 +154,7 @@ export function PropertyDetailsDialog({
                   variant="outline"
                   size="sm"
                   onClick={handleEdit}
-                  className="hover:bg-primary hover:cursor-pointer"
+                  className="hover:bg-primary"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit

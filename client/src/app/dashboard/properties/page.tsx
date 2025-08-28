@@ -47,7 +47,7 @@ export default function PropertiesPage() {
           <Card
             key={property.id}
             onClick={() => openPropertyDialog(property)}
-            className="overflow-hidden pt-0 hover:cursor-pointer"
+            className="overflow-hidden"
           >
             <div className="aspect-video h-60 bg-muted/30">
               <Image

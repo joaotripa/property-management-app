@@ -32,7 +32,7 @@ export function NavMain({
             <Link href={item.url}>
               <SidebarMenuButton
                 isActive={pathname === item.url}
-                className="hover:cursor-pointer h-10"
+                className="h-10"
               >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>

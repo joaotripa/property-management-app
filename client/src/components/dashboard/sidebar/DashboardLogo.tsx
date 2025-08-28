@@ -14,10 +14,7 @@ export function DashboardLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          className="hover:cursor-pointer hover:!bg-transparent"
-        >
+        <SidebarMenuButton size="lg" className="hover:!bg-transparent">
           <Link
             href="/dashboard"
             className="text-2xl font-bold text-foreground"
