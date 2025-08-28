@@ -18,7 +18,7 @@ export function usePropertyTransactions(
       setTotalCount(0);
       return;
     }
-
+    
     setLoading(true);
     setError(null);
 
@@ -67,7 +67,12 @@ export function usePropertyTransactions(
       const data = await response.json();
       
       // Transform dates from strings to Date objects
-      const transformedTransactions: Transaction[] = data.transactions.map((transaction: any) => ({
+      const transformedTransactions: Transaction[] = data.transactions.map((transaction: {
+        transactionDate: string;
+        createdAt: string;
+        updatedAt: string;
+        [key: string]: unknown;
+      }) => ({
         ...transaction,
         transactionDate: new Date(transaction.transactionDate),
         createdAt: new Date(transaction.createdAt),

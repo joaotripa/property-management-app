@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Filter, Search, X } from "lucide-react";
+import { Filter, Search, X, ChevronDown, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   TransactionFiltersProps,
@@ -21,6 +27,7 @@ import type {
 } from "@/types/transactions";
 import { TransactionType } from "@prisma/client";
 import { toCamelCase } from "@/lib/utils";
+import { Separator } from "../ui/separator";
 
 export function TransactionFilters({
   onFiltersChange,
@@ -30,7 +37,6 @@ export function TransactionFilters({
   availableCategories = [],
   initialFilters = {},
 }: TransactionFiltersProps) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<TransactionFiltersType>({
     type: "all",
     sortBy: "transactionDate",
@@ -116,7 +122,7 @@ export function TransactionFilters({
                 className="h-8 px-2"
               >
                 <X className="h-4 w-4 mr-1" />
-                Clear
+                Clear Filters
               </Button>
             )}
             <Button
@@ -125,16 +131,16 @@ export function TransactionFilters({
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-8 px-2"
             >
-              {isExpanded ? "Less" : "More"}
+              {isExpanded ? <ChevronDown /> : <ChevronRight />}
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="gap-4">
         {/* Basic Filters - Always visible */}
-        <div className="flex gap-4 flex-col sm:flex-row">
-          <div className="flex-1 min-w-[200px]">
+        <div className="flex gap-4 flex-col lg:flex-row">
+          <div className="flex-1 min-w-[180px]">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -149,14 +155,14 @@ export function TransactionFilters({
           </div>
 
           {/* Transaction Type */}
-          <div className="space-y-2">
+          <div className="gap-2">
             <Select
               value={filters.type || "all"}
               onValueChange={(value) =>
                 updateFilter("type", value as TransactionType | "all")
               }
             >
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -173,35 +179,47 @@ export function TransactionFilters({
 
           {/* Categories */}
           {availableCategories.length > 0 && (
-            <div className="space-y-2">
-              <Label>Categories</Label>
-              <div className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[40px]">
-                {availableCategories.map((category) => (
+            <div className="gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
-                    key={category.id}
-                    variant={
-                      selectedCategories.includes(category.id)
-                        ? "default"
-                        : "outline"
-                    }
+                    variant="outline"
                     size="sm"
-                    onClick={() => toggleCategory(category.id)}
-                    className="h-7 text-xs"
+                    className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground"
                   >
-                    {category.name}
-                    {selectedCategories.includes(category.id) && (
-                      <X className="h-3 w-3 ml-1" />
-                    )}
+                    <span>
+                      {selectedCategories.length === 0
+                        ? "All Categories"
+                        : selectedCategories.length === 1
+                          ? availableCategories.find(
+                              (c) => c.id === selectedCategories[0]
+                            )?.name
+                          : `${selectedCategories.length} categories selected`}
+                    </span>
+                    <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
-                ))}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {availableCategories.map((category) => (
+                    <DropdownMenuCheckboxItem
+                      key={category.id}
+                      className="capitalize"
+                      checked={selectedCategories.includes(category.id)}
+                      onCheckedChange={() => toggleCategory(category.id)}
+                    >
+                      {category.name}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {/* Property Filter (if enabled) */}
           {showPropertyFilter && (
-            <div className="space-y-2">
+            <div className="gap-2">
               <Label>Property</Label>
               <Select
                 value={filters.propertyId || ""}
@@ -227,10 +245,11 @@ export function TransactionFilters({
 
         {/* Advanced Filters - Collapsible */}
         {isExpanded && (
-          <div className="space-y-4 pt-4 border-t">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-6 mt-6">
+            <Separator />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Date From */}
-              <div className="space-y-2">
+              <div className="gap-2">
                 <Label>From Date</Label>
                 <Input
                   type="date"
@@ -249,7 +268,7 @@ export function TransactionFilters({
               </div>
 
               {/* Date To */}
-              <div className="space-y-2">
+              <div className="gap-2">
                 <Label>To Date</Label>
                 <Input
                   type="date"
@@ -265,7 +284,7 @@ export function TransactionFilters({
                 />
               </div>
               {/* Amount Range */}
-              <div className="space-y-2">
+              <div className="gap-2">
                 <Label>Min Amount (€)</Label>
                 <Input
                   type="number"
@@ -280,7 +299,7 @@ export function TransactionFilters({
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="gap-2">
                 <Label>Max Amount (€)</Label>
                 <Input
                   type="number"
@@ -296,7 +315,7 @@ export function TransactionFilters({
               </div>
 
               {/* Recurring Filter */}
-              <div className="space-y-2">
+              <div className="gap-2">
                 <Label>Recurring</Label>
                 <Select
                   value={
@@ -311,7 +330,7 @@ export function TransactionFilters({
                     )
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -321,19 +340,20 @@ export function TransactionFilters({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Sort Options */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              {/* Sort Options */}
+              <div className="gap-2">
                 <Label>Sort By</Label>
                 <Select
                   value={filters.sortBy || "transactionDate"}
                   onValueChange={(value) =>
-                    updateFilter("sortBy", value as any)
+                    updateFilter(
+                      "sortBy",
+                      value as "transactionDate" | "amount" | "type"
+                    )
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -344,7 +364,7 @@ export function TransactionFilters({
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              <div className="gap-4">
                 <Label>Sort Order</Label>
                 <Select
                   value={filters.sortOrder || "desc"}
@@ -352,7 +372,7 @@ export function TransactionFilters({
                     updateFilter("sortOrder", value as "asc" | "desc")
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

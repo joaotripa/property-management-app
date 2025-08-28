@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PropertyType } from "@prisma/client";
+import { Property } from "@/types/properties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,17 +23,6 @@ const getPropertyTypeOptions = () => {
     label: toCamelCase(type),
   }));
 };
-
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-  type: PropertyType;
-  rent: number;
-  occupancy: string;
-  tenants: number;
-  image: string;
-}
 
 interface PropertyEditFormProps {
   property: Property;

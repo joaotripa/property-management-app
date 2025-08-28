@@ -86,7 +86,7 @@ export async function GET(
     const sortBy = searchParams.get('sortBy');
     const sortOrder = searchParams.get('sortOrder');
     if (sortBy) {
-      filters.sortBy = sortBy as any;
+      filters.sortBy = sortBy as "transactionDate" | "amount" | "type";
     }
     if (sortOrder && (sortOrder === 'asc' || sortOrder === 'desc')) {
       filters.sortOrder = sortOrder;

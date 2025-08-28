@@ -141,7 +141,11 @@ export function TransactionTable({
         if (aValue == null || bValue == null) return 0;
         if (aValue === bValue) return 0;
 
-        const comparison = (aValue as any) < (bValue as any) ? -1 : 1;
+        const comparison =
+          (aValue as string | number | Date) <
+          (bValue as string | number | Date)
+            ? -1
+            : 1;
         return effectiveSortConfig.direction === "asc"
           ? comparison
           : -comparison;

@@ -22,23 +22,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { PropertyEditForm } from "./PropertyEditForm";
-import { PropertyType } from "@prisma/client";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters } from "@/components/filters/TransactionFilters";
 import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
 import { useTransactionFilters } from "@/hooks/useTransactionFilters";
 import { CategoryOption } from "@/types/transactions";
-
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-  type: PropertyType;
-  rent: number;
-  occupancy: string;
-  tenants: number;
-  image: string;
-}
+import { Property } from "@/types/properties";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -59,7 +48,6 @@ export function PropertyDetailsDialog({
     CategoryOption[]
   >([]);
 
-  // Transaction filtering and data fetching
   const { filters, setFilters } = useTransactionFilters({
     propertyId: property?.id,
   });
@@ -76,13 +64,12 @@ export function PropertyDetailsDialog({
     }
   }, [isOpen, property?.id]);
 
-  // Load categories for filtering
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
+        const response = await fetch("/api/categories");
         if (!response.ok) {
-          throw new Error('Failed to fetch categories');
+          throw new Error("Failed to fetch categories");
         }
         const data = await response.json();
         setAvailableCategories(data.categories);
@@ -248,7 +235,7 @@ export function PropertyDetailsDialog({
                   <CardTitle>Rental Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <div className="flex justify-center gap-2">
                         <Euro className="w-4 h-4 text-muted" />
@@ -322,7 +309,7 @@ export function PropertyDetailsDialog({
                   <TransactionFilters
                     onFiltersChange={setFilters}
                     showPropertyFilter={false}
-                    initialPropertyId={property.id}
+                    initialPropertyId={currentProperty.id}
                     availableCategories={availableCategories}
                     initialFilters={filters}
                   />

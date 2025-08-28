@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { TransactionFilters, Transaction, CategoryOption, PropertyOption } from "@/types/transactions";
-import { TransactionType } from "@prisma/client";
+import { TransactionType, Prisma } from "@prisma/client";
 
 /**
  * Get transactions with optional filtering for a specific user
@@ -17,7 +17,7 @@ export async function getTransactions(
   totalPages: number;
 }> {
   // Build where clause based on filters
-  const where: any = {
+  const where: Prisma.TransactionWhereInput = {
     userId,
   };
 
@@ -74,7 +74,7 @@ export async function getTransactions(
   }
 
   // Build order by clause
-  const orderBy: any = {};
+  const orderBy: Prisma.TransactionOrderByWithRelationInput = {};
   if (filters.sortBy) {
     orderBy[filters.sortBy] = filters.sortOrder || 'desc';
   } else {
@@ -160,7 +160,7 @@ export async function getPropertyTransactions(
 /**
  * Get all categories for a user to populate filter dropdown
  */
-export async function getUserCategories(userId: string): Promise<CategoryOption[]> {
+export async function getUserCategories(): Promise<CategoryOption[]> {
   try {
     const categories = await prisma.category.findMany({
       where: {
@@ -228,7 +228,7 @@ export async function getPropertyTransactionStats(
   transactionCount: number;
   recurringCount: number;
 }> {
-  const where: any = {
+  const where: Prisma.TransactionWhereInput = {
     userId,
     propertyId,
   };
@@ -273,10 +273,7 @@ export async function getPropertyTransactionStats(
   }
 }
 
-/**
- * Validate that a property belongs to a user
- * Security helper for API routes
- */
+
 export async function validatePropertyAccess(
   propertyId: string,
   userId: string

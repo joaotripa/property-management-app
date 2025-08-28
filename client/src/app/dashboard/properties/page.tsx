@@ -14,60 +14,10 @@ import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDi
 import Image from "next/image";
 import PropertiesStats from "@/components/properties/PropertiesStats";
 import { PropertyType } from "@prisma/client";
+import { Property } from "@/types/properties";
+import { mockProperties } from "@/lib/mock-data";
 
-interface Property {
-  id: number;
-  name: string;
-  address: string;
-  type: PropertyType;
-  rent: number;
-  occupancy: string;
-  tenants: number;
-  image: string;
-}
-
-const initialProperties: Property[] = [
-  {
-    id: 1,
-    name: "Downtown Apartment",
-    address: "123 Main St, City Center",
-    type: PropertyType.APARTMENT,
-    rent: 2500,
-    occupancy: "Occupied",
-    tenants: 2,
-    image: "/properties/house1-template.jpg",
-  },
-  {
-    id: 2,
-    name: "Beachfront Villa",
-    address: "456 Ocean Drive, Coastal Area",
-    type: PropertyType.VILLA,
-    rent: 4200,
-    occupancy: "Available",
-    tenants: 0,
-    image: "/properties/house2-template.jpg",
-  },
-  {
-    id: 3,
-    name: "Office Complex",
-    address: "789 Business Blvd, Commercial District",
-    type: PropertyType.OFFICE,
-    rent: 8500,
-    occupancy: "Occupied",
-    tenants: 15,
-    image: "/properties/house3-template.jpg",
-  },
-  {
-    id: 4,
-    name: "Suburban House",
-    address: "321 Elm Street, Suburbs",
-    type: PropertyType.HOUSE,
-    rent: 3200,
-    occupancy: "Occupied",
-    tenants: 4,
-    image: "/properties/house4-template.jpg",
-  },
-];
+const initialProperties: Property[] = mockProperties;
 
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<Property[]>(initialProperties);
