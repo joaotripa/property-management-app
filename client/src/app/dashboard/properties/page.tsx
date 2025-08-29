@@ -55,20 +55,20 @@ export default function PropertiesPage() {
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
       <PropertiesStats />
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {properties.map((property) => (
           <Card
             key={property.id}
             onClick={() => openPropertyDialog(property)}
-            className="overflow-hidden"
+            className="overflow-hidden p-0"
           >
-            <div className="aspect-video h-60 bg-muted/30">
+            <div className="h-50 w-full bg-muted/20 overflow-hidden">
               <PropertyImage
                 propertyId={property.id}
                 propertyName={property.name}
                 className="w-full h-full object-cover"
                 width={400}
-                height={225}
+                height={240}
               />
             </div>
             <CardHeader>
@@ -84,13 +84,13 @@ export default function PropertiesPage() {
                   {property.occupancy}
                 </span>
               </CardTitle>
-              <CardDescription className="flex items-center gap-1 text-muted">
+              <CardDescription className="flex items-center gap-2 text-muted h-6 mt-2">
                 <MapPin className="w-4 h-4" />
                 {property.address}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="mb-2">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted">Type</span>
                   <span className="text-sm">{property.type}</span>

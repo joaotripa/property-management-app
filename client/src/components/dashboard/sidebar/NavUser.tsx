@@ -41,7 +41,7 @@ export function NavUser({
 
   const handleLogout = async () => {
     try {
-      await signOut({ callbackUrl: "/" });
+      await signOut({ callbackUrl: "/login" });
       toast.success("Logged out successfully");
     } catch (error) {
       toast.error("Failed to log out");
