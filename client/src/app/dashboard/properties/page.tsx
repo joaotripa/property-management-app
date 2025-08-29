@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,13 +14,21 @@ import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDi
 import { PropertyAddDialog } from "@/components/properties/PropertyAddDialog";
 import { PropertyImage } from "@/components/properties/PropertyImage";
 import PropertiesStats from "@/components/properties/PropertiesStats";
+import { PropertyCardSkeleton } from "@/components/properties/PropertyCardSkeleton";
+import { EmptyPropertiesState } from "@/components/properties/EmptyPropertiesState";
 import { Property } from "@/types/properties";
-import { mockProperties } from "@/lib/mock-data";
-
-const initialProperties: Property[] = mockProperties;
+import { useUserProperties } from "@/hooks/useUserProperties";
 
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const { properties, isLoading, error, refetch } = useUserProperties();
+  const [localProperties, setLocalProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    setLocalProperties(properties);
+  }, [properties]);
+
+  const displayProperties =
+    localProperties.length > 0 ? localProperties : properties;
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
@@ -33,15 +41,17 @@ export default function PropertiesPage() {
   };
 
   const handleSaveProperty = (updatedProperty: Property) => {
-    setProperties((prev) =>
+    setLocalProperties((prev) =>
       prev.map((prop) =>
         prop.id === updatedProperty.id ? updatedProperty : prop
       )
     );
+    refetch();
   };
 
   const handleAddProperty = (newProperty: Property) => {
-    setProperties((prev) => [newProperty, ...prev]);
+    setLocalProperties((prev) => [newProperty, ...prev]);
+    refetch();
   };
 
   const openAddDialog = () => {
@@ -52,68 +62,103 @@ export default function PropertiesPage() {
     setIsAddDialogOpen(false);
   };
 
+  if (error) {
+    return (
+      <div className="p-6 space-y-8 max-w-7xl mx-auto">
+        <PropertiesStats />
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive font-medium">
+              Failed to load properties
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">{error}</p>
+            <Button
+              onClick={refetch}
+              variant="outline"
+              size="sm"
+              className="mt-4"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
       <PropertiesStats />
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        {properties.map((property) => (
-          <Card
-            key={property.id}
-            onClick={() => openPropertyDialog(property)}
-            className="overflow-hidden p-0"
-          >
-            <div className="h-50 w-full bg-muted/20 overflow-hidden">
-              <PropertyImage
-                propertyId={property.id}
-                propertyName={property.name}
-                className="w-full h-full object-cover"
-                width={400}
-                height={240}
-              />
-            </div>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {property.name}
-                <span
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    property.occupancy === "Occupied"
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-success/10 text-success"
-                  }`}
-                >
-                  {property.occupancy}
-                </span>
-              </CardTitle>
-              <CardDescription className="flex items-center gap-2 text-muted h-6 mt-2">
-                <MapPin className="w-4 h-4" />
-                {property.address}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="mb-2">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted">Type</span>
-                  <span className="text-sm">{property.type}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted flex items-center gap-1">
-                    <Euro className="w-3 h-3" />
-                    Monthly Rent
-                  </span>
-                  <span className="text-sm">€{property.rent}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted flex items-center gap-1">
-                    <Users className="w-3 h-3" />
-                    Tenants
-                  </span>
-                  <span className="text-sm">{property.tenants}</span>
-                </div>
+
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <PropertyCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : displayProperties.length === 0 ? (
+        <EmptyPropertiesState onAddProperty={openAddDialog} />
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {displayProperties.map((property) => (
+            <Card
+              key={property.id}
+              onClick={() => openPropertyDialog(property)}
+              className="overflow-hidden p-0"
+            >
+              <div className="h-50 w-full bg-muted/20 overflow-hidden">
+                <PropertyImage
+                  propertyId={property.id}
+                  propertyName={property.name}
+                  className="w-full h-full object-cover"
+                  width={400}
+                  height={240}
+                />
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {property.name}
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      property.occupancy === "Occupied"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-success/10 text-success"
+                    }`}
+                  >
+                    {property.occupancy}
+                  </span>
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2 text-muted h-6 mt-2">
+                  <MapPin className="w-4 h-4" />
+                  {property.address}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="mb-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted">Type</span>
+                    <span className="text-sm">{property.type}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted flex items-center gap-1">
+                      <Euro className="w-3 h-3" />
+                      Monthly Rent
+                    </span>
+                    <span className="text-sm">€{property.rent}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      Tenants
+                    </span>
+                    <span className="text-sm">{property.tenants}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Floating Add Button */}
       <Button
