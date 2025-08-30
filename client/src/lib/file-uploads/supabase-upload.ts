@@ -19,28 +19,68 @@ export interface UploadProgress {
  * Validate file before upload
  */
 export function validateImageFile(file: File): { isValid: boolean; error?: string } {
-  // Check file type
-  if (!file.type.startsWith('image/')) {
+
+  const isImage = file.type.startsWith('image/');
+  
+  if (!isImage) {
     return { isValid: false, error: 'Please select an image file' };
   }
 
-  // Check file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  // Check file size (max 5MB for images)
+  const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
-    return { isValid: false, error: 'Please select an image smaller than 5MB' };
+    const maxSizeText = '10MB';
+    return { isValid: false, error: `Please select a file smaller than ${maxSizeText}` };
   }
 
   // Check file extension
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const allowedImageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const allowedExtensions = [...allowedImageExtensions];
+  
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
   if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
     return { 
       isValid: false, 
-      error: `Please select a valid image file (${allowedExtensions.join(', ')})` 
+      error: `Please select a valid file type (${allowedExtensions.join(', ')})` 
     };
   }
 
   return { isValid: true };
+}
+
+/**
+ * Validate multiple files for property upload
+ */
+export function validatePropertyFiles(files: File[]): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (files.length === 0) {
+    errors.push('Please select at least one file');
+  }
+  
+  if (files.length > 10) {
+    errors.push('Maximum 10 files allowed per property');
+  }
+  
+  // Validate each file
+  files.forEach((file, index) => {
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      errors.push(`File ${index + 1}: ${validation.error}`);
+    }
+  });
+  
+  // Check total size (max 100MB total)
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  const maxTotalSize = 100 * 1024 * 1024; // 100MB
+  if (totalSize > maxTotalSize) {
+    errors.push('Total file size cannot exceed 100MB');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 }
 
 /**
@@ -68,98 +108,220 @@ export function createFilePreview(file: File): Promise<string> {
 }
 
 /**
- * Upload image to Supabase Storage using direct S3 connection for better performance
+ * Upload multiple images to Supabase Storage using direct S3 connection
+ */
+export async function uploadPropertyImages(
+  files: File[],
+  propertyId: string,
+  coverImageIndex: number = 0,
+  onProgress?: (fileIndex: number, progress: number) => void
+): Promise<UploadResult[]> {
+  if (files.length === 0) {
+    throw new Error('No files to upload');
+  }
+
+  const results: UploadResult[] = [];
+  const s3Client = getS3Client();
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      throw new Error(`File ${i + 1}: ${validation.error}`);
+    }
+
+    // Generate filename
+    const fileExtension = file.name.split('.').pop();
+    const isCover = i === coverImageIndex;
+    const fileName = isCover 
+      ? `cover-image.${fileExtension}`
+      : `image-${i + 1}.${fileExtension}`;
+    const filePath = getPropertyImagePath(propertyId, fileName);
+    
+    try {
+      onProgress?.(i, 0);
+      
+      // Convert file to buffer for S3 upload
+      const fileBuffer = await file.arrayBuffer();
+
+      // Upload directly to S3
+      const uploadCommand = new PutObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: filePath,
+        Body: new Uint8Array(fileBuffer),
+        ContentType: file.type,
+        CacheControl: 'max-age=3600',
+        Metadata: {
+          'uploaded-by': 'domari.app',
+          'property-id': propertyId,
+          'file-index': i.toString(),
+          'is-cover': isCover.toString(),
+        }
+      });
+
+      await s3Client.send(uploadCommand);
+      onProgress?.(i, 100);
+      
+      // Construct public URL
+      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
+      
+      results.push({
+        url: publicUrl,
+        path: filePath,
+        size: file.size,
+      });
+    } catch (error) {
+      console.error(`Error uploading file ${i + 1}:`, error);
+      throw error instanceof Error ? error : new Error(`Upload failed for file ${i + 1}`);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Upload single image to Supabase Storage (backward compatibility)
  */
 export async function uploadPropertyImage(
   file: File,
   propertyId: string
 ): Promise<UploadResult> {
-  // Validate file first
-  const validation = validateImageFile(file);
-  if (!validation.isValid) {
-    throw new Error(validation.error);
-  }
+  const results = await uploadPropertyImages([file], propertyId, 0);
+  return results[0];
+}
 
-  // Generate filename for property folder: property-images/{propertyId}/image.ext
-  const fileExtension = file.name.split('.').pop();
-  const fileName = `image.${fileExtension}`;
-  const filePath = getPropertyImagePath(propertyId, fileName);
-  
+/**
+ * Delete specific property image from Supabase Storage
+ */
+export async function deletePropertyImage(propertyId: string, filename?: string): Promise<void> {
   try {
-    // Convert file to buffer for S3 upload
-    const fileBuffer = await file.arrayBuffer();
-
-    // Upload directly to S3 using AWS SDK for better performance
-    const uploadCommand = new PutObjectCommand({
-      Bucket: STORAGE_BUCKET,
-      Key: filePath,
-      Body: new Uint8Array(fileBuffer),
-      ContentType: file.type,
-      CacheControl: 'max-age=3600',
-      Metadata: {
-        'uploaded-by': 'domari.app',
-        'property-id': propertyId,
-      }
-    });
-
     const s3Client = getS3Client();
-    await s3Client.send(uploadCommand);
-    
-    // Construct public URL
-    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
-    
-    return {
-      url: publicUrl,
-      path: filePath,
-      size: file.size,
-    };
+
+    if (filename) {
+      // Delete specific file
+      const filePath = getPropertyImagePath(propertyId, filename);
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: filePath,
+      });
+      await s3Client.send(deleteCommand);
+    } else {
+      // Delete all files in the property folder
+      const listCommand = new ListObjectsV2Command({
+        Bucket: STORAGE_BUCKET,
+        Prefix: `${propertyId}/`,
+      });
+
+      const listResult = await s3Client.send(listCommand);
+
+      if (listResult.Contents && listResult.Contents.length > 0) {
+        for (const obj of listResult.Contents) {
+          if (obj.Key) {
+            const deleteCommand = new DeleteObjectCommand({
+              Bucket: STORAGE_BUCKET,
+              Key: obj.Key,
+            });
+            await s3Client.send(deleteCommand);
+          }
+        }
+      }
+    }
   } catch (error) {
-    console.error('Error uploading image with S3:', error);
-    throw error instanceof Error ? error : new Error('S3 upload failed');
+    console.error('Error deleting property image(s):', error);
+    throw error instanceof Error ? error : new Error('Delete operation failed');
   }
 }
 
 /**
- * Delete property image from Supabase Storage using direct S3 connection
+ * Set a specific image as the cover image
  */
-export async function deletePropertyImage(propertyId: string): Promise<void> {
+export async function setPropertyCoverImage(
+  propertyId: string,
+  sourceFilename: string
+): Promise<void> {
   try {
-    // List all files in the property folder using S3
+    const s3Client = getS3Client();
+    
+    // Get the source file
+    const sourceKey = getPropertyImagePath(propertyId, sourceFilename);
+    
+    // Determine the extension from source filename
+    const extension = sourceFilename.split('.').pop();
+    const coverKey = getPropertyImagePath(propertyId, `cover-image.${extension}`);
+    
+    // Copy the source file to cover-image location
+    // Note: S3 copy operation would be ideal here, but for simplicity we'll handle this in the upload flow
+    throw new Error('Cover image setting should be handled during upload process');
+    
+  } catch (error) {
+    console.error('Error setting cover image:', error);
+    throw error instanceof Error ? error : new Error('Failed to set cover image');
+  }
+}
+
+/**
+ * Get property cover image URL from Supabase Storage
+ */
+export function getPropertyCoverImageUrl(propertyId: string): string {
+  // Try common extensions for cover image
+  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+  
+  // Return the first possible URL - the actual existence will be handled by the component
+  const { data } = supabase.storage
+    .from('property-images')
+    .getPublicUrl(`${propertyId}/cover-image.jpg`);
+
+  return data.publicUrl;
+}
+
+/**
+ * Get all property image URLs from Supabase Storage
+ */
+export async function getPropertyImageUrls(propertyId: string): Promise<string[]> {
+  try {
     const listCommand = new ListObjectsV2Command({
       Bucket: STORAGE_BUCKET,
       Prefix: `${propertyId}/`,
     });
 
     const s3Client = getS3Client();
-    const listResult = await s3Client.send(listCommand);
-
-    if (listResult.Contents && listResult.Contents.length > 0) {
-      // Delete all files in the property folder
-      for (const obj of listResult.Contents) {
-        if (obj.Key) {
-          const deleteCommand = new DeleteObjectCommand({
-            Bucket: STORAGE_BUCKET,
-            Key: obj.Key,
-          });
-          await s3Client.send(deleteCommand);
-        }
-      }
+    const result = await s3Client.send(listCommand);
+    
+    if (!result.Contents || result.Contents.length === 0) {
+      return [];
     }
+
+    // Sort images: cover image first, then by filename
+    const imageUrls = result.Contents
+      .filter(obj => obj.Key && obj.Key.match(/\.(jpg|jpeg|png|webp|gif)$/i))
+      .sort((a, b) => {
+        const aIsCover = a.Key?.includes('cover-image');
+        const bIsCover = b.Key?.includes('cover-image');
+        
+        if (aIsCover && !bIsCover) return -1;
+        if (!aIsCover && bIsCover) return 1;
+        
+        return (a.Key || '').localeCompare(b.Key || '');
+      })
+      .map(obj => {
+        const path = obj.Key!.replace(`property-images/`, '');
+        return getPublicImageUrl(path);
+      });
+
+    return imageUrls;
   } catch (error) {
-    console.error('Error deleting property images with S3:', error);
-    throw error instanceof Error ? error : new Error('S3 delete failed');
+    console.error('Error fetching property images:', error);
+    return [];
   }
 }
 
 /**
- * Get property image URL from Supabase Storage
+ * Get property image URL from Supabase Storage (backward compatibility)
  */
 export function getPropertyImageUrl(propertyId: string): string {
-  const { data } = supabase.storage
-    .from('property-images')
-    .getPublicUrl(`${propertyId}/image.jpg`); // Default to .jpg, could be enhanced to check actual extension
-
-  return data.publicUrl;
+  return getPropertyCoverImageUrl(propertyId);
 }
 
 /**

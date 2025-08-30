@@ -18,18 +18,18 @@ import {
 import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
 import { Property } from "@/types/properties";
-import { 
-  type CreatePropertyResponse 
-} from "@/lib/validations/property";
+import { type CreatePropertyResponse } from "@/lib/validations/property";
 import { z } from "zod";
-import { 
-  uploadPropertyImage, 
-  validateImageFile, 
-  createFilePreview
+import {
+  uploadPropertyImages,
+  validatePropertyFiles,
 } from "@/lib/file-uploads";
-import { FileUpload } from "@/components/ui/file-upload";
+import {
+  MultiImageUpload,
+  type FileWithPreview,
+} from "@/components/ui/multi-image-upload";
+import { toast } from "sonner";
 
-// Form-specific schema for input handling (all strings from form inputs)
 const propertyFormInputSchema = z.object({
   name: z.string().min(1, "Property name is required").trim(),
   address: z.string().min(1, "Address is required").trim(),
@@ -49,7 +49,6 @@ const getPropertyTypeOptions = () => {
   }));
 };
 
-
 interface PropertyAddFormProps {
   onSave: (property: Property) => void;
   onCancel: () => void;
@@ -62,9 +61,9 @@ export function PropertyAddForm({
   isSubmitting = false,
 }: PropertyAddFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
+  const [coverImageIndex, setCoverImageIndex] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const propertyTypeOptions = getPropertyTypeOptions();
 
@@ -89,45 +88,44 @@ export function PropertyAddForm({
     formState: { errors, isValid },
   } = form;
 
-  // Watch form values for real-time updates
   const watchedType = watch("type");
   const watchedOccupancy = watch("occupancy");
 
-  // Handle file selection
-  const handleFileSelect = async (file: File) => {
-    // Validate file
-    const validation = validateImageFile(file);
+  const handleFilesChange = (files: FileWithPreview[]) => {
+    const fileList = files.map((f) => f.file);
+    const validation = validatePropertyFiles(fileList);
+
     if (!validation.isValid) {
-      setUploadError(validation.error || "Invalid file");
+      setUploadError(validation.errors.join(", "));
       return;
     }
 
     setUploadError(null);
-    setSelectedFile(file);
-    
-    // Create preview
-    try {
-      const preview = await createFilePreview(file);
-      setImagePreview(preview);
-    } catch (error) {
-      console.error('Error creating preview:', error);
-      setUploadError("Failed to create preview");
+    setSelectedFiles(files);
+
+    setUploadProgress(new Array(files.length).fill(0));
+
+    if (coverImageIndex >= files.length) {
+      setCoverImageIndex(0);
     }
   };
 
-  // Remove selected file
-  const handleRemoveFile = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
-    setUploadProgress(0);
-    setUploadError(null);
+  const handleCoverImageChange = (index: number) => {
+    setCoverImageIndex(index);
+  };
+
+  const handleUploadProgress = (fileIndex: number, progress: number) => {
+    setUploadProgress((prev) => {
+      const newProgress = [...prev];
+      newProgress[fileIndex] = progress;
+      return newProgress;
+    });
   };
 
   const onSubmit = async (data: PropertyFormInput) => {
     try {
       setIsLoading(true);
 
-      // Transform form data to API data (convert strings to numbers)
       const apiData = {
         name: data.name,
         address: data.address,
@@ -137,7 +135,6 @@ export function PropertyAddForm({
         occupancy: data.occupancy,
       };
 
-      // Validate the transformed data
       if (isNaN(apiData.rent) || apiData.rent <= 0) {
         throw new Error("Please enter a valid rent amount");
       }
@@ -145,7 +142,6 @@ export function PropertyAddForm({
         throw new Error("Please enter a valid number of tenants");
       }
 
-      // First, create the property to get the ID
       const response = await fetch("/api/properties", {
         method: "POST",
         headers: {
@@ -166,23 +162,29 @@ export function PropertyAddForm({
 
       const createdProperty = result.property;
 
-      // Upload image if file is selected, using the property ID
-      if (selectedFile) {
+      if (selectedFiles.length > 0) {
         try {
-          await uploadPropertyImage(selectedFile, createdProperty.id);
-          // Note: We don't need to update the property with image URL since we retrieve it dynamically
+          const files = selectedFiles.map((f) => f.file);
+          await uploadPropertyImages(
+            files,
+            createdProperty.id,
+            coverImageIndex,
+            handleUploadProgress
+          );
         } catch (error) {
-          // Image upload failed, but property was created successfully
           console.error("Image upload failed:", error);
-          // Could show a warning to the user that the property was created but image upload failed
+          setUploadError("Property created, but some images failed to upload");
         }
       }
 
       onSave(createdProperty);
     } catch (error) {
       console.error("Error creating property:", error);
-      // In a real app, you'd want to show a toast notification here
-      alert(error instanceof Error ? error.message : "Failed to create property");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to create property. Please try again later."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -194,8 +196,7 @@ export function PropertyAddForm({
 
   const handleOccupancyChange = (value: "Available" | "Occupied") => {
     setValue("occupancy", value, { shouldValidate: true });
-    
-    // Reset tenants to 0 when property becomes available
+
     if (value === "Available") {
       setValue("tenants", "0", { shouldValidate: true });
     }
@@ -220,16 +221,15 @@ export function PropertyAddForm({
                   className={errors.name ? "border-destructive" : ""}
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="type">Property Type *</Label>
-                <Select
-                  value={watchedType}
-                  onValueChange={handleTypeChange}
-                >
+                <Select value={watchedType} onValueChange={handleTypeChange}>
                   <SelectTrigger
                     className={errors.type ? "border-destructive" : ""}
                   >
@@ -244,7 +244,9 @@ export function PropertyAddForm({
                   </SelectContent>
                 </Select>
                 {errors.type && (
-                  <p className="text-sm text-destructive">{errors.type.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.type.message}
+                  </p>
                 )}
               </div>
 
@@ -257,7 +259,9 @@ export function PropertyAddForm({
                   className={errors.address ? "border-destructive" : ""}
                 />
                 {errors.address && (
-                  <p className="text-sm text-destructive">{errors.address.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.address.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -284,7 +288,9 @@ export function PropertyAddForm({
                   className={errors.rent ? "border-destructive" : ""}
                 />
                 {errors.rent && (
-                  <p className="text-sm text-destructive">{errors.rent.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.rent.message}
+                  </p>
                 )}
               </div>
 
@@ -301,7 +307,9 @@ export function PropertyAddForm({
                   className={errors.tenants ? "border-destructive" : ""}
                 />
                 {errors.tenants && (
-                  <p className="text-sm text-destructive">{errors.tenants.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.tenants.message}
+                  </p>
                 )}
               </div>
 
@@ -320,7 +328,9 @@ export function PropertyAddForm({
                   </SelectContent>
                 </Select>
                 {errors.occupancy && (
-                  <p className="text-sm text-destructive">{errors.occupancy.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.occupancy.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -329,16 +339,19 @@ export function PropertyAddForm({
       </div>
 
       {/* Image Upload */}
-      <FileUpload
-        onFileSelect={handleFileSelect}
-        onFileRemove={handleRemoveFile}
-        preview={imagePreview}
-        isUploading={isLoading && selectedFile !== null}
+      <MultiImageUpload
+        files={selectedFiles}
+        onFilesChange={handleFilesChange}
+        coverImageIndex={coverImageIndex}
+        onCoverImageChange={handleCoverImageChange}
+        isUploading={isLoading}
         uploadProgress={uploadProgress}
         error={uploadError}
         disabled={isLoading || isSubmitting}
-        label="Property Image"
-        description="Click to upload or drag and drop"
+        label="Property Images"
+        description="Add up to 10 images for your property. The first image will be used as the cover photo."
+        maxFiles={10}
+        maxSize={5 * 1024 * 1024}
       />
 
       {/* Action Buttons */}
@@ -358,7 +371,7 @@ export function PropertyAddForm({
           disabled={isLoading || isSubmitting || !isValid}
           className="hover:bg-primary/90"
         >
-          {(isLoading || isSubmitting) ? (
+          {isLoading || isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Creating...

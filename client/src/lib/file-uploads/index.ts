@@ -1,10 +1,15 @@
 // Supabase upload utilities
 export {
   uploadPropertyImage,
+  uploadPropertyImages,
   deletePropertyImage,
   getPropertyImageUrl,
+  getPropertyCoverImageUrl,
+  getPropertyImageUrls,
+  setPropertyCoverImage,
   hasPropertyImage,
   validateImageFile,
+  validatePropertyFiles,
   generateFileName,
   createFilePreview,
   getPublicImageUrl,

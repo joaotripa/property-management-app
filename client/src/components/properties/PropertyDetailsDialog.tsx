@@ -20,7 +20,8 @@ import {
   ArrowLeft,
   ChevronRight,
 } from "lucide-react";
-import { PropertyImage } from "./PropertyImage";
+import { ImageCarousel } from "@/components/ui/image-carousel";
+import { getPropertyImageUrls } from "@/lib/file-uploads";
 import { PropertyEditForm } from "./PropertyEditForm";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters } from "@/components/filters/TransactionFilters";
@@ -47,6 +48,8 @@ export function PropertyDetailsDialog({
   const [availableCategories, setAvailableCategories] = useState<
     CategoryOption[]
   >([]);
+  const [propertyImages, setPropertyImages] = useState<string[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
 
   const { filters, setFilters } = useTransactionFilters({
     propertyId: property?.id,
@@ -65,7 +68,10 @@ export function PropertyDetailsDialog({
   }, [isOpen, property?.id]);
 
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadData = async () => {
+      if (!property) return;
+
+      // Load categories
       try {
         const response = await fetch("/api/categories");
         if (!response.ok) {
@@ -77,10 +83,22 @@ export function PropertyDetailsDialog({
         console.error("Failed to load categories:", error);
         setAvailableCategories([]);
       }
+
+      // Load property images
+      try {
+        setLoadingImages(true);
+        const images = await getPropertyImageUrls(property.id);
+        setPropertyImages(images);
+      } catch (error) {
+        console.error("Failed to load property images:", error);
+        setPropertyImages([]);
+      } finally {
+        setLoadingImages(false);
+      }
     };
 
     if (isOpen && property) {
-      loadCategories();
+      loadData();
     }
   }, [isOpen, property]);
 
@@ -166,15 +184,27 @@ export function PropertyDetailsDialog({
           {/* Content based on active mode */}
           {mode === "view" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Property Image */}
+              {/* Property Images Carousel */}
               <div className="flex flex-col gap-4">
-                <PropertyImage
-                  propertyId={currentProperty.id}
-                  propertyName={currentProperty.name}
-                  className="w-full aspect-video rounded-lg object-cover"
-                  width={400}
-                  height={300}
-                />
+                {loadingImages ? (
+                  <div className="aspect-video bg-muted/30 rounded-lg animate-pulse flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-8 h-8 bg-primary/60 rounded animate-pulse" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">Loading images...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <ImageCarousel
+                    images={propertyImages}
+                    propertyName={currentProperty.name}
+                    className="w-full"
+                    aspectRatio="video"
+                    showThumbnails={propertyImages.length > 1}
+                    autoPlay={false}
+                  />
+                )}
               </div>
 
               {/* Property Information Card */}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Home } from "lucide-react";
-import { getPropertyImageUrl } from "@/lib/file-uploads";
+import { getPropertyCoverImageUrl } from "@/lib/file-uploads";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -27,8 +27,8 @@ export function PropertyImage({
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Get the Supabase storage URL for this property
-    const supabaseImageUrl = getPropertyImageUrl(propertyId);
+    // Get the Supabase storage URL for this property's cover image
+    const supabaseImageUrl = getPropertyCoverImageUrl(propertyId);
     setImageSrc(supabaseImageUrl);
   }, [propertyId]);
 
@@ -51,23 +51,21 @@ export function PropertyImage({
     </div>
   );
 
-  if (imageError || !imageSrc) {
+  // Show skeleton while loading or if there's an error
+  if (isLoading || imageError || !imageSrc) {
     return <SkeletonImage />;
   }
 
   return (
-    <>
-      {isLoading && <SkeletonImage />}
-      <Image
-        src={imageSrc}
-        alt={propertyName}
-        width={width}
-        height={height}
-        className={`${className} ${isLoading ? "hidden" : ""}`}
-        onError={handleImageError}
-        onLoad={handleImageLoad}
-        priority={false}
-      />
-    </>
+    <Image
+      src={imageSrc}
+      alt={propertyName}
+      width={width}
+      height={height}
+      className={className}
+      onError={handleImageError}
+      onLoad={handleImageLoad}
+      priority={false}
+    />
   );
 }
