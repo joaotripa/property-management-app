@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse query parameters for filtering
     const { searchParams } = new URL(request.url);
     const filters = {
       type: searchParams.get("type") || undefined,
@@ -35,12 +34,10 @@ export async function GET(request: NextRequest) {
       search: searchParams.get("search") || undefined,
     };
 
-    // Remove undefined values
     const cleanFilters = Object.fromEntries(
       Object.entries(filters).filter(([, value]) => value !== undefined)
     );
 
-    // Validate filters
     const validatedFilters = propertyFiltersSchema.parse(cleanFilters);
     
     const properties = await getUserProperties(session.user.id, validatedFilters);
@@ -75,7 +72,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/properties - Create a new property
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -92,10 +88,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Validate the request body
     const validatedData = createPropertyRequestSchema.parse(body);
     
-    // Create the property
     const property = await createProperty(session.user.id, validatedData);
 
     const response = createPropertyResponseSchema.parse({
@@ -120,7 +114,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof Error) {
-      // Handle specific database errors
       if (error.message.includes("Unique constraint")) {
         return NextResponse.json(
           errorResponseSchema.parse({
@@ -150,7 +143,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/properties - Not implemented (use specific property ID endpoint)
 export async function PUT() {
   return NextResponse.json(
     errorResponseSchema.parse({
@@ -161,7 +153,6 @@ export async function PUT() {
   );
 }
 
-// DELETE /api/properties - Not implemented (use specific property ID endpoint)
 export async function DELETE() {
   return NextResponse.json(
     errorResponseSchema.parse({

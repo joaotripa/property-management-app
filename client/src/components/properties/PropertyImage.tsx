@@ -11,7 +11,6 @@ interface PropertyImageProps {
   className?: string;
   width?: number;
   height?: number;
-  fallbackSrc?: string;
 }
 
 export function PropertyImage({
@@ -20,7 +19,6 @@ export function PropertyImage({
   className = "",
   width = 400,
   height = 200,
-  fallbackSrc = "/properties/house1-template.jpg",
 }: PropertyImageProps) {
   const [imageSrc, setImageSrc] = useState<string>("");
   const [imageError, setImageError] = useState<boolean>(false);

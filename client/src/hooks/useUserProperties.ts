@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { Property } from "@/types/properties";
 import { PropertyFilters } from "@/lib/validations/property";
@@ -18,9 +18,17 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProperties = async () => {
-    if (status === "loading") return;
+  // Properly memoize filters by their actual content, not object reference
+  const filtersKey = JSON.stringify(filters);
+  const memoizedFilters = useMemo(() => filters, [filters]);
+
+  const fetchProperties = useCallback(async () => {
+    // Early return if session is still loading
+    if (status === "loading") {
+      return;
+    }
     
+    // Handle unauthenticated state
     if (!session?.user?.id) {
       setProperties([]);
       setIsLoading(false);
@@ -33,11 +41,11 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
       setError(null);
 
       const queryParams = new URLSearchParams();
-      if (filters.type) queryParams.append('type', filters.type);
-      if (filters.occupancy) queryParams.append('occupancy', filters.occupancy);
-      if (filters.minRent) queryParams.append('minRent', filters.minRent.toString());
-      if (filters.maxRent) queryParams.append('maxRent', filters.maxRent.toString());
-      if (filters.search) queryParams.append('search', filters.search);
+      if (memoizedFilters.type) queryParams.append('type', memoizedFilters.type);
+      if (memoizedFilters.occupancy) queryParams.append('occupancy', memoizedFilters.occupancy);
+      if (memoizedFilters.minRent) queryParams.append('minRent', memoizedFilters.minRent.toString());
+      if (memoizedFilters.maxRent) queryParams.append('maxRent', memoizedFilters.maxRent.toString());
+      if (memoizedFilters.search) queryParams.append('search', memoizedFilters.search);
 
       const response = await fetch(`/api/properties?${queryParams.toString()}`, {
         method: 'GET',
@@ -53,16 +61,18 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
       const data = await response.json();
       setProperties(data.properties || []);
     } catch (err) {
+      console.error('Error fetching properties:', err);
       setError(err instanceof Error ? err.message : 'Failed to load properties');
       setProperties([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.user?.id, status, memoizedFilters]);
 
+  // Only fetch when fetchProperties function changes
   useEffect(() => {
     fetchProperties();
-  }, [session?.user?.id, status, JSON.stringify(filters)]);
+  }, [fetchProperties]);
 
   return {
     properties,

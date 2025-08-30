@@ -6,7 +6,6 @@ export {
   getPropertyImageUrl,
   getPropertyCoverImageUrl,
   getPropertyImageUrls,
-  setPropertyCoverImage,
   hasPropertyImage,
   validateImageFile,
   validatePropertyFiles,

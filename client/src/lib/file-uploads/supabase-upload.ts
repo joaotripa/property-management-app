@@ -26,14 +26,12 @@ export function validateImageFile(file: File): { isValid: boolean; error?: strin
     return { isValid: false, error: 'Please select an image file' };
   }
 
-  // Check file size (max 5MB for images)
   const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
-    const maxSizeText = '10MB';
+    const maxSizeText = '5MB';
     return { isValid: false, error: `Please select a file smaller than ${maxSizeText}` };
   }
 
-  // Check file extension
   const allowedImageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
   const allowedExtensions = [...allowedImageExtensions];
   
@@ -54,15 +52,10 @@ export function validateImageFile(file: File): { isValid: boolean; error?: strin
 export function validatePropertyFiles(files: File[]): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  if (files.length === 0) {
-    errors.push('Please select at least one file');
-  }
-  
   if (files.length > 10) {
     errors.push('Maximum 10 files allowed per property');
   }
   
-  // Validate each file
   files.forEach((file, index) => {
     const validation = validateImageFile(file);
     if (!validation.isValid) {
@@ -70,7 +63,6 @@ export function validatePropertyFiles(files: File[]): { isValid: boolean; errors
     }
   });
   
-  // Check total size (max 100MB total)
   const totalSize = files.reduce((sum, file) => sum + file.size, 0);
   const maxTotalSize = 100 * 1024 * 1024; // 100MB
   if (totalSize > maxTotalSize) {
@@ -126,13 +118,11 @@ export async function uploadPropertyImages(
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     
-    // Validate file
     const validation = validateImageFile(file);
     if (!validation.isValid) {
       throw new Error(`File ${i + 1}: ${validation.error}`);
     }
 
-    // Generate filename
     const fileExtension = file.name.split('.').pop();
     const isCover = i === coverImageIndex;
     const fileName = isCover 
@@ -143,10 +133,8 @@ export async function uploadPropertyImages(
     try {
       onProgress?.(i, 0);
       
-      // Convert file to buffer for S3 upload
       const fileBuffer = await file.arrayBuffer();
 
-      // Upload directly to S3
       const uploadCommand = new PutObjectCommand({
         Bucket: STORAGE_BUCKET,
         Key: filePath,
@@ -164,7 +152,6 @@ export async function uploadPropertyImages(
       await s3Client.send(uploadCommand);
       onProgress?.(i, 100);
       
-      // Construct public URL
       const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
       
       results.push({
@@ -200,7 +187,6 @@ export async function deletePropertyImage(propertyId: string, filename?: string)
     const s3Client = getS3Client();
 
     if (filename) {
-      // Delete specific file
       const filePath = getPropertyImagePath(propertyId, filename);
       const deleteCommand = new DeleteObjectCommand({
         Bucket: STORAGE_BUCKET,
@@ -208,7 +194,6 @@ export async function deletePropertyImage(propertyId: string, filename?: string)
       });
       await s3Client.send(deleteCommand);
     } else {
-      // Delete all files in the property folder
       const listCommand = new ListObjectsV2Command({
         Bucket: STORAGE_BUCKET,
         Prefix: `${propertyId}/`,
@@ -234,41 +219,11 @@ export async function deletePropertyImage(propertyId: string, filename?: string)
   }
 }
 
-/**
- * Set a specific image as the cover image
- */
-export async function setPropertyCoverImage(
-  propertyId: string,
-  sourceFilename: string
-): Promise<void> {
-  try {
-    const s3Client = getS3Client();
-    
-    // Get the source file
-    const sourceKey = getPropertyImagePath(propertyId, sourceFilename);
-    
-    // Determine the extension from source filename
-    const extension = sourceFilename.split('.').pop();
-    const coverKey = getPropertyImagePath(propertyId, `cover-image.${extension}`);
-    
-    // Copy the source file to cover-image location
-    // Note: S3 copy operation would be ideal here, but for simplicity we'll handle this in the upload flow
-    throw new Error('Cover image setting should be handled during upload process');
-    
-  } catch (error) {
-    console.error('Error setting cover image:', error);
-    throw error instanceof Error ? error : new Error('Failed to set cover image');
-  }
-}
 
 /**
  * Get property cover image URL from Supabase Storage
  */
 export function getPropertyCoverImageUrl(propertyId: string): string {
-  // Try common extensions for cover image
-  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-  
-  // Return the first possible URL - the actual existence will be handled by the component
   const { data } = supabase.storage
     .from('property-images')
     .getPublicUrl(`${propertyId}/cover-image.jpg`);
@@ -293,7 +248,6 @@ export async function getPropertyImageUrls(propertyId: string): Promise<string[]
       return [];
     }
 
-    // Sort images: cover image first, then by filename
     const imageUrls = result.Contents
       .filter(obj => obj.Key && obj.Key.match(/\.(jpg|jpeg|png|webp|gif)$/i))
       .sort((a, b) => {
@@ -332,7 +286,7 @@ export async function hasPropertyImage(propertyId: string): Promise<boolean> {
     const listCommand = new ListObjectsV2Command({
       Bucket: STORAGE_BUCKET,
       Prefix: `${propertyId}/`,
-      MaxKeys: 1, // We only need to check if any files exist
+      MaxKeys: 1, 
     });
 
     const s3Client = getS3Client();
@@ -347,12 +301,10 @@ export async function hasPropertyImage(propertyId: string): Promise<boolean> {
  * Get public URL for an image in Supabase Storage
  */
 export function getPublicImageUrl(path: string): string {
-  // If path is already a full URL, return as is
   if (path.startsWith('http')) {
     return path;
   }
 
-  // Get public URL from Supabase client
   const { data } = supabase.storage
     .from('property-images')
     .getPublicUrl(path);
@@ -365,7 +317,7 @@ export function getPublicImageUrl(path: string): string {
  */
 export function extractPathFromUrl(url: string): string {
   if (!url.includes('storage/v1/object/public/property-images/')) {
-    return url; // Return as is if it's not a Supabase URL
+    return url; 
   }
 
   return url.split('storage/v1/object/public/property-images/')[1];
@@ -386,7 +338,6 @@ export function resizeImage(
     const img = new Image();
 
     img.onload = () => {
-      // Calculate new dimensions
       let { width, height } = img;
       
       if (width > maxWidth) {
@@ -399,11 +350,9 @@ export function resizeImage(
         height = maxHeight;
       }
 
-      // Set canvas dimensions
       canvas.width = width;
       canvas.height = height;
 
-      // Draw and compress
       ctx?.drawImage(img, 0, 0, width, height);
       
       canvas.toBlob(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -19,21 +19,34 @@ import { EmptyPropertiesState } from "@/components/properties/EmptyPropertiesSta
 import { Property } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
 
+// Stable empty filters object to prevent recreation on every render
+const EMPTY_FILTERS = {};
+
 export default function PropertiesPage() {
-  const { properties, isLoading, error, refetch } = useUserProperties();
-  const [localProperties, setLocalProperties] = useState<Property[]>([]);
-
-  useEffect(() => {
-    setLocalProperties(properties);
-  }, [properties]);
-
-  const displayProperties =
-    localProperties.length > 0 ? localProperties : properties;
+  // All useState hooks must be declared first (Rules of Hooks)
+  const [optimisticProperties, setOptimisticProperties] = useState<Property[]>(
+    []
+  );
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  // Then other hooks
+  const { properties, isLoading, error, refetch } =
+    useUserProperties(EMPTY_FILTERS);
+
+  const displayProperties = useMemo(() => {
+    return optimisticProperties.length > 0 ? optimisticProperties : properties;
+  }, [optimisticProperties, properties]);
+
+  // Sync optimistic properties when hook properties change (initial load, refetch)
+  useEffect(() => {
+    if (properties.length >= 0) { // Allow empty arrays to sync too
+      setOptimisticProperties(properties);
+    }
+  }, [properties]);
 
   const openPropertyDialog = (property: Property) => {
     setSelectedProperty(property);
@@ -41,17 +54,25 @@ export default function PropertiesPage() {
   };
 
   const handleSaveProperty = (updatedProperty: Property) => {
-    setLocalProperties((prev) =>
-      prev.map((prop) =>
-        prop.id === updatedProperty.id ? updatedProperty : prop
-      )
-    );
-    refetch();
+    try {
+      // Optimistic update - immediately update UI
+      setOptimisticProperties((prev) =>
+        prev.map((prop) =>
+          prop.id === updatedProperty.id ? updatedProperty : prop
+        )
+      );
+    } catch (error) {
+      console.error('Error updating property:', error);
+    }
   };
 
   const handleAddProperty = (newProperty: Property) => {
-    setLocalProperties((prev) => [newProperty, ...prev]);
-    refetch();
+    try {
+      // Optimistic update - immediately add to UI
+      setOptimisticProperties((prev) => [newProperty, ...prev]);
+    } catch (error) {
+      console.error('Error adding property:', error);
+    }
   };
 
   const openAddDialog = () => {
@@ -73,7 +94,10 @@ export default function PropertiesPage() {
             </p>
             <p className="text-sm text-muted-foreground mt-1">{error}</p>
             <Button
-              onClick={refetch}
+              onClick={() => {
+                setOptimisticProperties([]);
+                refetch();
+              }}
               variant="outline"
               size="sm"
               className="mt-4"

@@ -28,7 +28,6 @@ import {
   MultiImageUpload,
   type FileWithPreview,
 } from "@/components/ui/multi-image-upload";
-import { toast } from "sonner";
 
 const propertyFormInputSchema = z.object({
   name: z.string().min(1, "Property name is required").trim(),

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Plus, X, Crown, Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, AlertTriangle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { ImageGrid } from "@/components/ui/image-grid";
+import { Button } from "@/components/ui/button";
 
 export interface FileWithPreview {
   file: File;
@@ -48,9 +48,10 @@ export function MultiImageUpload({
   description = "Add images of your property",
 }: MultiImageUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const generateFileId = () => Math.random().toString(36).substr(2, 9);
+  const generateFileId = () => Math.random().toString(36).substring(2, 11);
 
   const createFilePreview = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -71,14 +72,35 @@ export function MultiImageUpload({
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles || disabled || isUploading) return;
 
+    // Clear previous validation errors
+    setValidationErrors([]);
+
     const currentFileCount = files.length;
     const fileArray = Array.from(selectedFiles);
+    const newErrors: string[] = [];
 
     const filesToProcess = fileArray.slice(0, maxFiles - currentFileCount);
 
+    // Check if too many files were selected
+    if (fileArray.length > maxFiles - currentFileCount) {
+      newErrors.push(
+        `Only ${maxFiles - currentFileCount} more files can be added. ${fileArray.length - (maxFiles - currentFileCount)} files were ignored.`
+      );
+    }
+
     const filePromises = filesToProcess.map(async (file) => {
       if (file.size > maxSize) {
-        console.warn(`File ${file.name} exceeds size limit`);
+        const maxSizeText = formatFileSize(maxSize);
+        newErrors.push(
+          `"${file.name}" is too large (${formatFileSize(file.size)}). Maximum size is ${maxSizeText}.`
+        );
+        return null;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        newErrors.push(
+          `"${file.name}" is not an image file. Please select JPG, PNG, WebP, or GIF files only.`
+        );
         return null;
       }
 
@@ -97,6 +119,9 @@ export function MultiImageUpload({
         };
       } catch (error) {
         console.error("Error creating preview for file:", file.name, error);
+        newErrors.push(
+          `Failed to process "${file.name}". The file may be corrupted or unsupported.`
+        );
         return null;
       }
     });
@@ -107,6 +132,11 @@ export function MultiImageUpload({
       (result): result is FileWithPreview => result !== null
     );
     console.log("Valid files processed:", validFiles.length, "files");
+
+    // Set validation errors if any
+    if (newErrors.length > 0) {
+      setValidationErrors(newErrors);
+    }
 
     if (validFiles.length > 0) {
       onFilesChange([...files, ...validFiles]);
@@ -142,6 +172,11 @@ export function MultiImageUpload({
   const handleRemoveFile = (index: number) => {
     if (disabled || isUploading) return;
 
+    // Clear validation errors when user removes files
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+
     const newFiles = files.filter((_, i) => i !== index);
     onFilesChange(newFiles);
 
@@ -152,13 +187,12 @@ export function MultiImageUpload({
     }
   };
 
-  const handleSetCoverImage = (index: number) => {
-    if (disabled || isUploading) return;
-    onCoverImageChange(index);
-  };
-
   const handleAddMore = () => {
     if (!disabled && !isUploading) {
+      // Clear validation errors when user tries to add more files
+      if (validationErrors.length > 0) {
+        setValidationErrors([]);
+      }
       fileInputRef.current?.click();
     }
   };
@@ -180,120 +214,22 @@ export function MultiImageUpload({
 
       {/* Image Grid */}
       {files.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {files.map((fileWithPreview, index) => (
-            <div key={fileWithPreview.id} className="relative group">
-              <Card className="overflow-hidden aspect-video">
-                <CardContent className="p-0 text-muted-foreground">
-                  <span>{fileWithPreview.file.type}</span>
-
-                  <Image
-                    src={fileWithPreview.preview}
-                    alt={`Preview ${index + 1}`}
-                    fill
-                    className="w-full h-full object-cover rounded-md"
-                    onError={(e) => {
-                      console.error(
-                        "Image load error for:",
-                        fileWithPreview.file.name,
-                        e
-                      );
-                    }}
-                    onLoad={() => {
-                      console.log(
-                        "Image loaded successfully:",
-                        fileWithPreview.file.name
-                      );
-                    }}
-                  />
-
-                  {/* Cover Image Badge */}
-                  {index === coverImageIndex && (
-                    <div className="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-                      <Crown className="w-3 h-3 text-primary-foreground" />
-                      <span className="text-xs font-medium text-primary-foreground">
-                        Cover
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Upload Progress */}
-                  {isUploading &&
-                    uploadProgress[index] !== undefined &&
-                    uploadProgress[index] < 100 && (
-                      <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
-                        <div className="text-center text-dashboard-background">
-                          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                          <p className="text-xs">
-                            {Math.round(uploadProgress[index])}%
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Remove Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(index)}
-                    disabled={disabled || isUploading}
-                    className="absolute top-2 right-2 bg-destructive/90 hover:bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-
-                  {/* Set as Cover Button */}
-                  {index !== coverImageIndex && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetCoverImage(index)}
-                      disabled={disabled || isUploading}
-                      className="absolute top-2 left-2 bg-secondary/90 hover:bg-secondary text-secondary-foreground rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                    >
-                      Set as Cover
-                    </button>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* File Info */}
-              <div className="mt-1 text-center">
-                <p className="text-xs text-muted-foreground truncate">
-                  {fileWithPreview.file.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(fileWithPreview.file.size)}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Add More Button */}
-          {files.length < maxFiles && (
-            <Card
-              className={cn(
-                "aspect-video border-2 border-dashed cursor-pointer hover:border-primary/50 transition-colors",
-                disabled && "opacity-50 cursor-not-allowed",
-                isDragOver && "border-primary bg-primary/5"
-              )}
-              onClick={handleAddMore}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <CardContent className="p-4 flex flex-col items-center justify-center text-center h-full">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-                  <Plus className="w-6 h-6 text-primary" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Add More
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {files.length} of {maxFiles}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <ImageGrid
+          files={files}
+          coverImageIndex={coverImageIndex}
+          onCoverImageChange={onCoverImageChange}
+          onRemoveFile={handleRemoveFile}
+          onAddMore={handleAddMore}
+          maxFiles={maxFiles}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          disabled={disabled}
+          showAddMore={true}
+          isDragOver={isDragOver}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        />
       )}
 
       {/* Initial Upload Area */}
@@ -348,11 +284,42 @@ export function MultiImageUpload({
         multiple
       />
 
-      {/* Error Display */}
+      {/* Validation Error Display */}
+      {validationErrors.length > 0 && (
+        <div className="flex items-start gap-2 px-3 py-4 bg-destructive/5 border border-destructive/20 rounded-md text-sm">
+          <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="font-medium text-destructive mb-1">
+              {validationErrors.length === 1
+                ? "File Upload Error"
+                : `${validationErrors.length} File Upload Errors`}
+            </div>
+            <ul className="gap-2">
+              {validationErrors.map((error, index) => (
+                <li key={index} className="text-destructive text-sm">
+                  {error}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 mt-0.5"
+            onClick={() => setValidationErrors([])}
+          >
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      )}
+
+      {/* General Error Display */}
       {error && (
-        <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-          {error}
-        </p>
+        <div className="flex items-center gap-2 px-3 py-4 bg-destructive/5 border border-destructive/20 rounded-md text-sm">
+          <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+          <span className="text-destructive font-medium">Upload Error:</span>
+          <span className="text-destructive/90">{error}</span>
+        </div>
       )}
     </div>
   );

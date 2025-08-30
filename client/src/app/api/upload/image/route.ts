@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { success: false, message: "File size too large. Maximum size is 5MB" },
