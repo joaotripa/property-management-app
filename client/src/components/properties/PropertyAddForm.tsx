@@ -7,7 +7,6 @@ import { PropertyType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
 import { Property } from "@/types/properties";
@@ -83,6 +90,7 @@ export function PropertyAddForm({
 
   const form = useForm<PropertyFormInput>({
     resolver: zodResolver(propertyFormInputSchema),
+    mode: 'all',
     defaultValues: {
       name: "",
       address: "",
@@ -95,16 +103,13 @@ export function PropertyAddForm({
   });
 
   const {
-    register,
     handleSubmit,
-    setValue,
     watch,
     setError,
     clearErrors,
-    formState: { errors, isValid },
+    formState: { isValid },
   } = form;
 
-  const watchedType = watch("type");
   const watchedOccupancy = watch("occupancy");
 
   const handleFilesChange = (files: FileWithPreview[]) => {
@@ -227,20 +232,15 @@ export function PropertyAddForm({
     }
   };
 
-  const handleTypeChange = (value: PropertyType) => {
-    setValue("type", value, { shouldValidate: true });
-  };
-
   const handleOccupancyChange = (value: "Available" | "Occupied") => {
-    setValue("occupancy", value, { shouldValidate: true });
-
     if (value === "Available") {
-      setValue("tenants", "0", { shouldValidate: true });
+      form.setValue("tenants", "0", { shouldValidate: true });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-6">
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Property Information */}
         <Card className="w-full">
@@ -249,57 +249,65 @@ export function PropertyAddForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Property Name *</Label>
-                <Input
-                  id="name"
-                  {...register("name")}
-                  placeholder="Enter property name"
-                  className={errors.name ? "border-destructive" : ""}
-                />
-                {errors.name && (
-                  <p className="text-sm text-destructive">
-                    {errors.name.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Property Name *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter property name"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="type">Property Type *</Label>
-                <Select value={watchedType} onValueChange={handleTypeChange}>
-                  <SelectTrigger
-                    className={errors.type ? "border-destructive" : ""}
-                  >
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {propertyTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.type && (
-                  <p className="text-sm text-destructive">
-                    {errors.type.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Property Type *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select property type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {propertyTypeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
 
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address *</Label>
-                <Input
-                  id="address"
-                  {...register("address")}
-                  placeholder="Enter full address"
-                  className={errors.address ? "border-destructive" : ""}
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter full address"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.address && (
-                  <p className="text-sm text-destructive">
-                    {errors.address.message}
-                  </p>
-                )}
               </div>
             </div>
           </CardContent>
@@ -312,63 +320,76 @@ export function PropertyAddForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rent">Monthly Rent (€) *</Label>
-                <Input
-                  id="rent"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="50000"
-                  {...register("rent")}
-                  placeholder="0.00"
-                  className={errors.rent ? "border-destructive" : ""}
-                />
-                {errors.rent && (
-                  <p className="text-sm text-destructive">
-                    {errors.rent.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="rent"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Monthly Rent (€) *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="50000"
+                        placeholder="0.00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="tenants">Current Tenants *</Label>
-                <Input
-                  id="tenants"
-                  type="number"
-                  min="0"
-                  max="100"
-                  {...register("tenants")}
-                  disabled={watchedOccupancy === "Available"}
-                  placeholder="0"
-                  className={errors.tenants ? "border-destructive" : ""}
-                />
-                {errors.tenants && (
-                  <p className="text-sm text-destructive">
-                    {errors.tenants.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="tenants"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Tenants *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        disabled={watchedOccupancy === "Available"}
+                        placeholder="0"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
 
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="occupancy">Occupancy Status *</Label>
-                <Select
-                  value={watchedOccupancy}
-                  onValueChange={handleOccupancyChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select occupancy status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Occupied">Occupied</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.occupancy && (
-                  <p className="text-sm text-destructive">
-                    {errors.occupancy.message}
-                  </p>
-                )}
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="occupancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Occupancy Status *</FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          handleOccupancyChange(value as "Available" | "Occupied");
+                        }} 
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select occupancy status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Available">Available</SelectItem>
+                          <SelectItem value="Occupied">Occupied</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
           </CardContent>
@@ -430,6 +451,7 @@ export function PropertyAddForm({
           )}
         </Button>
       </div>
-    </form>
+      </form>
+    </Form>
   );
 }
