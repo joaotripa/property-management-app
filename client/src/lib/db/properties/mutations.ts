@@ -2,11 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { 
   CreatePropertyInput, 
   UpdatePropertyInput,
-  createPropertySchema,
+  basePropertySchema,
   updatePropertySchema 
 } from "@/lib/validations/property";
 import { Property } from "@/types/properties";
 import { generateUUID } from "@/lib/utils";
+import { OccupancyStatus } from "@prisma/client";
 
 /**
  * Create a new property for a user
@@ -16,7 +17,7 @@ export async function createProperty(
   input: CreatePropertyInput
 ): Promise<Property> {
   try {
-    const validatedInput = createPropertySchema.parse(input);
+    const validatedInput = basePropertySchema.parse(input);
     
     const property = await prisma.property.create({
       data: {
@@ -221,7 +222,7 @@ export async function restoreProperty(
 export async function updatePropertyOccupancy(
   propertyId: string,
   userId: string,
-  occupancy: "Available" | "Occupied",
+  occupancy: OccupancyStatus,
   tenantCount?: number
 ): Promise<Property> {
   try {
@@ -240,9 +241,9 @@ export async function updatePropertyOccupancy(
 
     // Determine tenant count based on occupancy
     let finalTenantCount = tenantCount;
-    if (occupancy === "Available" && finalTenantCount === undefined) {
+    if (occupancy === "AVAILABLE" && finalTenantCount === undefined) {
       finalTenantCount = 0;
-    } else if (occupancy === "Occupied" && finalTenantCount === undefined) {
+    } else if (occupancy === "OCCUPIED" && finalTenantCount === undefined) {
       finalTenantCount = existingProperty.tenants;
     }
 

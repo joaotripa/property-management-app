@@ -166,14 +166,14 @@ export async function getPropertyStats(userId: string) {
         where: {
           userId,
           isActive: true,
-          occupancy: "Occupied",
+          occupancy: "OCCUPIED",
         },
       }),
       prisma.property.aggregate({
         where: {
           userId,
           isActive: true,
-          occupancy: "Occupied",
+          occupancy: "OCCUPIED",
         },
         _sum: {
           rent: true,

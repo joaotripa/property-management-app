@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
+        
     const validatedData = createPropertyRequestSchema.parse(body);
-    
+        
     const property = await createProperty(session.user.id, validatedData);
 
     const response = createPropertyResponseSchema.parse({

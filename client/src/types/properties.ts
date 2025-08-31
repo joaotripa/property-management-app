@@ -1,4 +1,4 @@
-import { PropertyType } from "@prisma/client";
+import { PropertyType, OccupancyStatus } from "@prisma/client";
 
 export interface Property {
   id: string;
@@ -6,6 +6,6 @@ export interface Property {
   address: string;
   type: PropertyType;
   rent: number;
-  occupancy: string;
+  occupancy: OccupancyStatus;
   tenants: number;
 }

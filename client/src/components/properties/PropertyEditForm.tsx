@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PropertyType } from "@prisma/client";
+import { PropertyType, OccupancyStatus } from "@prisma/client";
 import { Property } from "@/types/properties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,8 +199,8 @@ export function PropertyEditForm({
                     <SelectValue placeholder="Select occupancy status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Occupied">Occupied</SelectItem>
+                    <SelectItem value={OccupancyStatus.AVAILABLE}>Available</SelectItem>
+                    <SelectItem value={OccupancyStatus.OCCUPIED}>Occupied</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
