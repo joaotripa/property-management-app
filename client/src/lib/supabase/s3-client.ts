@@ -5,7 +5,6 @@ function createS3Client() {
   const accessKeyId = process.env.SUPABASE_S3_ACCESS_KEY_ID;
   const secretAccessKey = process.env.SUPABASE_S3_SECRET_ACCESS_KEY;
 
-  // Only create S3 client if all required environment variables are available
   if (!endpoint || !accessKeyId || !secretAccessKey) {
     throw new Error('Missing required S3 environment variables');
   }

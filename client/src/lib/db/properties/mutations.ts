@@ -16,7 +16,6 @@ export async function createProperty(
   input: CreatePropertyInput
 ): Promise<Property> {
   try {
-    // Validate input
     const validatedInput = createPropertySchema.parse(input);
     
     const property = await prisma.property.create({
@@ -42,7 +41,6 @@ export async function createProperty(
       },
     });
 
-    // Transform Decimal rent to number for frontend
     return {
       ...property,
       rent: Number(property.rent),

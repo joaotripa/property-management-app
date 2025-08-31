@@ -1,7 +1,5 @@
 import { generateUUID } from "@/lib/utils";
 import { supabase } from "@/lib/supabase/client";
-import { getS3Client, STORAGE_BUCKET, getPropertyImagePath } from "@/lib/supabase/s3-client";
-import { PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 export interface UploadResult {
   url: string;
@@ -100,7 +98,7 @@ export function createFilePreview(file: File): Promise<string> {
 }
 
 /**
- * Upload multiple images to Supabase Storage using direct S3 connection
+ * Upload multiple images to Supabase Storage via API route
  */
 export async function uploadPropertyImages(
   files: File[],
@@ -112,60 +110,45 @@ export async function uploadPropertyImages(
     throw new Error('No files to upload');
   }
 
-  const results: UploadResult[] = [];
-  const s3Client = getS3Client();
-
+  // Client-side validation
   for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    
-    const validation = validateImageFile(file);
+    const validation = validateImageFile(files[i]);
     if (!validation.isValid) {
       throw new Error(`File ${i + 1}: ${validation.error}`);
     }
-
-    const fileExtension = file.name.split('.').pop();
-    const isCover = i === coverImageIndex;
-    const fileName = isCover 
-      ? `cover-image.${fileExtension}`
-      : `image-${i + 1}.${fileExtension}`;
-    const filePath = getPropertyImagePath(propertyId, fileName);
-    
-    try {
-      onProgress?.(i, 0);
-      
-      const fileBuffer = await file.arrayBuffer();
-
-      const uploadCommand = new PutObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        Key: filePath,
-        Body: new Uint8Array(fileBuffer),
-        ContentType: file.type,
-        CacheControl: 'max-age=3600',
-        Metadata: {
-          'uploaded-by': 'domari.app',
-          'property-id': propertyId,
-          'file-index': i.toString(),
-          'is-cover': isCover.toString(),
-        }
-      });
-
-      await s3Client.send(uploadCommand);
-      onProgress?.(i, 100);
-      
-      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
-      
-      results.push({
-        url: publicUrl,
-        path: filePath,
-        size: file.size,
-      });
-    } catch (error) {
-      console.error(`Error uploading file ${i + 1}:`, error);
-      throw error instanceof Error ? error : new Error(`Upload failed for file ${i + 1}`);
-    }
   }
 
-  return results;
+  try {
+    const formData = new FormData();
+    formData.append('propertyId', propertyId);
+    formData.append('coverImageIndex', coverImageIndex.toString());
+    
+    files.forEach((file, index) => {
+      formData.append(`file-${index}`, file);
+      onProgress?.(index, 0);
+    });
+
+    const response = await fetch(`/api/properties/${propertyId}/images`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Upload failed');
+    }
+
+    const { results } = await response.json();
+    
+    files.forEach((_, index) => {
+      onProgress?.(index, 100);
+    });
+
+    return results;
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    throw error instanceof Error ? error : new Error('Upload failed');
+  }
 }
 
 /**
@@ -180,38 +163,22 @@ export async function uploadPropertyImage(
 }
 
 /**
- * Delete specific property image from Supabase Storage
+ * Delete specific property image from Supabase Storage via API route
  */
 export async function deletePropertyImage(propertyId: string, filename?: string): Promise<void> {
   try {
-    const s3Client = getS3Client();
-
+    let deleteUrl = `/api/properties/${propertyId}/images`;
     if (filename) {
-      const filePath = getPropertyImagePath(propertyId, filename);
-      const deleteCommand = new DeleteObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        Key: filePath,
-      });
-      await s3Client.send(deleteCommand);
-    } else {
-      const listCommand = new ListObjectsV2Command({
-        Bucket: STORAGE_BUCKET,
-        Prefix: `${propertyId}/`,
-      });
+      deleteUrl = `/api/properties/${propertyId}/images/${filename}`;
+    }
 
-      const listResult = await s3Client.send(listCommand);
+    const response = await fetch(deleteUrl, {
+      method: 'DELETE',
+    });
 
-      if (listResult.Contents && listResult.Contents.length > 0) {
-        for (const obj of listResult.Contents) {
-          if (obj.Key) {
-            const deleteCommand = new DeleteObjectCommand({
-              Bucket: STORAGE_BUCKET,
-              Key: obj.Key,
-            });
-            await s3Client.send(deleteCommand);
-          }
-        }
-      }
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Delete operation failed');
     }
   } catch (error) {
     console.error('Error deleting property image(s):', error);
@@ -232,39 +199,19 @@ export function getPropertyCoverImageUrl(propertyId: string): string {
 }
 
 /**
- * Get all property image URLs from Supabase Storage
+ * Get all property image URLs from Supabase Storage via API route
  */
 export async function getPropertyImageUrls(propertyId: string): Promise<string[]> {
   try {
-    const listCommand = new ListObjectsV2Command({
-      Bucket: STORAGE_BUCKET,
-      Prefix: `${propertyId}/`,
-    });
-
-    const s3Client = getS3Client();
-    const result = await s3Client.send(listCommand);
+    const response = await fetch(`/api/properties/${propertyId}/images?action=list`);
     
-    if (!result.Contents || result.Contents.length === 0) {
+    if (!response.ok) {
+      console.error('Failed to fetch property images');
       return [];
     }
 
-    const imageUrls = result.Contents
-      .filter(obj => obj.Key && obj.Key.match(/\.(jpg|jpeg|png|webp|gif)$/i))
-      .sort((a, b) => {
-        const aIsCover = a.Key?.includes('cover-image');
-        const bIsCover = b.Key?.includes('cover-image');
-        
-        if (aIsCover && !bIsCover) return -1;
-        if (!aIsCover && bIsCover) return 1;
-        
-        return (a.Key || '').localeCompare(b.Key || '');
-      })
-      .map(obj => {
-        const path = obj.Key!.replace(`property-images/`, '');
-        return getPublicImageUrl(path);
-      });
-
-    return imageUrls;
+    const { imageUrls } = await response.json();
+    return imageUrls || [];
   } catch (error) {
     console.error('Error fetching property images:', error);
     return [];
@@ -279,19 +226,18 @@ export function getPropertyImageUrl(propertyId: string): string {
 }
 
 /**
- * Check if property has an image in storage using S3 direct connection
+ * Check if property has an image in storage via API route
  */
 export async function hasPropertyImage(propertyId: string): Promise<boolean> {
   try {
-    const listCommand = new ListObjectsV2Command({
-      Bucket: STORAGE_BUCKET,
-      Prefix: `${propertyId}/`,
-      MaxKeys: 1, 
-    });
+    const response = await fetch(`/api/properties/${propertyId}/images?action=check`);
+    
+    if (!response.ok) {
+      return false;
+    }
 
-    const s3Client = getS3Client();
-    const result = await s3Client.send(listCommand);
-    return Boolean(result.Contents && result.Contents.length > 0);
+    const { hasImages } = await response.json();
+    return hasImages || false;
   } catch {
     return false;
   }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Home } from "lucide-react";
-import { getPropertyCoverImageUrl } from "@/lib/file-uploads";
+import { getPropertyCoverImageUrl } from "@/lib/supabase/uploads";
 
 interface PropertyImageProps {
   propertyId: string;

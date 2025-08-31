@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { PropertyType } from "@prisma/client";
 
-// Base property schema for common validations
 const basePropertySchema = z.object({
   name: z
     .string()
@@ -13,7 +12,7 @@ const basePropertySchema = z.object({
   address: z
     .string()
     .min(1, "Address is required")
-    .min(5, "Address must be at least 5 characters")
+    .min(2, "Address must be at least 2 characters")
     .max(200, "Address must be less than 200 characters")
     .trim(),
     
@@ -39,10 +38,8 @@ const basePropertySchema = z.object({
     }),
 });
 
-// Schema for creating a new property
 export const createPropertySchema = basePropertySchema;
 
-// Schema for updating an existing property
 export const updatePropertySchema = basePropertySchema.extend({
   id: z.string().uuid("Invalid property ID"),
 });
@@ -69,7 +66,6 @@ export const propertyFormSchema = z.object({
   occupancy: z.enum(["Available", "Occupied"]),
 });
 
-// API request/response schemas
 export const createPropertyRequestSchema = createPropertySchema;
 
 export const createPropertyResponseSchema = z.object({
@@ -86,14 +82,12 @@ export const createPropertyResponseSchema = z.object({
   }).optional(),
 });
 
-// Error response schema
 export const errorResponseSchema = z.object({
   success: z.literal(false),
   message: z.string(),
-  errors: z.record(z.string(), z.string()).optional(),
+  errors: z.record(z.string(), z.array(z.string())).optional(),
 });
 
-// Property validation for database queries
 export const propertyIdSchema = z.string().uuid("Invalid property ID");
 
 export const propertyFiltersSchema = z.object({
@@ -115,7 +109,6 @@ export const propertyFiltersSchema = z.object({
   }
 );
 
-// Type exports for use in components
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;
 export type PropertyFormInput = z.infer<typeof propertyFormSchema>;

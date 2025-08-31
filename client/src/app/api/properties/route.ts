@@ -10,7 +10,6 @@ import {
 } from "@/lib/db/properties";
 import { ZodError } from "zod";
 
-// GET /api/properties - Get all properties for the authenticated user
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

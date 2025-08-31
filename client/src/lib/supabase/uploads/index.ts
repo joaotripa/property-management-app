@@ -1,4 +1,4 @@
-// Supabase upload utilities
+// Supabase image upload utilities
 export {
   uploadPropertyImage,
   uploadPropertyImages,
@@ -14,13 +14,13 @@ export {
   getPublicImageUrl,
   extractPathFromUrl,
   resizeImage,
-} from './supabase-upload';
+} from './images';
 
 // Types
 export type {
   UploadResult,
   UploadProgress,
-} from './supabase-upload';
+} from './images';
 
 // Re-export for convenience
-export * from './supabase-upload';
+export * from './images';

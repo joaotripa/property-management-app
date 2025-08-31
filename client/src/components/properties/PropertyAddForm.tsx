@@ -18,24 +18,38 @@ import {
 import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
 import { Property } from "@/types/properties";
-import { type CreatePropertyResponse } from "@/lib/validations/property";
+import { type CreatePropertyResponse, type ErrorResponse } from "@/lib/validations/property";
 import { z } from "zod";
 import {
   uploadPropertyImages,
   validatePropertyFiles,
-} from "@/lib/file-uploads";
+} from "@/lib/supabase/uploads";
 import {
   MultiImageUpload,
   type FileWithPreview,
 } from "@/components/ui/multi-image-upload";
 
 const propertyFormInputSchema = z.object({
-  name: z.string().min(1, "Property name is required").trim(),
-  address: z.string().min(1, "Address is required").trim(),
-  type: z.nativeEnum(PropertyType),
+  name: z
+    .string()
+    .min(1, "Property name is required")
+    .min(2, "Property name must be at least 2 characters")
+    .max(100, "Property name must be less than 100 characters")
+    .trim(),
+  address: z
+    .string()
+    .min(1, "Address is required")
+    .min(2, "Address must be at least 2 characters")
+    .max(200, "Address must be less than 200 characters")
+    .trim(),
+  type: z.nativeEnum(PropertyType, {
+    message: "Please select a valid property type",
+  }),
   rent: z.string().min(1, "Monthly rent is required"),
   tenants: z.string().min(1, "Number of tenants is required"),
-  occupancy: z.enum(["Available", "Occupied"]),
+  occupancy: z.enum(["Available", "Occupied"], {
+    message: "Please select a valid occupancy status",
+  }),
   image: z.string().optional(),
 });
 
@@ -64,6 +78,7 @@ export function PropertyAddForm({
   const [coverImageIndex, setCoverImageIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   const propertyTypeOptions = getPropertyTypeOptions();
 
   const form = useForm<PropertyFormInput>({
@@ -84,6 +99,8 @@ export function PropertyAddForm({
     handleSubmit,
     setValue,
     watch,
+    setError,
+    clearErrors,
     formState: { errors, isValid },
   } = form;
 
@@ -124,6 +141,8 @@ export function PropertyAddForm({
   const onSubmit = async (data: PropertyFormInput) => {
     try {
       setIsLoading(true);
+      setApiError(null);
+      clearErrors();
 
       const apiData = {
         name: data.name,
@@ -135,10 +154,12 @@ export function PropertyAddForm({
       };
 
       if (isNaN(apiData.rent) || apiData.rent <= 0) {
-        throw new Error("Please enter a valid rent amount");
+        setError("rent", { message: "Please enter a valid rent amount" });
+        return;
       }
       if (isNaN(apiData.tenants) || apiData.tenants < 0) {
-        throw new Error("Please enter a valid number of tenants");
+        setError("tenants", { message: "Please enter a valid number of tenants" });
+        return;
       }
 
       const response = await fetch("/api/properties", {
@@ -149,14 +170,31 @@ export function PropertyAddForm({
         body: JSON.stringify(apiData),
       });
 
-      const result: CreatePropertyResponse = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || "Failed to create property");
+        const errorResult: ErrorResponse = await response.json();
+        
+        // Handle validation errors from API
+        if (response.status === 400 && errorResult.errors) {
+          // Map API field errors to form errors
+          Object.entries(errorResult.errors).forEach(([field, messages]) => {
+            if (Array.isArray(messages) && messages.length > 0) {
+              setError(field as keyof PropertyFormInput, { 
+                message: messages[0] 
+              });
+            }
+          });
+          setApiError("Please fix the validation errors below");
+        } else {
+          setApiError(errorResult.message || "Failed to create property");
+        }
+        return;
       }
 
+      const result: CreatePropertyResponse = await response.json();
+
       if (!result.success || !result.property) {
-        throw new Error("Invalid response from server");
+        setApiError("Invalid response from server");
+        return;
       }
 
       const createdProperty = result.property;
@@ -179,7 +217,7 @@ export function PropertyAddForm({
       onSave(createdProperty);
     } catch (error) {
       console.error("Error creating property:", error);
-      alert(
+      setApiError(
         error instanceof Error
           ? error.message
           : "Failed to create property. Please try again later."
@@ -352,6 +390,15 @@ export function PropertyAddForm({
         maxFiles={10}
         maxSize={5 * 1024 * 1024}
       />
+
+      {/* Error Display */}
+      {apiError && (
+        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4">
+          <div className="text-sm text-destructive font-medium">
+            {apiError}
+          </div>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3">

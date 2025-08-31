@@ -21,7 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ImageCarousel } from "@/components/ui/image-carousel";
-import { getPropertyImageUrls } from "@/lib/file-uploads";
+import { getPropertyImageUrls } from "@/lib/supabase/uploads";
 import { PropertyEditForm } from "./PropertyEditForm";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters } from "@/components/filters/TransactionFilters";

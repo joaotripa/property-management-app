@@ -18,17 +18,13 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Properly memoize filters by their actual content, not object reference
-  const filtersKey = JSON.stringify(filters);
   const memoizedFilters = useMemo(() => filters, [filters]);
 
   const fetchProperties = useCallback(async () => {
-    // Early return if session is still loading
     if (status === "loading") {
       return;
     }
     
-    // Handle unauthenticated state
     if (!session?.user?.id) {
       setProperties([]);
       setIsLoading(false);
@@ -69,7 +65,6 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
     }
   }, [session?.user?.id, status, memoizedFilters]);
 
-  // Only fetch when fetchProperties function changes
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
