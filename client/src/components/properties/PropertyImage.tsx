@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Home } from "lucide-react";
+import { Home, Loader2 } from "lucide-react";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -56,7 +56,7 @@ export function PropertyImage({
     };
 
     const shouldRefresh = Date.now() > urlExpiry - 300000;
-    
+
     if (!imageSrc || shouldRefresh) {
       fetchCoverImage();
     }
@@ -81,21 +81,32 @@ export function PropertyImage({
     </div>
   );
 
-  // Show skeleton while loading or if there's an error
-  if (isLoading || imageError || !imageSrc) {
+  // Show skeleton if there's an error or no image
+  if (imageError || (!imageSrc && !isLoading)) {
     return <SkeletonImage />;
   }
 
   return (
-    <Image
-      src={imageSrc}
-      alt={propertyName}
-      width={width}
-      height={height}
-      className={className}
-      onError={handleImageError}
-      onLoad={handleImageLoad}
-      priority={false}
-    />
+    <div className="relative w-full h-full">
+      {imageSrc && (
+        <Image
+          src={imageSrc}
+          alt={propertyName}
+          width={width}
+          height={height}
+          className={className}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          priority={false}
+        />
+      )}
+
+      {/* Loading Circle Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-muted-foreground/10 flex items-center justify-center rounded-md">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      )}
+    </div>
   );
 }
