@@ -1,4 +1,4 @@
-import { PropertyType } from "@prisma/client";
+import { OccupancyStatus, PropertyType } from "@prisma/client";
 import { Property } from "@/types/properties";
 
 export const mockProperties: Property[] = [
@@ -8,7 +8,7 @@ export const mockProperties: Property[] = [
     address: "123 Main St, City Center",
     type: PropertyType.APARTMENT,
     rent: 2500,
-    occupancy: "Occupied",
+    occupancy: OccupancyStatus.OCCUPIED,
     tenants: 2,
   },
   {
@@ -17,7 +17,7 @@ export const mockProperties: Property[] = [
     address: "456 Ocean Drive, Coastal Area",
     type: PropertyType.VILLA,
     rent: 4200,
-    occupancy: "Available",
+    occupancy: OccupancyStatus.AVAILABLE,
     tenants: 0,
   },
   {
@@ -26,7 +26,7 @@ export const mockProperties: Property[] = [
     address: "789 Business Blvd, Commercial District",
     type: PropertyType.OFFICE,
     rent: 8500,
-    occupancy: "Occupied",
+    occupancy: OccupancyStatus.OCCUPIED,
     tenants: 15,
   },
   {
@@ -35,7 +35,7 @@ export const mockProperties: Property[] = [
     address: "321 Elm Street, Suburbs",
     type: PropertyType.HOUSE,
     rent: 3200,
-    occupancy: "Occupied",
+    occupancy: OccupancyStatus.OCCUPIED,
     tenants: 4,
   },
 ];

@@ -104,7 +104,7 @@ async function uploadWithProgress(
   formData: FormData,
   url: string,
   onProgress: (progress: number) => void
-): Promise<any> {
+): Promise<{ results: UploadResult[] }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
@@ -121,9 +121,10 @@ async function uploadWithProgress(
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          onProgress(100); // Set to 100% on success
+          onProgress(100);
           resolve(response);
         } catch (parseError) {
+          console.error('Invalid response format from server:', parseError);
           reject(new Error('Invalid response format from server'));
         }
       } else {

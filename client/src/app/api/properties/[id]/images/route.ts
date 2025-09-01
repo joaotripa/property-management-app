@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client, STORAGE_BUCKET, getPropertyImagePath } from '@/lib/supabase/s3-client';
-import { PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { validateImageFile } from '@/lib/supabase/uploads/images';
 
 export async function GET(
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action'); // 'list' or 'check'
+    const action = searchParams.get('action');
     const { id: propertyId } = await params;
 
     if (!propertyId) {
@@ -31,11 +32,33 @@ export async function GET(
       });
     }
 
+    if (action === 'cover') {
+      if (!result.Contents || result.Contents.length === 0) {
+        return NextResponse.json({ coverImageUrl: null });
+      }
+
+      const coverImage = result.Contents.find(obj => 
+        obj.Key && obj.Key.includes('cover-image')
+      );
+
+      if (!coverImage || !coverImage.Key) {
+        return NextResponse.json({ coverImageUrl: null });
+      }
+
+      const getCommand = new GetObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: coverImage.Key,
+      });
+
+      const coverImageUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
+      return NextResponse.json({ coverImageUrl });
+    }
+
     if (!result.Contents || result.Contents.length === 0) {
       return NextResponse.json({ imageUrls: [] });
     }
 
-    const imageUrls = result.Contents
+    const imageObjects = result.Contents
       .filter(obj => obj.Key && obj.Key.match(/\.(jpg|jpeg|png|webp|gif)$/i))
       .sort((a, b) => {
         const aIsCover = a.Key?.includes('cover-image');
@@ -45,11 +68,17 @@ export async function GET(
         if (!aIsCover && bIsCover) return 1;
         
         return (a.Key || '').localeCompare(b.Key || '');
-      })
-      .map(obj => {
-        const path = obj.Key!;
-        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
       });
+
+    const imageUrls = await Promise.all(
+      imageObjects.map(async (obj) => {
+        const getCommand = new GetObjectCommand({
+          Bucket: STORAGE_BUCKET,
+          Key: obj.Key!,
+        });
+        return await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
+      })
+    );
 
     return NextResponse.json({ imageUrls });
   } catch (error) {
@@ -123,7 +152,12 @@ export async function POST(
 
         await s3Client.send(uploadCommand);
         
-        const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filePath}`;
+        const getCommand = new GetObjectCommand({
+          Bucket: STORAGE_BUCKET,
+          Key: filePath,
+        });
+        
+        const publicUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
         
         results.push({
           url: publicUrl,

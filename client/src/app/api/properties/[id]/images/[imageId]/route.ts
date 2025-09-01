@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getS3Client, STORAGE_BUCKET, getPropertyImagePath } from '@/lib/supabase/s3-client';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string; imageId: string }> }
 ) {
   try {
@@ -13,11 +14,18 @@ export async function GET(
       return NextResponse.json({ error: 'Property ID and Image ID are required' }, { status: 400 });
     }
 
+    const s3Client = getS3Client();
     const filePath = getPropertyImagePath(propertyId, imageId);
-    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filePath}`;
+    
+    const getCommand = new GetObjectCommand({
+      Bucket: STORAGE_BUCKET,
+      Key: filePath,
+    });
+    
+    const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
     
     return NextResponse.json({ 
-      url: publicUrl,
+      url: signedUrl,
       path: filePath 
     });
   } catch (error) {

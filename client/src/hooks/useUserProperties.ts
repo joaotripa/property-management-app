@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Property } from "@/types/properties";
-import { PropertyFilters } from "@/lib/validations/property";
 
 interface UseUserPropertiesReturn {
   properties: Property[];
@@ -12,38 +11,20 @@ interface UseUserPropertiesReturn {
   refetch: () => Promise<void>;
 }
 
-export function useUserProperties(filters: PropertyFilters = {}): UseUserPropertiesReturn {
+export function useUserProperties(): UseUserPropertiesReturn {
   const { data: session, status } = useSession();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const memoizedFilters = useMemo(() => filters, [filters]);
-
   const fetchProperties = useCallback(async () => {
-    if (status === "loading") {
-      return;
-    }
+    if (!session?.user?.id) return;
     
-    if (!session?.user?.id) {
-      setProperties([]);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError(null);
 
-      const queryParams = new URLSearchParams();
-      if (memoizedFilters.type) queryParams.append('type', memoizedFilters.type);
-      if (memoizedFilters.occupancy) queryParams.append('occupancy', memoizedFilters.occupancy);
-      if (memoizedFilters.minRent) queryParams.append('minRent', memoizedFilters.minRent.toString());
-      if (memoizedFilters.maxRent) queryParams.append('maxRent', memoizedFilters.maxRent.toString());
-      if (memoizedFilters.search) queryParams.append('search', memoizedFilters.search);
-
-      const response = await fetch(`/api/properties?${queryParams.toString()}`, {
+      const response = await fetch(`/api/properties`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -63,11 +44,17 @@ export function useUserProperties(filters: PropertyFilters = {}): UseUserPropert
     } finally {
       setIsLoading(false);
     }
-  }, [session?.user?.id, status, memoizedFilters]);
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    fetchProperties();
-  }, [fetchProperties]);
+    if (status === "authenticated" && session?.user?.id) {
+      fetchProperties();
+    } else if (status === "unauthenticated") {
+      setProperties([]);
+      setIsLoading(false);
+      setError(null);
+    }
+  }, [status, session?.user?.id, fetchProperties]);
 
   return {
     properties,

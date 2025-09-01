@@ -26,21 +26,7 @@ export function usePropertyStats(): UsePropertyStatsReturn {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
-    if (status === "loading") return;
-    
-    if (!session?.user?.id) {
-      setStats({
-        totalProperties: 0,
-        occupiedProperties: 0,
-        availableProperties: 0,
-        occupancyRate: 0,
-        totalRent: 0,
-        averageRent: 0,
-      });
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
+    if (!session?.user?.id) return;
 
     try {
       setIsLoading(true);
@@ -65,11 +51,24 @@ export function usePropertyStats(): UsePropertyStatsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [session?.user?.id, status]);
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    if (status === "authenticated" && session?.user?.id) {
+      fetchStats();
+    } else if (status === "unauthenticated") {
+      setStats({
+        totalProperties: 0,
+        occupiedProperties: 0,
+        availableProperties: 0,
+        occupancyRate: 0,
+        totalRent: 0,
+        averageRent: 0,
+      });
+      setIsLoading(false);
+      setError(null);
+    }
+  }, [status, session?.user?.id, fetchStats]);
 
   return {
     stats,

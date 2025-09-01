@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Home } from "lucide-react";
-import { getPropertyCoverImageUrl } from "@/lib/supabase/uploads";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -23,12 +22,45 @@ export function PropertyImage({
   const [imageSrc, setImageSrc] = useState<string>("");
   const [imageError, setImageError] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [urlExpiry, setUrlExpiry] = useState<number>(0);
 
   useEffect(() => {
-    // Get the Supabase storage URL for this property's cover image
-    const supabaseImageUrl = getPropertyCoverImageUrl(propertyId);
-    setImageSrc(supabaseImageUrl);
-  }, [propertyId]);
+    if (!propertyId) return;
+
+    const fetchCoverImage = async () => {
+      try {
+        setIsLoading(true);
+        setImageError(false);
+
+        const response = await fetch(
+          `/api/properties/${propertyId}/images?action=cover`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch cover image");
+        }
+
+        const data = await response.json();
+
+        if (data.coverImageUrl) {
+          setImageSrc(data.coverImageUrl);
+          setUrlExpiry(Date.now() + 3600 * 1000);
+        } else {
+          setImageError(true);
+        }
+      } catch {
+        setImageError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const shouldRefresh = Date.now() > urlExpiry - 300000;
+    
+    if (!imageSrc || shouldRefresh) {
+      fetchCoverImage();
+    }
+  }, [propertyId, imageSrc, urlExpiry]);
 
   const handleImageError = () => {
     setImageError(true);
