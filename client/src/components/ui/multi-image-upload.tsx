@@ -3,10 +3,11 @@
 import React, { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Upload, Loader2, AlertTriangle, X } from "lucide-react";
+import { Upload, AlertTriangle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageGrid } from "@/components/ui/image-grid";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 export interface FileWithPreview {
   file: File;
@@ -248,26 +249,36 @@ export function MultiImageUpload({
         >
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
             <div className="mb-4">
-              {isUploading ? (
-                <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-              ) : (
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Upload className="h-8 w-8 text-primary" />
-                </div>
-              )}
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <Upload className="h-8 w-8 text-primary" />
+              </div>
             </div>
 
             <div className="space-y-2">
               <p className="text-lg font-medium">
                 {isUploading ? "Uploading..." : "Add Property Images"}
               </p>
-              <p className="text-sm text-muted-foreground">
-                Click to upload or drag and drop
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Images up to {formatFileSize(maxSize)} each (max {maxFiles}{" "}
-                files)
-              </p>
+              {isUploading && uploadProgress.length > 0 ? (
+                <div className="w-full max-w-xs space-y-2">
+                  <Progress 
+                    value={Math.round(uploadProgress.reduce((acc, prog) => acc + prog, 0) / uploadProgress.length)} 
+                    className="h-2" 
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {Math.round(uploadProgress.reduce((acc, prog) => acc + prog, 0) / uploadProgress.length)}% complete
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Images up to {formatFileSize(maxSize)} each (max {maxFiles}{" "}
+                    files)
+                  </p>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

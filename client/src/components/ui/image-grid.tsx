@@ -2,9 +2,10 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, Crown, Loader2 } from "lucide-react";
+import { Plus, X, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { Progress } from "@/components/ui/progress";
 
 export interface FileWithPreview {
   file: File;
@@ -116,12 +117,9 @@ export function ImageGrid({
               {isUploading &&
                 uploadProgress[index] !== undefined &&
                 uploadProgress[index] < 100 && (
-                  <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center rounded-md">
-                    <div className="text-center text-dashboard-background">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                      <p className="text-xs">
-                        {Math.round(uploadProgress[index])}%
-                      </p>
+                  <div className="absolute inset-0 bg-muted/50 flex flex-col items-center justify-center rounded-md p-4">
+                    <div className="w-full max-w-[80%] gap-2">
+                      <Progress value={uploadProgress[index]} className="h-2" />
                     </div>
                   </div>
                 )}

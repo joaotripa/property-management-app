@@ -98,6 +98,63 @@ export function createFilePreview(file: File): Promise<string> {
 }
 
 /**
+ * Upload multiple images with real-time progress tracking
+ */
+async function uploadWithProgress(
+  formData: FormData,
+  url: string,
+  onProgress: (progress: number) => void
+): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress(Math.min(progress, 99)); // Keep at 99% until complete
+      }
+    });
+
+    // Handle successful completion
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          onProgress(100); // Set to 100% on success
+          resolve(response);
+        } catch (parseError) {
+          reject(new Error('Invalid response format from server'));
+        }
+      } else {
+        // Handle HTTP error responses
+        try {
+          const errorResponse = JSON.parse(xhr.responseText);
+          reject(new Error(errorResponse.error || `HTTP ${xhr.status}: Upload failed`));
+        } catch {
+          reject(new Error(`HTTP ${xhr.status}: Upload failed`));
+        }
+      }
+    });
+
+    // Handle network errors
+    xhr.addEventListener('error', () => {
+      reject(new Error('Network error occurred during upload'));
+    });
+
+    // Handle timeout
+    xhr.addEventListener('timeout', () => {
+      reject(new Error('Upload timed out'));
+    });
+
+    // Configure and send request
+    xhr.open('POST', url);
+    xhr.timeout = 5 * 60 * 1000; // 5 minutes timeout
+    xhr.send(formData);
+  });
+}
+
+/**
  * Upload multiple images to Supabase Storage via API route
  */
 export async function uploadPropertyImages(
@@ -106,8 +163,13 @@ export async function uploadPropertyImages(
   coverImageIndex: number = 0,
   onProgress?: (fileIndex: number, progress: number) => void
 ): Promise<UploadResult[]> {
+  // Validate inputs
   if (files.length === 0) {
     throw new Error('No files to upload');
+  }
+
+  if (!propertyId || typeof propertyId !== 'string') {
+    throw new Error('Valid property ID is required');
   }
 
   // Client-side validation
@@ -119,35 +181,53 @@ export async function uploadPropertyImages(
   }
 
   try {
+    // Prepare form data
     const formData = new FormData();
     formData.append('propertyId', propertyId);
     formData.append('coverImageIndex', coverImageIndex.toString());
     
     files.forEach((file, index) => {
       formData.append(`file-${index}`, file);
+    });
+
+    // Initialize progress for all files
+    files.forEach((_, index) => {
       onProgress?.(index, 0);
     });
 
-    const response = await fetch(`/api/properties/${propertyId}/images`, {
-      method: 'POST',
-      body: formData,
-    });
+    // Upload with progress tracking
+    const response = await uploadWithProgress(
+      formData,
+      `/api/properties/${propertyId}/images`,
+      (overallProgress) => {
+        // Distribute progress evenly across all files
+        files.forEach((_, index) => {
+          onProgress?.(index, overallProgress);
+        });
+      }
+    );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Upload failed');
+    // Validate response structure
+    if (!response?.results || !Array.isArray(response.results)) {
+      throw new Error('Invalid response structure from server');
     }
 
-    const { results } = await response.json();
+    return response.results;
     
+  } catch (error) {
+    // Reset progress on error
     files.forEach((_, index) => {
-      onProgress?.(index, 100);
+      onProgress?.(index, 0);
     });
 
-    return results;
-  } catch (error) {
-    console.error('Error uploading files:', error);
-    throw error instanceof Error ? error : new Error('Upload failed');
+    // Log error for debugging (in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Upload error:', error);
+    }
+
+    // Re-throw with context
+    const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+    throw new Error(`Failed to upload property images: ${errorMessage}`);
   }
 }
 
