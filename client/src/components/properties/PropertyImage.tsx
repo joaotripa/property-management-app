@@ -81,7 +81,6 @@ export function PropertyImage({
     </div>
   );
 
-  // Show skeleton if there's an error or no image
   if (imageError || (!imageSrc && !isLoading)) {
     return <SkeletonImage />;
   }
