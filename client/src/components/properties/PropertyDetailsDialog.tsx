@@ -29,6 +29,7 @@ import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
 import { useTransactionFilters } from "@/hooks/useTransactionFilters";
 import { CategoryOption } from "@/types/transactions";
 import { Property } from "@/types/properties";
+import { OccupancyStatus } from "@prisma/client";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -105,7 +106,8 @@ export function PropertyDetailsDialog({
   if (!property) return null;
 
   const currentProperty = editProperty || property;
-  const occupancyRate = currentProperty.occupancy === "Occupied" ? 100 : 0;
+  const occupancyRate =
+    currentProperty.occupancy === OccupancyStatus.OCCUPIED ? 100 : 0;
   const city = currentProperty.address.split(",")[1]?.trim() || "Unknown City";
   const country = "Portugal";
 
@@ -192,7 +194,9 @@ export function PropertyDetailsDialog({
                       <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <div className="w-8 h-8 bg-primary/60 rounded animate-pulse" />
                       </div>
-                      <p className="text-sm text-muted-foreground">Loading images...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Loading images...
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -311,14 +315,16 @@ export function PropertyDetailsDialog({
                       <div className="flex justify-center">
                         <Badge
                           variant={
-                            currentProperty.occupancy === "Available"
+                            currentProperty.occupancy ===
+                            OccupancyStatus.AVAILABLE
                               ? "secondary"
                               : "default"
                           }
                           className={`${
-                            currentProperty.occupancy === "Available"
-                              ? "bg-green-100 text-success"
-                              : "bg-red-100 text-destructive"
+                            currentProperty.occupancy ===
+                            OccupancyStatus.AVAILABLE
+                              ? "bg-success/10 text-success"
+                              : "bg-destructive/10 text-destructive"
                           }`}
                         >
                           {currentProperty.occupancy}

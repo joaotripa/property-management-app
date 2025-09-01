@@ -18,6 +18,7 @@ import { PropertyCardSkeleton } from "@/components/properties/PropertyCardSkelet
 import { EmptyPropertiesState } from "@/components/properties/EmptyPropertiesState";
 import { Property } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
+import { OccupancyStatus } from "@prisma/client";
 
 // Stable empty filters object to prevent recreation on every render
 const EMPTY_FILTERS = {};
@@ -43,7 +44,8 @@ export default function PropertiesPage() {
 
   // Sync optimistic properties when hook properties change (initial load, refetch)
   useEffect(() => {
-    if (properties.length >= 0) { // Allow empty arrays to sync too
+    if (properties.length >= 0) {
+      // Allow empty arrays to sync too
       setOptimisticProperties(properties);
     }
   }, [properties]);
@@ -62,7 +64,7 @@ export default function PropertiesPage() {
         )
       );
     } catch (error) {
-      console.error('Error updating property:', error);
+      console.error("Error updating property:", error);
     }
   };
 
@@ -71,7 +73,7 @@ export default function PropertiesPage() {
       // Optimistic update - immediately add to UI
       setOptimisticProperties((prev) => [newProperty, ...prev]);
     } catch (error) {
-      console.error('Error adding property:', error);
+      console.error("Error adding property:", error);
     }
   };
 
@@ -144,7 +146,7 @@ export default function PropertiesPage() {
                   {property.name}
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
-                      property.occupancy === "Occupied"
+                      property.occupancy === OccupancyStatus.OCCUPIED
                         ? "bg-destructive/10 text-destructive"
                         : "bg-success/10 text-success"
                     }`}
