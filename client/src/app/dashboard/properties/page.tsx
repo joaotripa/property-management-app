@@ -20,7 +20,6 @@ import { Property } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
 import { OccupancyStatus } from "@prisma/client";
 
-
 export default function PropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
@@ -28,8 +27,7 @@ export default function PropertiesPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { properties, isLoading, error, refetch } =
-    useUserProperties();
+  const { properties, isLoading, error, refetch } = useUserProperties();
 
   const openPropertyDialog = (property: Property) => {
     setSelectedProperty(property);
@@ -106,7 +104,7 @@ export default function PropertiesPage() {
               onClick={() => openPropertyDialog(property)}
               className="overflow-hidden p-0"
             >
-              <div className="h-50 w-full bg-muted/20 overflow-hidden">
+              <div className="h-50 w-full bg-muted-foreground/10 overflow-hidden">
                 <PropertyImage
                   propertyId={property.id}
                   propertyName={property.name}

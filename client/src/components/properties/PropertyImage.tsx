@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { Home, Loader2 } from "lucide-react";
+import { ImageDisplayItem } from "@/components/ui/image-display-item";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -10,6 +9,7 @@ interface PropertyImageProps {
   className?: string;
   width?: number;
   height?: number;
+  aspectRatio?: "video" | "square" | "auto";
 }
 
 export function PropertyImage({
@@ -18,10 +18,10 @@ export function PropertyImage({
   className = "",
   width = 400,
   height = 200,
+  aspectRatio = "video",
 }: PropertyImageProps) {
   const [imageSrc, setImageSrc] = useState<string>("");
   const [imageError, setImageError] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [urlExpiry, setUrlExpiry] = useState<number>(0);
 
   useEffect(() => {
@@ -29,7 +29,6 @@ export function PropertyImage({
 
     const fetchCoverImage = async () => {
       try {
-        setIsLoading(true);
         setImageError(false);
 
         const response = await fetch(
@@ -50,8 +49,6 @@ export function PropertyImage({
         }
       } catch {
         setImageError(true);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -64,48 +61,31 @@ export function PropertyImage({
 
   const handleImageError = () => {
     setImageError(true);
-    setIsLoading(false);
   };
 
-  const handleImageLoad = () => {
-    setIsLoading(false);
-  };
-
-  const SkeletonImage = () => (
-    <div
-      className={`${className} bg-muted-foreground/10 flex items-center justify-center`}
-    >
-      <div className="w-16 h-16 bg-primary/60 rounded-full flex items-center justify-center">
-        <Home className="w-8 h-8 text-background" />
-      </div>
-    </div>
-  );
-
-  if (imageError || (!imageSrc && !isLoading)) {
-    return <SkeletonImage />;
+  if (imageError || (!imageSrc && !imageError)) {
+    return (
+      <ImageDisplayItem
+        src=""
+        alt={propertyName}
+        className={className}
+        width={width}
+        height={height}
+        aspectRatio={aspectRatio}
+        onError={handleImageError}
+      />
+    );
   }
 
   return (
-    <div className="relative w-full h-full">
-      {imageSrc && (
-        <Image
-          src={imageSrc}
-          alt={propertyName}
-          width={width}
-          height={height}
-          className={className}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          priority={false}
-        />
-      )}
-
-      {/* Loading Circle Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-muted-foreground/10 flex items-center justify-center rounded-md">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        </div>
-      )}
-    </div>
+    <ImageDisplayItem
+      src={imageSrc}
+      alt={propertyName}
+      className={className}
+      width={width}
+      height={height}
+      aspectRatio={aspectRatio}
+      onError={handleImageError}
+    />
   );
 }

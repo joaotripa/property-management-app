@@ -69,10 +69,12 @@ export function PropertyDetailsDialog({
   }, [isOpen, property?.id]);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!property) return;
+    if (!isOpen || !property) return;
 
-      // Load categories
+    setPropertyImages([]);
+    setLoadingImages(true);
+
+    const loadData = async () => {
       try {
         const response = await fetch("/api/categories");
         if (!response.ok) {
@@ -85,9 +87,7 @@ export function PropertyDetailsDialog({
         setAvailableCategories([]);
       }
 
-      // Load property images
       try {
-        setLoadingImages(true);
         const images = await getPropertyImageUrls(property.id);
         setPropertyImages(images);
       } catch (error) {
@@ -98,9 +98,7 @@ export function PropertyDetailsDialog({
       }
     };
 
-    if (isOpen && property) {
-      loadData();
-    }
+    loadData();
   }, [isOpen, property]);
 
   if (!property) return null;
@@ -188,27 +186,14 @@ export function PropertyDetailsDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Images Carousel */}
               <div className="flex flex-col gap-4">
-                {loadingImages ? (
-                  <div className="aspect-video bg-muted/30 rounded-lg animate-pulse flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <div className="w-8 h-8 bg-primary/60 rounded animate-pulse" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Loading images...
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <ImageCarousel
-                    images={propertyImages}
-                    propertyName={currentProperty.name}
-                    className="w-full"
-                    aspectRatio="video"
-                    showThumbnails={propertyImages.length > 1}
-                    autoPlay={false}
-                  />
-                )}
+                <ImageCarousel
+                  images={propertyImages}
+                  propertyName={currentProperty.name}
+                  className="w-full"
+                  aspectRatio="video"
+                  showThumbnails={propertyImages.length > 1}
+                  isLoading={loadingImages}
+                />
               </div>
 
               {/* Property Information Card */}
@@ -216,9 +201,9 @@ export function PropertyDetailsDialog({
                 <CardHeader>
                   <CardTitle>Property Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">Address</span>
@@ -228,7 +213,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm font-medium">City</span>
@@ -238,7 +223,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm font-medium">Country</span>
@@ -248,7 +233,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <Home className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm font-medium">
@@ -268,9 +253,9 @@ export function PropertyDetailsDialog({
                 <CardHeader>
                   <CardTitle>Rental Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex justify-center gap-2">
                         <Euro className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
@@ -282,7 +267,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex justify-center gap-2">
                         <Users className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
@@ -294,7 +279,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex justify-center gap-2">
                         <Percent className="w-4 h-4 text-muted" />
                         <span className="text-sm font-medium">
@@ -306,7 +291,7 @@ export function PropertyDetailsDialog({
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <div className="flex justify-center gap-2">
                         <span className="text-sm font-medium">
                           Availability
@@ -340,7 +325,7 @@ export function PropertyDetailsDialog({
                 <CardHeader>
                   <CardTitle>Transaction Details</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="flex flex-col gap-4">
                   {/* Transaction Filters */}
                   <TransactionFilters
                     onFiltersChange={setFilters}
