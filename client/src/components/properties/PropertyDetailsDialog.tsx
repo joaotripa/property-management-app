@@ -19,6 +19,7 @@ import {
   Percent,
   ArrowLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import { ImageCarousel } from "@/components/ui/image-carousel";
 import { getPropertyImageUrls } from "@/lib/supabase/uploads";
@@ -30,12 +31,14 @@ import { useTransactionFilters } from "@/hooks/useTransactionFilters";
 import { CategoryOption } from "@/types/transactions";
 import { Property } from "@/types/properties";
 import { OccupancyStatus } from "@prisma/client";
+import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (property: Property) => void;
+  onDelete?: () => void | Promise<void>;
 }
 
 export function PropertyDetailsDialog({
@@ -43,6 +46,7 @@ export function PropertyDetailsDialog({
   isOpen,
   onClose,
   onSave,
+  onDelete,
 }: PropertyDetailsDialogProps) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
@@ -51,6 +55,7 @@ export function PropertyDetailsDialog({
   >([]);
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { filters, setFilters } = useTransactionFilters({
     propertyId: property?.id,
@@ -132,6 +137,14 @@ export function PropertyDetailsDialog({
     setEditProperty(null);
   };
 
+  const handleDeleteProperty = async () => {
+    try {
+      await onDelete?.();
+    } catch (error) {
+      console.error("Error in delete callback:", error);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-[80vw] max-h-[90vh] overflow-y-auto">
@@ -168,15 +181,26 @@ export function PropertyDetailsDialog({
                 </div>
               </div>
               {mode === "view" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEdit}
-                  className="hover:bg-primary"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEdit}
+                    className="hover:bg-primary"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                </div>
               )}
             </DialogTitle>
           </DialogHeader>
@@ -373,6 +397,14 @@ export function PropertyDetailsDialog({
           )}
         </div>
       </DialogContent>
+
+      <DeletePropertyConfirmDialog
+        property={property}
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteProperty}
+        onCloseParent={onClose}
+      />
     </Dialog>
   );
 }

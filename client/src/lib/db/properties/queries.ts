@@ -17,7 +17,7 @@ export async function getUserProperties(
     // Build where clause
     const where: Prisma.PropertyWhereInput = {
       userId,
-      isActive: true,
+      deletedAt: null,
     };
 
     // Apply filters
@@ -95,7 +95,7 @@ export async function getPropertyById(
       where: {
         id: propertyId,
         userId,
-        isActive: true,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -131,7 +131,7 @@ export async function getPropertyOptions(userId: string) {
     const properties = await prisma.property.findMany({
       where: {
         userId,
-        isActive: true,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -159,20 +159,20 @@ export async function getPropertyStats(userId: string) {
       prisma.property.count({
         where: {
           userId,
-          isActive: true,
+          deletedAt: null,
         },
       }),
       prisma.property.count({
         where: {
           userId,
-          isActive: true,
+          deletedAt: null,
           occupancy: "OCCUPIED",
         },
       }),
       prisma.property.aggregate({
         where: {
           userId,
-          isActive: true,
+          deletedAt: null,
           occupancy: "OCCUPIED",
         },
         _sum: {
@@ -182,7 +182,7 @@ export async function getPropertyStats(userId: string) {
       prisma.property.aggregate({
         where: {
           userId,
-          isActive: true,
+          deletedAt: null,
         },
         _avg: {
           rent: true,

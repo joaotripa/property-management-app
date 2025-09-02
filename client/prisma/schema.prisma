@@ -36,6 +36,7 @@ model Property {
   country       String?
   purchasePrice Decimal?        @map("purchase_price") @db.Decimal(12, 2)
   isActive      Boolean         @default(true) @map("is_active")
+  deletedAt     DateTime?       @map("deleted_at") @db.Timestamptz(6)
   createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
   userId        String          @map("user_id") @db.Uuid
@@ -48,6 +49,7 @@ model Property {
 
   @@index([userId])
   @@index([isActive])
+  @@index([deletedAt])
   @@index([occupancy])
   @@map("properties")
 }
@@ -74,6 +76,7 @@ model Transaction {
   description     String?
   transactionDate DateTime        @map("transaction_date") @db.Date
   isRecurring     Boolean         @default(false) @map("is_recurring")
+  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(6)
   createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
   userId          String          @map("user_id") @db.Uuid
@@ -85,6 +88,7 @@ model Transaction {
 
   @@index([userId, propertyId])
   @@index([userId, type])
+  @@index([deletedAt])
   @@index([transactionDate])
   @@index([propertyId, type])
   @@map("transactions")

@@ -68,7 +68,7 @@ export async function updateProperty(
       where: {
         id: validatedInput.id,
         userId,
-        isActive: true,
+        deletedAt: null,
       },
     });
 
@@ -112,7 +112,7 @@ export async function updateProperty(
 }
 
 /**
- * Soft delete a property (mark as inactive)
+ * Soft delete a property using deletedAt timestamp
  */
 export async function deleteProperty(
   propertyId: string,
@@ -124,7 +124,7 @@ export async function deleteProperty(
       where: {
         id: propertyId,
         userId,
-        isActive: true,
+        deletedAt: null,
       },
     });
 
@@ -132,33 +132,16 @@ export async function deleteProperty(
       throw new Error('Property not found or access denied');
     }
 
-    // Check if property has active transactions
-    const hasTransactions = await prisma.transaction.count({
+    // Always use soft delete to preserve data integrity
+    await prisma.property.update({
       where: {
-        propertyId,
-        userId,
+        id: propertyId,
+      },
+      data: {
+        deletedAt: new Date(),
+        updatedAt: new Date(),
       },
     });
-
-    if (hasTransactions > 0) {
-      // Soft delete to preserve transaction history
-      await prisma.property.update({
-        where: {
-          id: propertyId,
-        },
-        data: {
-          isActive: false,
-          updatedAt: new Date(),
-        },
-      });
-    } else {
-      // Hard delete if no transactions exist
-      await prisma.property.delete({
-        where: {
-          id: propertyId,
-        },
-      });
-    }
   } catch (error) {
     console.error('Error deleting property:', error);
     throw new Error('Failed to delete property');
@@ -173,12 +156,14 @@ export async function restoreProperty(
   userId: string
 ): Promise<Property> {
   try {
-    // Check if property exists and belongs to user (including inactive)
+    // Check if property exists and belongs to user (including soft-deleted)
     const existingProperty = await prisma.property.findFirst({
       where: {
         id: propertyId,
         userId,
-        isActive: false,
+        deletedAt: {
+          not: null,
+        },
       },
     });
 
@@ -191,7 +176,7 @@ export async function restoreProperty(
         id: propertyId,
       },
       data: {
-        isActive: true,
+        deletedAt: null,
         updatedAt: new Date(),
       },
       select: {
@@ -231,7 +216,7 @@ export async function updatePropertyOccupancy(
       where: {
         id: propertyId,
         userId,
-        isActive: true,
+        deletedAt: null,
       },
     });
 

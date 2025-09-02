@@ -1,2 +1,0 @@
--- This is an empty baseline migration for existing database
--- All tables and enums already exist in the database

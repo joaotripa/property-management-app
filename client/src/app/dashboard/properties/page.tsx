@@ -18,6 +18,7 @@ import { PropertyCardSkeleton } from "@/components/properties/PropertyCardSkelet
 import { EmptyPropertiesState } from "@/components/properties/EmptyPropertiesState";
 import { Property } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
+import { usePropertyStats } from "@/hooks/usePropertyStats";
 import { OccupancyStatus } from "@prisma/client";
 
 export default function PropertiesPage() {
@@ -28,25 +29,34 @@ export default function PropertiesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const { properties, isLoading, error, refetch } = useUserProperties();
+  const { refetch: refetchStats } = usePropertyStats();
 
   const openPropertyDialog = (property: Property) => {
     setSelectedProperty(property);
     setIsDetailsOpen(true);
   };
 
-  const handleSaveProperty = () => {
+  const handleSaveProperty = async () => {
     try {
-      refetch();
+      await Promise.all([refetch(), refetchStats()]);
     } catch (error) {
       console.error("Error updating property:", error);
     }
   };
 
-  const handleAddProperty = () => {
+  const handleAddProperty = async () => {
     try {
-      refetch();
+      await Promise.all([refetch(), refetchStats()]);
     } catch (error) {
       console.error("Error adding property:", error);
+    }
+  };
+
+  const handleDeleteProperty = async () => {
+    try {
+      await Promise.all([refetch(), refetchStats()]);
+    } catch (error) {
+      console.error("Error deleting property:", error);
     }
   };
 
@@ -173,6 +183,7 @@ export default function PropertiesPage() {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         onSave={handleSaveProperty}
+        onDelete={handleDeleteProperty}
       />
 
       {/* Property Add Dialog */}
