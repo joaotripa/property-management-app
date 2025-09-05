@@ -8,14 +8,16 @@ import { TransactionType, Prisma } from "@prisma/client";
  */
 export async function getTransactions(
   userId: string,
-  filters: TransactionFilters = {},
-  page: number = 1,
-  pageSize: number = 50
+  filters: TransactionFilters & {
+    limit?: number;
+    offset?: number;
+  } = {}
 ): Promise<{
   transactions: Transaction[];
   totalCount: number;
-  totalPages: number;
 }> {
+  const limit = filters.limit || 50;
+  const offset = filters.offset || 0;
   // Build where clause based on filters
   const where: Prisma.TransactionWhereInput = {
     userId,
@@ -86,7 +88,6 @@ export async function getTransactions(
   try {
     // Get total count for pagination
     const totalCount = await prisma.transaction.count({ where });
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     // Get transactions with relations
     const transactions = await prisma.transaction.findMany({
@@ -109,8 +110,8 @@ export async function getTransactions(
         },
       },
       orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      skip: offset,
+      take: limit,
     });
 
     // Transform Decimal amounts to numbers for frontend
@@ -127,7 +128,6 @@ export async function getTransactions(
     return {
       transactions: formattedTransactions,
       totalCount,
-      totalPages,
     };
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -142,19 +142,17 @@ export async function getTransactions(
 export async function getPropertyTransactions(
   propertyId: string,
   userId: string,
-  filters: Omit<TransactionFilters, 'propertyId'> = {},
-  page: number = 1,
-  pageSize: number = 50
+  filters: Omit<TransactionFilters, 'propertyId'> & {
+    limit?: number;
+    offset?: number;
+  } = {}
 ): Promise<{
   transactions: Transaction[];
   totalCount: number;
-  totalPages: number;
 }> {
   return getTransactions(
     userId,
-    { ...filters, propertyId },
-    page,
-    pageSize
+    { ...filters, propertyId }
   );
 }
 
@@ -244,6 +242,105 @@ export async function getPropertyTransactionStats(
 
   try {
     // Get aggregated data
+    const [incomeAgg, expenseAgg, totalCount, recurringCount] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { ...where, type: TransactionType.INCOME },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      prisma.transaction.aggregate({
+        where: { ...where, type: TransactionType.EXPENSE },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      prisma.transaction.count({ where }),
+      prisma.transaction.count({ where: { ...where, isRecurring: true } }),
+    ]);
+
+    const totalIncome = Number(incomeAgg._sum.amount || 0);
+    const totalExpenses = Number(expenseAgg._sum.amount || 0);
+
+    return {
+      totalIncome,
+      totalExpenses,
+      netIncome: totalIncome - totalExpenses,
+      transactionCount: totalCount,
+      recurringCount,
+    };
+  } catch (error) {
+    console.error('Error fetching transaction stats:', error);
+    throw new Error('Failed to fetch transaction statistics');
+  }
+}
+
+/**
+ * Get transaction statistics for all transactions with optional filtering
+ * Useful for summary cards on transactions page
+ */
+export async function getTransactionStats(
+  userId: string,
+  filters: Omit<TransactionFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'> = {}
+): Promise<{
+  totalIncome: number;
+  totalExpenses: number;
+  netIncome: number;
+  transactionCount: number;
+  recurringCount: number;
+}> {
+  // Build where clause using same logic as getTransactions
+  const where: Prisma.TransactionWhereInput = {
+    userId,
+    deletedAt: null, // Only get active transactions
+  };
+
+  // Apply all the same filters as getTransactions
+  if (filters.propertyId) {
+    where.propertyId = filters.propertyId;
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    where.transactionDate = {};
+    if (filters.dateFrom) {
+      where.transactionDate.gte = filters.dateFrom;
+    }
+    if (filters.dateTo) {
+      where.transactionDate.lte = filters.dateTo;
+    }
+  }
+
+  if (filters.type && filters.type !== 'all') {
+    where.type = filters.type;
+  }
+
+  if (filters.amountMin !== undefined || filters.amountMax !== undefined) {
+    where.amount = {};
+    if (filters.amountMin !== undefined) {
+      where.amount.gte = filters.amountMin;
+    }
+    if (filters.amountMax !== undefined) {
+      where.amount.lte = filters.amountMax;
+    }
+  }
+
+  if (filters.categoryIds && filters.categoryIds.length > 0) {
+    where.categoryId = {
+      in: filters.categoryIds,
+    };
+  }
+
+  if (filters.isRecurring !== undefined) {
+    where.isRecurring = filters.isRecurring;
+  }
+
+  if (filters.search) {
+    where.description = {
+      contains: filters.search,
+      mode: 'insensitive',
+    };
+  }
+
+  try {
+    // Get aggregated data using same where clause as transactions
     const [incomeAgg, expenseAgg, totalCount, recurringCount] = await Promise.all([
       prisma.transaction.aggregate({
         where: { ...where, type: TransactionType.INCOME },

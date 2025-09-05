@@ -99,7 +99,7 @@ export function TransactionFilters({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-3">
+      <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -139,7 +139,7 @@ export function TransactionFilters({
 
       <CardContent className="gap-4">
         {/* Basic Filters - Always visible */}
-        <div className="flex gap-4 flex-col lg:flex-row">
+        <div className="flex gap-4 flex-col md:flex-row">
           <div className="flex-1 min-w-[180px]">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -155,7 +155,7 @@ export function TransactionFilters({
           </div>
 
           {/* Transaction Type */}
-          <div className="gap-2">
+          <div className="flex gap-2">
             <Select
               value={filters.type || "all"}
               onValueChange={(value) =>
@@ -179,12 +179,11 @@ export function TransactionFilters({
 
           {/* Categories */}
           {availableCategories.length > 0 && (
-            <div className="gap-2">
+            <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
                     className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground"
                   >
                     <span>
@@ -214,24 +213,24 @@ export function TransactionFilters({
               </DropdownMenu>
             </div>
           )}
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {/* Property Filter (if enabled) */}
           {showPropertyFilter && (
-            <div className="gap-2">
-              <Label>Property</Label>
+            <div className="flex flex-col">
               <Select
-                value={filters.propertyId || ""}
+                value={filters.propertyId || "all"}
                 onValueChange={(value) =>
-                  updateFilter("propertyId", value || undefined)
+                  updateFilter(
+                    "propertyId",
+                    value === "all" ? undefined : value
+                  )
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Properties" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Properties</SelectItem>
+                  <SelectItem value="all">All Properties</SelectItem>
                   {availableProperties.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
                       {property.name}
@@ -249,7 +248,7 @@ export function TransactionFilters({
             <Separator />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Date From */}
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>From Date</Label>
                 <Input
                   type="date"
@@ -268,7 +267,7 @@ export function TransactionFilters({
               </div>
 
               {/* Date To */}
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>To Date</Label>
                 <Input
                   type="date"
@@ -284,7 +283,7 @@ export function TransactionFilters({
                 />
               </div>
               {/* Amount Range */}
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>Min Amount (€)</Label>
                 <Input
                   type="number"
@@ -299,7 +298,7 @@ export function TransactionFilters({
                 />
               </div>
 
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>Max Amount (€)</Label>
                 <Input
                   type="number"
@@ -315,7 +314,7 @@ export function TransactionFilters({
               </div>
 
               {/* Recurring Filter */}
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>Recurring</Label>
                 <Select
                   value={
@@ -342,7 +341,7 @@ export function TransactionFilters({
               </div>
 
               {/* Sort Options */}
-              <div className="gap-2">
+              <div className="flex flex-col gap-2">
                 <Label>Sort By</Label>
                 <Select
                   value={filters.sortBy || "transactionDate"}
@@ -364,7 +363,7 @@ export function TransactionFilters({
                 </Select>
               </div>
 
-              <div className="gap-4">
+              <div className="flex flex-col gap-2">
                 <Label>Sort Order</Label>
                 <Select
                   value={filters.sortOrder || "desc"}

@@ -35,7 +35,9 @@
 
   --success: oklch(0.7227 0.192 149.58); /* #22C55E - Positive states */
   --warning: oklch(0.8606 0.1731 91.94); /* #FACC15 - Highlights */
-  --warning-foreground: oklch(0.4 0.15 60); /* Dark text for warning backgrounds */
+  --warning-foreground: oklch(
+    0.4 0.15 60
+  ); /* Dark text for warning backgrounds */
 
   --border: oklch(0.9288 0.0126 255.51); /* #E2E8F0 - Dividers */
   --input: var(--border);
@@ -73,7 +75,9 @@
   --muted: oklch(0.2989 0.0231 247.86);
   --muted-foreground: oklch(0.6507 0.0301 256.79);
 
-  --warning-foreground: oklch(0.2 0.1 60); /* Dark text for warning in dark mode */
+  --warning-foreground: oklch(
+    0.2 0.1 60
+  ); /* Dark text for warning in dark mode */
 
   --border: oklch(0.2588 0.0211 255.51);
   --input: oklch(0.1889 0.0191 247.86);
@@ -190,6 +194,18 @@
 
   input[type="checkbox"]:hover {
     opacity: 0.7;
+  }
+
+  tr:hover {
+    @apply !bg-transparent;
+  }
+
+  th {
+    @apply !text-foreground;
+  }
+
+  td {
+    @apply !text-foreground/80;
   }
 
   [data-slot="dialog-close"] {

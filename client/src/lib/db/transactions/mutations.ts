@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Transaction } from "@/types/transactions";
+import { TransactionType } from "@prisma/client";
 
 /**
  * Soft delete all transactions for a specific property
@@ -220,5 +221,244 @@ export async function getPropertyTransactionCount(
   } catch (error) {
     console.error('Error getting property transaction count:', error);
     throw new Error('Failed to get transaction count');
+  }
+}
+
+/**
+ * Create a new transaction
+ */
+export async function createTransaction(
+  transactionData: {
+    amount: number;
+    type: TransactionType;
+    description?: string;
+    transactionDate: Date;
+    isRecurring: boolean;
+    propertyId: string;
+    categoryId: string;
+  },
+  userId: string
+): Promise<Transaction> {
+  try {
+    // Verify property ownership
+    const property = await prisma.property.findFirst({
+      where: {
+        id: transactionData.propertyId,
+        userId,
+        deletedAt: null,
+      },
+    });
+
+    if (!property) {
+      throw new Error('Property not found or access denied');
+    }
+
+    // Verify category exists
+    const category = await prisma.category.findFirst({
+      where: {
+        id: transactionData.categoryId,
+        isActive: true,
+      },
+    });
+
+    if (!category) {
+      throw new Error('Category not found');
+    }
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        amount: transactionData.amount,
+        type: transactionData.type,
+        description: transactionData.description,
+        transactionDate: transactionData.transactionDate,
+        isRecurring: transactionData.isRecurring,
+        propertyId: transactionData.propertyId,
+        categoryId: transactionData.categoryId,
+        userId,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true,
+          },
+        },
+        property: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    });
+
+    // Transform Decimal amounts to numbers for frontend
+    return {
+      ...transaction,
+      amount: Number(transaction.amount),
+      description: transaction.description ?? undefined,
+      category: transaction.category
+        ? { ...transaction.category, description: transaction.category.description ?? undefined }
+        : undefined,
+    };
+  } catch (error) {
+    console.error('Error creating transaction:', error);
+    throw new Error('Failed to create transaction');
+  }
+}
+
+/**
+ * Update an existing transaction
+ */
+export async function updateTransaction(
+  transactionId: string,
+  updateData: {
+    amount?: number;
+    type?: TransactionType;
+    description?: string | null;
+    transactionDate?: Date;
+    isRecurring?: boolean;
+    propertyId?: string;
+    categoryId?: string;
+  },
+  userId: string
+): Promise<Transaction> {
+  try {
+    // Check if transaction exists and belongs to user
+    const existingTransaction = await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+        deletedAt: null,
+      },
+    });
+
+    if (!existingTransaction) {
+      throw new Error('Transaction not found or access denied');
+    }
+
+    // Verify property ownership if property is being changed
+    if (updateData.propertyId) {
+      const property = await prisma.property.findFirst({
+        where: {
+          id: updateData.propertyId,
+          userId,
+          deletedAt: null,
+        },
+      });
+
+      if (!property) {
+        throw new Error('Property not found or access denied');
+      }
+    }
+
+    // Verify category exists if category is being changed
+    if (updateData.categoryId) {
+      const category = await prisma.category.findFirst({
+        where: {
+          id: updateData.categoryId,
+          isActive: true,
+        },
+      });
+
+      if (!category) {
+        throw new Error('Category not found');
+      }
+    }
+
+    const transaction = await prisma.transaction.update({
+      where: {
+        id: transactionId,
+      },
+      data: {
+        ...updateData,
+        updatedAt: new Date(),
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true,
+          },
+        },
+        property: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    });
+
+    // Transform Decimal amounts to numbers for frontend
+    return {
+      ...transaction,
+      amount: Number(transaction.amount),
+      description: transaction.description ?? undefined,
+      category: transaction.category
+        ? { ...transaction.category, description: transaction.category.description ?? undefined }
+        : undefined,
+    };
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    throw new Error('Failed to update transaction');
+  }
+}
+
+/**
+ * Get a single transaction by ID
+ */
+export async function getTransactionById(
+  transactionId: string,
+  userId: string
+): Promise<Transaction | null> {
+  try {
+    const transaction = await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+        deletedAt: null,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true,
+          },
+        },
+        property: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    });
+
+    if (!transaction) {
+      return null;
+    }
+
+    // Transform Decimal amounts to numbers for frontend
+    return {
+      ...transaction,
+      amount: Number(transaction.amount),
+      description: transaction.description ?? undefined,
+      category: transaction.category
+        ? { ...transaction.category, description: transaction.category.description ?? undefined }
+        : undefined,
+    };
+  } catch (error) {
+    console.error('Error getting transaction by ID:', error);
+    throw new Error('Failed to get transaction');
   }
 }

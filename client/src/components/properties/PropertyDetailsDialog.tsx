@@ -24,7 +24,7 @@ import {
 import { ImageCarousel } from "@/components/ui/image-carousel";
 import { getPropertyImageUrls } from "@/lib/supabase/uploads";
 import { PropertyEditForm } from "./PropertyEditForm";
-import { TransactionTable } from "@/components/transactions/TransactionTable";
+import { TransactionTableWithActions } from "@/components/transactions/TransactionTableWithActions";
 import { TransactionFilters } from "@/components/filters/TransactionFilters";
 import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
 import { useTransactionFilters } from "@/hooks/useTransactionFilters";
@@ -366,11 +366,13 @@ export function PropertyDetailsDialog({
                         <p className="text-sm text-destructive">{error}</p>
                       </div>
                     ) : (
-                      <TransactionTable
+                      <TransactionTableWithActions
                         transactions={transactions}
                         loading={loading}
                         showPropertyColumn={false}
                         emptyMessage={`No transactions found for ${currentProperty.name}`}
+                        onEdit={undefined}
+                        onDelete={undefined}
                       />
                     )}
 

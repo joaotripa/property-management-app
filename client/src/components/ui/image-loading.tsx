@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageLoadingProps {
@@ -20,7 +19,9 @@ export function ImageLoading({
         className
       )}
     >
-      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     </div>
   );
 }

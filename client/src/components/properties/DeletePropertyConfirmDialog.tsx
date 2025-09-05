@@ -82,7 +82,7 @@ export function DeletePropertyConfirmDialog({
             </span>
             <span className="block text-foreground/80">
               Are you sure you want to delete the property{" "}
-              <span className="font-semibold">"{property.name}"</span>?
+              <span className="font-semibold">&quot;{property.name}&quot;</span>?
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -100,15 +100,17 @@ export async function GET(
     const result = await getPropertyTransactions(
       propertyId,
       userId,
-      filters,
-      page,
-      pageSize
+      {
+        ...filters,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+      }
     );
 
     return NextResponse.json({
       transactions: result.transactions,
       totalCount: result.totalCount,
-      totalPages: result.totalPages,
+      totalPages: Math.ceil(result.totalCount / pageSize),
       currentPage: page,
     });
 
