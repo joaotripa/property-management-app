@@ -1,13 +1,12 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import DashboardPreview from "@/components/DashboardPreview";
-import Problem from "@/components/Problem";
-import Solution from "@/components/Solution";
-import Footer from "@/components/Footer";
-import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
-import FAQ from "@/components/FAQ";
-import CTA from "@/components/CTA";
+import Navbar from "@/components/landing/Navbar";
+import Hero from "@/components/landing/Hero";
+import DashboardPreview from "@/components/landing/DashboardPreview";
+import Problem from "@/components/landing/Problem";
+import Solution from "@/components/landing/Solution";
+import Footer from "@/components/landing/Footer";
+import Pricing from "@/components/landing/Pricing";
+import FAQ from "@/components/landing/FAQ";
+import CTA from "@/components/landing/CTA";
 
 export default function Home() {
   return (
@@ -18,7 +17,6 @@ export default function Home() {
         <DashboardPreview />
         <Problem />
         <Solution />
-        <Testimonials />
         <Pricing />
         <FAQ />
         <CTA />

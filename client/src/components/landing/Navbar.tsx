@@ -19,7 +19,7 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-background backdrop-blur-sm shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-18">
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-foreground">
@@ -29,12 +29,12 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex">
-            <div className="flex items-center space-x-8">
+            <div className="flex flex-row items-center gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="text-foreground hover:text-primary px-3 py-2 font-medium transition-colors duration-200"
+                  className="text-foreground text-md hover:text-primary px-3 py-2 transition-colors duration-200"
                 >
                   {item.label}
                 </Link>
@@ -43,15 +43,14 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <Link
-              href="/login"
-              className="text-foreground hover:text-primary px-3 py-2 font-medium transition-colors duration-200"
-            >
-              Login
+          <div className="hidden lg:flex items-center gap-4">
+            <Link href="/login" passHref>
+              <Button className="bg-white border border-border hover:bg-muted text-md text-foreground font-normal !px-8 !py-4 rounded-full group">
+                Login{" "}
+              </Button>
             </Link>
             <Link href="/signup" passHref>
-              <Button className="bg-primary text-md hover:bg-primary/90 hover-scale text-primary-foreground !px-8 !py-6 rounded-full group shadow-xl shadow-primary/30 hover:!shadow-2xl hover:!shadow-primary/60 transition-shadow duration-200">
+              <Button className="bg-primary text-md hover:bg-primary/90 text-md text-primary-foreground !px-8 !py-4  rounded-full group">
                 Sign Up
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
@@ -92,7 +91,7 @@ const Navbar = () => {
                 className="w-1/2 text-foreground hover:text-primary text-base font-medium transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                <Button className="w-full bg-background hover:bg-primary border border-primary text-primary hover:text-primary-foreground rounded-full">
+                <Button className="w-full bg-background hover:bg-muted border border-border text-foreground rounded-full">
                   Login
                 </Button>
               </Link>

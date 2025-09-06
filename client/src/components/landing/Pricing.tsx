@@ -71,10 +71,8 @@ const Pricing = () => {
     <section id="pricing" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Pricing
-          </h2>
-          <p className="text-xl text-dark max-w-3xl mx-auto mb-8">
+          <h2 className="text-3xl sm:text-4xl font-semibold">Pricing</h2>
+          <p className="text-lg max-w-3xl mx-auto mt-4 mb-8">
             Choose the perfect plan for your property portfolio.
           </p>
 
@@ -84,7 +82,7 @@ const Pricing = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 !isYearly
                   ? "bg-primary text-white shadow-sm"
-                  : "text-dark hover:text-primary"
+                  : "hover:text-primary"
               }`}
             >
               Monthly
@@ -94,7 +92,7 @@ const Pricing = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 isYearly
                   ? "bg-primary text-white shadow-sm"
-                  : "text-dark hover:text-primary"
+                  : "hover:text-primary"
               }`}
             >
               Yearly
@@ -124,21 +122,19 @@ const Pricing = () => {
                 </div>
               )}
 
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-foreground">
+              <CardHeader className="text-center pb-4 mt-2">
+                <CardTitle className="text-2xl font-semibold">
                   {plan.name}
                 </CardTitle>
-                <p className="text-dark">{plan.description}</p>
+                <p className="text-muted-foreground/80">{plan.description}</p>
 
                 <div className="py-4">
-                  <div className="text-4xl font-bold text-foreground">
+                  <div className="text-4xl font-semibold">
                     ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
-                    <span className="text-lg font-normal text-dark">
-                      /month
-                    </span>
+                    <span className="text-lg font-normal">/month</span>
                   </div>
                   {isYearly && plan.monthlyPrice > 0 && (
-                    <div className="text-sm text-dark mt-1">
+                    <div className="text-sm mt-1">
                       ${plan.monthlyPrice}/month billed monthly
                     </div>
                   )}
@@ -153,7 +149,7 @@ const Pricing = () => {
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start">
                       <Check className="h-5 w-5 text-success mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-dark">{feature}</span>
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -176,10 +172,10 @@ const Pricing = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <p className="text-dark mb-4">
+          <p className="mb-4">
             All plans include a 14-day free trial. No credit card required.
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-dark">
+          <div className="flex flex-row justify-center items-center gap-8 text-sm">
             <div className="flex items-center">
               <Check className="h-4 w-4 text-success mr-2" />
               Cancel anytime

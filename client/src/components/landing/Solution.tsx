@@ -1,4 +1,5 @@
 import { BarChart3, TrendingUp, Building2, ReceiptText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Solution = () => {
   const features = [
@@ -9,7 +10,6 @@ const Solution = () => {
       description:
         "Log rent, expenses, maintenance costs, repairs, and more in seconds. Built-in categories mean no more guessing where that repair bill should go.",
       color: "from-green-500 to-emerald-600",
-      bgColor: "bg-success/10",
     },
     {
       icon: Building2,
@@ -18,7 +18,6 @@ const Solution = () => {
       description:
         "Add your properties and see performance at a glance. Switch between properties instantly and track what matters most.",
       color: "from-green-500 to-emerald-600",
-      bgColor: "bg-success/10",
     },
     {
       icon: BarChart3,
@@ -27,7 +26,6 @@ const Solution = () => {
       description:
         "Generate profit & loss statements, export everything for your accountant, and see exactly which properties make you money.",
       color: "from-green-500 to-emerald-600",
-      bgColor: "bg-success/10",
     },
     {
       icon: TrendingUp,
@@ -36,25 +34,22 @@ const Solution = () => {
       description:
         "See total income, expenses, and profit across your entire portfolio. Monthly, yearly, or property-by-property views.",
       color: "from-green-500 to-emerald-600",
-      bgColor: "bg-success/10",
     },
   ];
 
   return (
     <section id="why-domari" className="py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-6">
               <span className="text-sm font-medium text-primary">Solution</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-snug">
+            <h2 className="text-3xl sm:text-4xl font-semibold mb-4 leading-snug">
               Everything you need to track your{" "}
-              <span className="text-primary text-shadow-sm text-shadow-primary">
-                property finances.
-              </span>
+              <span className="text-primary">property finances.</span>
             </h2>
-            <p className="text-xl text-muted">
+            <p className="text-lg text-balance">
               Track income, manage expenses, generate tax-ready reports from one
               simple dashboard and scale your portfolio effortlessly.
             </p>
@@ -62,23 +57,25 @@ const Solution = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => (
-            <div
+            <Card
               key={index}
-              className={`bg-gradient-to-br ${feature.bgColor} p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border/20 group animate-fade-in`}
+              className={`rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group animate-fade-in`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div
-                className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
-              >
-                <feature.icon className="h-8 w-8 text-white" />
-              </div>
-
-              <h3 className="text-xl font-semibold text-foreground mb-4">
-                {feature.title}
-              </h3>
-
-              <p className="text-dark leading-relaxed">{feature.description}</p>
-            </div>
+              <CardHeader className="px-8 py-4 flex flex-row items-center gap-4">
+                <div
+                  className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}
+                >
+                  <feature.icon className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl font-semibold">
+                  {feature.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-8 mb-4">
+                <p className="leading-relaxed">{feature.description}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

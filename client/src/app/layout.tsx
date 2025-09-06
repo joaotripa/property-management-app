@@ -2,6 +2,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { Montserrat, Nunito_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import Script from "next/script";
 import AuthProvider from "@/components/providers/AuthProvider";
 
@@ -21,7 +22,7 @@ const nunitoSans = Nunito_Sans({
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${nunitoSans.variable}`}>
+    <html lang="en" className={GeistSans.className}>
       <head>
         <Script
           defer

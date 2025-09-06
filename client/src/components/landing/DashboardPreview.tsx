@@ -4,11 +4,19 @@ import { TrendingUp } from "lucide-react";
 
 const DashboardPreview = () => {
   return (
-    <section className="hidden md:block bg-primary-light/60 pt-2 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      className="hidden md:block relative pt-2 pb-16 overflow-visible"
+      style={{ zIndex: 10 }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="relative animate-fade-in">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-3xl blur-3xl opacity-20 scale-105"></div>
-          <div className="relative bg-white rounded-3xl shadow-2xl border border-border overflow-hidden">
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl border border-border overflow-hidden"
+            style={{
+              boxShadow:
+                "0 25px 50px -12px rgba(47, 109, 242, 0.25), 0 0 0 1px rgba(47, 109, 242, 0.1)",
+            }}
+          >
             <div className="bg-gray-50 px-6 py-4 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">

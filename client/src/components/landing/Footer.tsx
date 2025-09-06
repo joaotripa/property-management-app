@@ -8,20 +8,20 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-primary-light/40 text-secondary">
+    <footer className="bg-primary-light/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mt-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="space-y-6">
             <div className="flex items-center text-xl text-foreground">
               <Logo />
             </div>
-            <p className="text-primary leading-relaxed">
+            <p className="leading-relaxed">
               Stay on top of your property finances without spreadsheets or
               accounting headaches.
             </p>
           </div>
           <div>
-            <h3 className="text-lg text-primary font-semibold mb-6">Links</h3>
+            <h3 className="text-lg font-semibold mb-6">Links</h3>
             <ul className="space-y-4">
               {[
                 { label: "Features", href: "#how-it-works" },
@@ -33,7 +33,7 @@ const Footer = () => {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-primary hover:text-primary/60 transition-colors"
+                    className="hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
@@ -42,13 +42,13 @@ const Footer = () => {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg text-primary font-semibold mb-6">Contact</h3>
-            <ul className="space-y-4">
+            <h3 className="text-lg font-semibold mb-6">Contact</h3>
+            <ul className="flex flex-col gap-4">
               <li className="flex items-center">
-                <Mail className="h-4 w-4 mr-3 text-primary" />
+                <Mail className="h-4 w-4 mr-3" />
                 <a
                   href="mailto:support@domari.app"
-                  className="text-primary hover:text-primary/60 transition-colors"
+                  className="hover:text-primary  transition-colors"
                 >
                   support@domari.app
                 </a>
@@ -57,9 +57,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-primary text-sm">
+        <div className="border-t border-foreground mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+            <div className="text-sm">
               © {currentYear} Domari. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
@@ -71,7 +71,7 @@ const Footer = () => {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-primary hover:text-primary/60 transition-colors"
+                  className="hover:text-primary transition-colors"
                 >
                   {link.label}
                 </Link>
