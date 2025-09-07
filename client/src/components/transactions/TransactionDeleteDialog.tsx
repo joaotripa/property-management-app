@@ -69,7 +69,7 @@ export function TransactionDeleteDialog({
           </div>
           <AlertDialogDescription asChild>
             <div className="flex flex-col">
-              <span className="text-muted">
+              <span className="text-muted-foreground">
                 Are you sure you want to delete this transaction?
               </span>
               <div className="bg-warning/10 p-4 mt-3 rounded-md border-l-4 border-warning w-full text-sm text-warning-foreground">

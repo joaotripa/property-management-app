@@ -26,13 +26,10 @@ export function PropertyAddDialog({
   const handleSave = async (property: Property) => {
     setIsSubmitting(true);
     try {
-      // The PropertyAddForm handles the API call, so we just need to
-      // pass the created property back to the parent
       onPropertyAdded(property);
-      onClose(); // Close the dialog on success
+      onClose();
     } catch (error) {
       console.error("Error in PropertyAddDialog:", error);
-      // Error handling is done in PropertyAddForm, but we should reset submitting state
     } finally {
       setIsSubmitting(false);
     }

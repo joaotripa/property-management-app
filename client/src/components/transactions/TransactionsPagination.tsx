@@ -2,7 +2,13 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TransactionsPaginationProps {
   currentPage: number;
@@ -35,16 +41,16 @@ export function TransactionsPagination({
       <div className="text-sm text-muted-foreground">
         {startItem}-{endItem} of {totalCount} transactions
       </div>
-      
+
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Rows per page</span>
+          <span className="text-sm">Rows per page</span>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
             disabled={loading}
           >
-            <SelectTrigger className="h-8 w-16">
+            <SelectTrigger size="sm" className="h-8 w-20">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -57,7 +63,7 @@ export function TransactionsPagination({
           </Select>
         </div>
 
-        <div className="text-sm font-medium">
+        <div className="text-sm">
           Page {currentPage} of {totalPages}
         </div>
 

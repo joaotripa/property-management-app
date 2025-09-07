@@ -25,7 +25,7 @@ const TransactionStats = ({ filters }: TransactionStatsProps) => {
             {statsLoading ? (
               <Skeleton className="h-8 w-24 rounded-full !bg-muted/50" />
             ) : statsError ? (
-              "Error"
+              "—"
             ) : (
               `€${(stats?.totalIncome || 0).toLocaleString()}`
             )}
@@ -42,7 +42,7 @@ const TransactionStats = ({ filters }: TransactionStatsProps) => {
             {statsLoading ? (
               <Skeleton className="h-8 w-24 rounded-full !bg-muted/50" />
             ) : statsError ? (
-              "Error"
+              "—"
             ) : (
               `€${(stats?.totalExpenses || 0).toLocaleString()}`
             )}
@@ -63,7 +63,7 @@ const TransactionStats = ({ filters }: TransactionStatsProps) => {
             {statsLoading ? (
               <Skeleton className="h-8 w-24 rounded-full !bg-muted/50" />
             ) : statsError ? (
-              "Error"
+              "—"
             ) : (
               `€${(stats?.netIncome || 0).toLocaleString()}`
             )}

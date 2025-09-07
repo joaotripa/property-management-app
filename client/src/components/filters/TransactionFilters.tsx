@@ -184,7 +184,7 @@ export function TransactionFilters({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground"
+                    className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground font-normal"
                   >
                     <span>
                       {selectedCategories.length === 0

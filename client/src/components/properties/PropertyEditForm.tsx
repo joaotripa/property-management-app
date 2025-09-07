@@ -77,7 +77,6 @@ export function PropertyEditForm({
     const updatedProperty = { ...property, [field]: value };
     onChange(updatedProperty);
 
-    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -199,8 +198,12 @@ export function PropertyEditForm({
                     <SelectValue placeholder="Select occupancy status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={OccupancyStatus.AVAILABLE}>Available</SelectItem>
-                    <SelectItem value={OccupancyStatus.OCCUPIED}>Occupied</SelectItem>
+                    <SelectItem value={OccupancyStatus.AVAILABLE}>
+                      Available
+                    </SelectItem>
+                    <SelectItem value={OccupancyStatus.OCCUPIED}>
+                      Occupied
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

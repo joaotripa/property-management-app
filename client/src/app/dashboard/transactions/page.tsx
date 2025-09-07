@@ -46,7 +46,6 @@ export default function TransactionsPage() {
     setPageSize,
   } = useTransactions(filters);
 
-
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
@@ -94,7 +93,7 @@ export default function TransactionsPage() {
 
   if (error) {
     return (
-      <div className="p-6 space-y-8 max-w-7xl mx-auto">
+      <div className="flex gap-8 p-6 max-w-7xl mx-auto">
         <Card className="bg-destructive/10 border-destructive/20">
           <CardContent className="p-6 text-center">
             <p className="text-destructive font-medium">
@@ -116,12 +115,14 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="flex flex-col p-6 gap-6 max-w-7xl mx-auto">
+    <div className="flex flex-col max-w-7xl p-6 gap-6 mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Transactions</h2>
-          <p className="text-muted-foreground">Track all income and expenses</p>
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+          <p className="text-muted-foreground">
+            See what&apos;s coming in and what&apos;s heading out.
+          </p>
         </div>
         <Button>
           <Download className="mr-2 h-4 w-4" />

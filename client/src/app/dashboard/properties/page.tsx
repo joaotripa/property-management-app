@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, MapPin, Euro, Users } from "lucide-react";
+import { Plus, MapPin, Euro, Users, Home } from "lucide-react";
 import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDialog";
 import { PropertyAddDialog } from "@/components/properties/PropertyAddDialog";
 import { PropertyImage } from "@/components/properties/PropertyImage";
@@ -95,7 +95,14 @@ export default function PropertiesPage() {
   }
 
   return (
-    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-8 p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col">
+        <h2 className="text-3xl font-bold tracking-tight">Properties</h2>
+        <p className="text-muted-foreground">
+          Think of this as your property shelf. Add, update, or tidy it up
+          anytime.
+        </p>
+      </div>
       <PropertiesStats />
 
       {isLoading ? (
@@ -114,7 +121,7 @@ export default function PropertiesPage() {
               onClick={() => openPropertyDialog(property)}
               className="overflow-hidden p-0"
             >
-              <div className="h-50 w-full bg-muted-foreground/10 overflow-hidden">
+              <div className="h-50 w-full bg-muted/20 overflow-hidden">
                 <PropertyImage
                   propertyId={property.id}
                   propertyName={property.name}
@@ -136,7 +143,7 @@ export default function PropertiesPage() {
                     {property.occupancy}
                   </span>
                 </CardTitle>
-                <CardDescription className="flex items-center gap-2 text-muted h-6 mt-2">
+                <CardDescription className="flex items-center text-muted-foreground/80 gap-2 h-6 mt-2">
                   <MapPin className="w-4 h-4" />
                   {property.address}
                 </CardDescription>
@@ -144,19 +151,22 @@ export default function PropertiesPage() {
               <CardContent className="mb-2">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted">Type</span>
+                    <span className="text-sm text-muted-foreground/80 flex items-center gap-1">
+                      <Home className="w-4 h-4" />
+                      Type
+                    </span>
                     <span className="text-sm">{property.type}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted flex items-center gap-1">
-                      <Euro className="w-3 h-3" />
+                    <span className="text-sm text-muted-foreground/80 flex items-center gap-1">
+                      <Euro className="w-4 h-4" />
                       Monthly Rent
                     </span>
                     <span className="text-sm">€{property.rent}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted flex items-center gap-1">
-                      <Users className="w-3 h-3" />
+                    <span className="text-sm text-muted-foreground/80 flex items-center gap-1">
+                      <Users className="w-4 h-4" />
                       Tenants
                     </span>
                     <span className="text-sm">{property.tenants}</span>

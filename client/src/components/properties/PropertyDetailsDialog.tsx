@@ -229,17 +229,17 @@ export function PropertyDetailsDialog({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-muted" />
+                        <MapPin className="w-4 h-4" />
                         <span className="text-sm font-medium">Address</span>
                       </div>
-                      <p className="text-sm text-muted ml-6">
+                      <p className="text-sm text-muted-foreground ml-6">
                         {currentProperty.address}
                       </p>
                     </div>
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <MapPin className="w-4 h-4" />
                         <span className="text-sm font-medium">City</span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
@@ -249,7 +249,7 @@ export function PropertyDetailsDialog({
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <MapPin className="w-4 h-4" />
                         <span className="text-sm font-medium">Country</span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
@@ -259,7 +259,7 @@ export function PropertyDetailsDialog({
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <Home className="w-4 h-4 text-muted-foreground" />
+                        <Home className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           Property Type
                         </span>
@@ -280,8 +280,8 @@ export function PropertyDetailsDialog({
                 <CardContent className="flex flex-col gap-4">
                   <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="flex flex-col gap-2">
-                      <div className="flex justify-center gap-2">
-                        <Euro className="w-4 h-4 text-muted" />
+                      <div className="flex items-center justify-center gap-2">
+                        <Euro className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           Monthly Rent
                         </span>
@@ -292,8 +292,8 @@ export function PropertyDetailsDialog({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <div className="flex justify-center gap-2">
-                        <Users className="w-4 h-4 text-muted" />
+                      <div className="flex items-center justify-center gap-2">
+                        <Users className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           Current Tenants
                         </span>
@@ -304,8 +304,8 @@ export function PropertyDetailsDialog({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <div className="flex justify-center gap-2">
-                        <Percent className="w-4 h-4 text-muted" />
+                      <div className="flex items-center justify-center gap-2">
+                        <Percent className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           Occupancy Rate
                         </span>
