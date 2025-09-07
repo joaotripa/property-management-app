@@ -9,7 +9,6 @@ import Logo from "@/components/Logo";
 const navItems = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Why Domari", href: "#why-domari" },
-  { label: "Testimonials", href: "#testimonials" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ];
@@ -20,7 +19,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-background backdrop-blur-sm shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-18">
+        <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-foreground">
               <Logo size="38px" />
@@ -43,7 +42,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/login" passHref>
               <Button className="bg-white border border-border hover:bg-muted text-md text-foreground font-normal !px-8 !py-4 rounded-full group">
                 Login{" "}
@@ -60,7 +59,7 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors duration-200"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors duration-200"
           >
             {isOpen ? (
               <X className="block h-6 w-6" />
@@ -73,7 +72,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation Menu */}
       {isOpen && (
-        <div className="lg:hidden bg-background border-t border-border/20">
+        <div className="md:hidden bg-background border-t border-border/20">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Link

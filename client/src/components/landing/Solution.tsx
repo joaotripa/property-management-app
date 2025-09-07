@@ -38,7 +38,7 @@ const Solution = () => {
   ];
 
   return (
-    <section id="why-domari" className="py-24 bg-background">
+    <section id="solution" className="py-24 bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
@@ -46,8 +46,8 @@ const Solution = () => {
               <span className="text-sm font-medium text-primary">Solution</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-semibold mb-4 leading-snug">
-              Everything you need to track your{" "}
-              <span className="text-primary">property finances.</span>
+              Everything you need to{" "}
+              <span className="text-primary">track your property</span> finances
             </h2>
             <p className="text-lg text-balance">
               Track income, manage expenses, generate tax-ready reports from one

@@ -60,7 +60,10 @@ const FAQ = () => {
           <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg">Everything you need to know about Domari</p>
+          <p className="text-lg">
+            Find clear answers to the questions owners, landlords and property
+            managers ask most.
+          </p>
         </div>
 
         <Accordion type="single" collapsible className="flex flex-col gap-4">

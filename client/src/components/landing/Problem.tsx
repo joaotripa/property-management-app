@@ -39,10 +39,12 @@ const Problem = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-6">
-              <span className="text-sm font-medium text-primary">Problem</span>
+              <span className="text-sm font-medium text-primary">
+                Challenges
+              </span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-semibold mb-4 leading-snug">
-              <span className="text-primary">Rental finances </span>
+              <span className="text-primary">Property finances</span>{" "}
               shouldn&apos;t be this hard
             </h2>
             <p className="text-lg text-balance">
