@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Dot, TrendingUp } from "lucide-react";
+import { Dot } from "lucide-react";
 import CTAButton from "./CTAButton";
 
 const Hero = () => {
