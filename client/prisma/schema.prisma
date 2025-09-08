@@ -22,6 +22,7 @@ model User {
   properties    Property[]
   sessions      Session[]
   transactions  Transaction[]
+  monthlyMetrics MonthlyMetrics[]
 
   @@map("users")
 }
@@ -35,6 +36,7 @@ model Property {
   zipCode       String?         @map("zip_code")
   country       String?
   purchasePrice Decimal?        @map("purchase_price") @db.Decimal(12, 2)
+  marketValue   Decimal?        @map("market_value") @db.Decimal(12, 2)
   isActive      Boolean         @default(true) @map("is_active")
   deletedAt     DateTime?       @map("deleted_at") @db.Timestamptz(6)
   createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -46,6 +48,7 @@ model Property {
   occupancy     OccupancyStatus @default(AVAILABLE)
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
+  monthlyMetrics MonthlyMetrics[]
 
   @@index([userId])
   @@index([isActive])
@@ -92,6 +95,29 @@ model Transaction {
   @@index([transactionDate])
   @@index([propertyId, type])
   @@map("transactions")
+}
+
+
+model MonthlyMetrics {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId       String   @map("property_id") @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  year             Int
+  month            Int      // 1-12
+  totalIncome      Decimal  @default(0) @map("total_income") @db.Decimal(12, 2)
+  totalExpenses    Decimal  @default(0) @map("total_expenses") @db.Decimal(12, 2)
+  netIncome        Decimal  @default(0) @map("net_income") @db.Decimal(12, 2)
+  transactionCount Int      @default(0) @map("transaction_count")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, year, month])
+  @@index([propertyId])
+  @@index([userId])
+  @@index([year, month])
+  @@map("monthly_metrics")
 }
 
 model Account {

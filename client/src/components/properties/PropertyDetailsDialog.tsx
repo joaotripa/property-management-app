@@ -111,8 +111,8 @@ export function PropertyDetailsDialog({
   const currentProperty = editProperty || property;
   const occupancyRate =
     currentProperty.occupancy === OccupancyStatus.OCCUPIED ? 100 : 0;
-  const city = currentProperty.address.split(",")[1]?.trim() || "Unknown City";
-  const country = "Portugal";
+  const city = currentProperty.city || null;
+  const country = currentProperty.country || null;
 
   const handleEdit = () => {
     setEditProperty({ ...property });

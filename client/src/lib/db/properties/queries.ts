@@ -62,6 +62,9 @@ export async function getUserProperties(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -72,10 +75,13 @@ export async function getUserProperties(
       },
     });
 
-    // Transform Decimal rent to number for frontend
+    // Transform Decimal rent to number and handle null values for frontend
     return properties.map((property) => ({
       ...property,
       rent: Number(property.rent),
+      city: property.city ?? undefined,
+      country: property.country ?? undefined,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : undefined,
     }));
   } catch (error) {
     console.error('Error fetching user properties:', error);
@@ -101,6 +107,9 @@ export async function getPropertyById(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -112,10 +121,13 @@ export async function getPropertyById(
       return null;
     }
 
-    // Transform Decimal rent to number for frontend
+    // Transform Decimal rent to number and handle null values for frontend
     return {
       ...property,
       rent: Number(property.rent),
+      city: property.city ?? undefined,
+      country: property.country ?? undefined,
+      purchasePrice: property.purchasePrice != null ? Number(property.purchasePrice) : undefined,
     };
   } catch (error) {
     console.error('Error fetching property:', error);

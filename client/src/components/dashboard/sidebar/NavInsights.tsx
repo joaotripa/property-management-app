@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-export function NavMain({
+export function NavInsights({
   items,
 }: {
   items: {
@@ -25,7 +25,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Management</SidebarGroupLabel>
+      <SidebarGroupLabel>Data & Insights</SidebarGroupLabel>
       <SidebarMenu className="gap-2">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

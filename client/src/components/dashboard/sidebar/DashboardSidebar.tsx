@@ -1,9 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3, Building2, CreditCard } from "lucide-react";
+import {
+  BarChart3,
+  Building2,
+  CreditCard,
+  LayoutDashboard,
+} from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/sidebar/NavMain";
+import { NavInsights } from "./NavInsights";
 import { NavUser } from "@/components/dashboard/sidebar/NavUser";
 import { DashboardLogo } from "@/components/dashboard/sidebar/DashboardLogo";
 import {
@@ -23,7 +29,7 @@ const data = {
     {
       title: "Overview",
       url: "/dashboard",
-      icon: BarChart3,
+      icon: LayoutDashboard,
     },
     {
       title: "Properties",
@@ -34,6 +40,13 @@ const data = {
       title: "Transactions",
       url: "/dashboard/transactions",
       icon: CreditCard,
+    },
+  ],
+  navInsights: [
+    {
+      title: "Analytics",
+      url: "/dashboard/analytics",
+      icon: BarChart3,
     },
   ],
 };
@@ -53,6 +66,7 @@ export function DashboardSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavInsights items={data.navInsights} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

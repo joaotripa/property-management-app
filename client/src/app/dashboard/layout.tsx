@@ -1,14 +1,11 @@
 "use client";
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar/DashboardSidebar";
-import { Separator } from "@/components/ui/separator";
-import { UserDropdown } from "@/components/dashboard/header/UserDropdown";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
 import { useRedirectIfSignedOut } from "@/hooks/useRedirectIfSignedOut";
 import { useSession } from "next-auth/react";
 
@@ -16,36 +13,9 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const getPageTitle = (pathname: string): string => {
-  const pathSegments = pathname.split("/").filter(Boolean);
-  const lastSegment = pathSegments[pathSegments.length - 1];
-
-  const titleMap: Record<string, string> = {
-    dashboard: "Overview",
-    properties: "Properties",
-    transactions: "Transactions",
-    categories: "Categories",
-    reports: "Reports",
-    settings: "Settings",
-    profile: "Profile",
-    billing: "Billing",
-    notifications: "Notifications",
-  };
-
-  return titleMap[lastSegment] || "Dashboard";
-};
-
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   useRedirectIfSignedOut();
   const { status } = useSession();
-  const pathname = usePathname();
-  const pageTitle = getPageTitle(pathname);
-
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "",
-  };
 
   return (
     <SidebarProvider>
