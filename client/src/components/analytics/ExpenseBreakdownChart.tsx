@@ -23,16 +23,14 @@ interface ExpenseBreakdownChartProps {
 
 // Modern color palette for expense categories
 const COLORS = [
-  "hsl(210, 95%, 60%)",  // blue
-  "hsl(120, 65%, 50%)",  // emerald green
-  "hsl(20, 85%, 58%)",   // coral orange
-  "hsl(270, 70%, 60%)",  // violet
-  "hsl(180, 75%, 45%)",  // teal
-  "hsl(340, 75%, 55%)",  // rose
-  "hsl(45, 85%, 50%)",   // amber
-  "hsl(310, 70%, 60%)",  // magenta
-  "hsl(160, 70%, 50%)",  // mint green
-  "hsl(30, 80%, 55%)",   // orange
+  "var(--color-sky-500)",      // sky blue
+  "var(--color-emerald-500)",  // emerald green
+  "var(--color-coral-500)",    // coral orange
+  "var(--color-violet-500)",   // violet
+  "var(--color-teal-500)",     // teal
+  "var(--color-rose-500)",     // rose
+  "var(--color-amber-500)",    // amber
+  "var(--color-indigo-500)",   // indigo
 ];
 
 function formatCurrency(value: number): string {

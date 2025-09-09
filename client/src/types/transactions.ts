@@ -78,6 +78,7 @@ export interface PropertyOption {
   id: string;
   name: string;
   address: string;
+  occupancy?: "OCCUPIED" | "AVAILABLE";
 }
 
 // Table component props interfaces

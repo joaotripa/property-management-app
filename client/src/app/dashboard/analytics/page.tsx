@@ -1,17 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, TrendingUp, BarChart3, Target } from "lucide-react";
+import { RefreshCw, TrendingUp, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 // Analytics components
-import { KPICards } from "@/components/analytics/KPICards";
+import {
+  KPICards,
+  formatPercentage,
+  getTrendData,
+  KPICardConfig,
+} from "@/components/analytics/KPICards";
 import { CashFlowChart } from "@/components/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/analytics/ExpenseBreakdownChart";
-import { PropertyRankingChart } from "@/components/analytics/PropertyRankingChart";
+import { TopIncomeChart } from "@/components/analytics/TopIncomeChart";
+import { NetIncomeChart } from "@/components/analytics/NetIncomeChart";
+import { ROIChart } from "@/components/analytics/ROIChart";
 import { ROICapRateChart } from "@/components/analytics/ROICapRateChart";
 import { PropertyOption } from "@/components/analytics/PropertySelector";
 
@@ -43,7 +49,6 @@ function getFixedDateRange(): {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Calculate 6 months ago, ensuring we get the first day of that month
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
 
   return {
@@ -53,16 +58,15 @@ function getFixedDateRange(): {
   };
 }
 
-// Get current month date range for KPIs
 function getCurrentMonthRange(): { dateFrom: Date; dateTo: Date } {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return {
     dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
-    dateTo: new Date(now.getFullYear(), now.getMonth() + 1, 0), // Last day of current month
+    dateTo: today,
   };
 }
 
-// Get previous month date range for KPI trends
 function getPreviousMonthRange(): { dateFrom: Date; dateTo: Date } {
   const now = new Date();
   return {
@@ -94,9 +98,6 @@ export default function AnalyticsPage() {
     properties: [],
   });
 
-  // Remove global property selection - each chart will handle its own
-
-  // Fetch all analytics data with fixed 6-month range
   const fetchAnalyticsData = async () => {
     const { dateFrom, dateTo, monthsBack } = getFixedDateRange();
     const currentMonth = getCurrentMonthRange();
@@ -111,7 +112,6 @@ export default function AnalyticsPage() {
         propertyComparison: true,
       }));
 
-      // Clear previous errors
       setErrors({
         kpis: "",
         charts: "",
@@ -119,7 +119,6 @@ export default function AnalyticsPage() {
         properties: "",
       });
 
-      // Fetch data in parallel - current month KPIs, previous month KPIs, charts for 6 months, property comparison for 6 months
       const [kpisData, previousKpisData, chartsData, comparisonData] =
         await Promise.allSettled([
           getAnalyticsKPIs({
@@ -231,6 +230,49 @@ export default function AnalyticsPage() {
     fetchAnalyticsData();
   };
 
+  // Generate KPI configs for analytics page
+  const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
+    const current = data.kpis?.portfolio;
+    const previous = data.previousKpis?.portfolio;
+
+    return [
+      {
+        title: "Cash-on-Cash Return",
+        value: loading.kpis
+          ? "..."
+          : formatPercentage(current?.cashOnCashReturn || 0),
+        ...getTrendData(
+          current?.cashOnCashReturn || 0,
+          previous?.cashOnCashReturn
+        ),
+      },
+      {
+        title: "Average Cap Rate",
+        value: loading.kpis
+          ? "..."
+          : formatPercentage(current?.averageCapRate || 0),
+        ...getTrendData(current?.averageCapRate || 0, previous?.averageCapRate),
+      },
+      {
+        title: "Expense-to-Income Ratio",
+        value: loading.kpis
+          ? "..."
+          : formatPercentage(current?.expenseToIncomeRatio || 0),
+        ...getTrendData(
+          current?.expenseToIncomeRatio || 0,
+          previous?.expenseToIncomeRatio
+        ),
+      },
+      {
+        title: "Average ROI",
+        value: loading.kpis
+          ? "..."
+          : formatPercentage(current?.averageROI || 0),
+        ...getTrendData(current?.averageROI || 0, previous?.averageROI),
+      },
+    ];
+  };
+
   const isAnyLoading = Object.values(loading).some(Boolean);
 
   return (
@@ -268,8 +310,7 @@ export default function AnalyticsPage() {
       {/* KPI Cards */}
       <section>
         <KPICards
-          data={data.kpis?.portfolio}
-          previousData={data.previousKpis?.portfolio}
+          kpiConfigs={getAnalyticsKPIConfigs()}
           isLoading={loading.kpis}
           error={errors.kpis}
         />
@@ -318,14 +359,26 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Property Ranking */}
           <div className="animate-in slide-in-from-left duration-700 delay-300">
-            <PropertyRankingChart
+            <TopIncomeChart
               data={data.propertyComparison?.propertyRanking}
               isLoading={loading.propertyComparison}
               error={errors.propertyComparison}
             />
           </div>
-
-          {/* ROI vs Cap Rate */}
+          <div className="animate-in slide-in-from-right duration-700 delay-450">
+            <NetIncomeChart
+              data={data.propertyComparison?.propertyRanking}
+              isLoading={loading.propertyComparison}
+              error={errors.propertyComparison}
+            />
+          </div>
+          <div className="animate-in slide-in-from-left duration-700 delay-300">
+            <ROIChart
+              data={data.propertyComparison?.propertyRanking}
+              isLoading={loading.propertyComparison}
+              error={errors.propertyComparison}
+            />
+          </div>
           <div className="animate-in slide-in-from-right duration-700 delay-450">
             <ROICapRateChart
               data={data.propertyComparison?.propertyKPIs}

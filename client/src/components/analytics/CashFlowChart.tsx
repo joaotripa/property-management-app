@@ -22,15 +22,15 @@ interface CashFlowChartProps {
 const chartConfig = {
   income: {
     label: "Income",
-    color: "hsl(120, 70%, 50%)", // emerald green
+    color: "var(--color-emerald-500)",
   },
   expenses: {
     label: "Expenses",
-    color: "hsl(10, 80%, 58%)", // coral red
+    color: "var(--color-coral-500)",
   },
   netIncome: {
     label: "Net Income",
-    color: "hsl(230, 85%, 65%)", // indigo blue
+    color: "var(--color-indigo-500)",
   },
 } as const;
 
