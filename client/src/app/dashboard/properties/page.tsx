@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Euro, Users, Home } from "lucide-react";
-import { PropertyDetailsDialog } from "@/components/properties/PropertyDetailsDialog";
-import { PropertyAddDialog } from "@/components/properties/PropertyAddDialog";
-import { PropertyImage } from "@/components/properties/PropertyImage";
-import PropertiesStats from "@/components/properties/PropertiesStats";
-import { PropertyCardSkeleton } from "@/components/properties/PropertyCardSkeleton";
-import { EmptyPropertiesState } from "@/components/properties/EmptyPropertiesState";
+import { PropertyDetailsDialog } from "@/components/dashboard/properties/PropertyDetailsDialog";
+import { PropertyAddDialog } from "@/components/dashboard/properties/PropertyAddDialog";
+import { PropertyImage } from "@/components/dashboard/properties/PropertyImage";
+import PropertiesStats from "@/components/dashboard/properties/PropertiesStats";
+import { PropertyCardSkeleton } from "@/components/dashboard/properties/PropertyCardSkeleton";
+import { EmptyPropertiesState } from "@/components/dashboard/properties/EmptyPropertiesState";
 import { Property } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
 import { usePropertyStats } from "@/hooks/usePropertyStats";

@@ -73,13 +73,13 @@ export function getTrendData(
 
 function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   return (
-    <Card className="border-secondary py-4 gap-2">
+    <Card className="border-secondary py-4 justify-between">
       <CardHeader className="px-6">
         <CardTitle className="text-sm font-semibold text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-row items-end px-6 gap-2  ">
+      <CardContent className="flex flex-row items-end px-6 gap-2">
         <div className="text-3xl font-medium">{value}</div>
         {trendValue && (
           <div className="flex items-center mb-1">
@@ -103,7 +103,7 @@ function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   );
 }
 
-export function KPICards({ kpiConfigs, columns = 5 }: KPICardsProps) {
+export function KPICards({ kpiConfigs, columns }: KPICardsProps) {
   const getResponsiveGridClasses = (cols: number) => {
     return `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${cols} gap-4 mb-6`;
   };

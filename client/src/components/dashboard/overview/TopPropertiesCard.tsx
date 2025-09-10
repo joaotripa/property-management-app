@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2 } from "lucide-react";
 import { getPropertyComparison } from "@/lib/services/analyticsService";
-import { formatCurrency } from "@/components/analytics/KPICards";
+import { formatCurrency } from "@/components/dashboard/analytics/KPICards";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 
 interface TopPropertiesData {
@@ -26,12 +26,16 @@ export function TopPropertiesCard() {
         // Get current month date range
         const now = new Date();
         const dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-        const dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateTo = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
 
         const result = await getPropertyComparison({
           dateFrom,
           dateTo,
-          sortBy: 'netIncome',
+          sortBy: "netIncome",
         });
 
         setData({ properties: result.propertyRanking.slice(0, 4) });
@@ -56,9 +60,7 @@ export function TopPropertiesCard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-destructive py-8">
-            {error}
-          </div>
+          <div className="text-center text-destructive py-8">{error}</div>
         </CardContent>
       </Card>
     );
@@ -68,7 +70,9 @@ export function TopPropertiesCard() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Top Properties</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Top Properties
+          </CardTitle>
           <div className="text-sm text-muted-foreground">This month</div>
         </div>
       </CardHeader>
@@ -76,7 +80,10 @@ export function TopPropertiesCard() {
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center justify-between p-4 rounded-lg border"
+              >
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-10 w-10 rounded-full" />
                   <div>
@@ -95,10 +102,18 @@ export function TopPropertiesCard() {
         ) : (
           <div className="space-y-4">
             {data.properties.map((property, index) => {
-              const colors = ["bg-blue-500", "bg-cyan-500", "bg-green-500", "bg-orange-500"];
-              
+              const colors = [
+                "bg-blue-500",
+                "bg-cyan-500",
+                "bg-green-500",
+                "bg-orange-500",
+              ];
+
               return (
-                <div key={property.propertyId} className="flex items-center justify-between">
+                <div
+                  key={property.propertyId}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${colors[index]}`} />
                     <div>

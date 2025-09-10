@@ -12,14 +12,14 @@ import {
   formatPercentage,
   getTrendData,
   KPICardConfig,
-} from "@/components/analytics/KPICards";
-import { CashFlowChart } from "@/components/analytics/CashFlowChart";
-import { ExpenseBreakdownChart } from "@/components/analytics/ExpenseBreakdownChart";
-import { TopIncomeChart } from "@/components/analytics/TopIncomeChart";
-import { NetIncomeChart } from "@/components/analytics/NetIncomeChart";
-import { ROIChart } from "@/components/analytics/ROIChart";
-import { ROICapRateChart } from "@/components/analytics/ROICapRateChart";
-import { PropertyOption } from "@/components/analytics/PropertySelector";
+} from "@/components/dashboard/analytics/KPICards";
+import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
+import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
+import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
+import { NetIncomeChart } from "@/components/dashboard/analytics/NetIncomeChart";
+import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
+import { ROICapRateChart } from "@/components/dashboard/analytics/ROICapRateChart";
+import { PropertyOption } from "@/components/dashboard/analytics/PropertySelector";
 
 // Services and types
 import {

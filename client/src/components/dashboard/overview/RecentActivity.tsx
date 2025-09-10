@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity as ActivityIcon } from "lucide-react";
 import { getRecentActivities, Activity } from "@/lib/services/activityService";
-import { formatCurrency } from "@/components/analytics/KPICards";
+import { formatCurrency } from "@/components/dashboard/analytics/KPICards";
 
 interface RecentActivityData {
   activities: Activity[];
@@ -66,9 +66,7 @@ export function RecentActivity() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-destructive py-8">
-            {error}
-          </div>
+          <div className="text-center text-destructive py-8">{error}</div>
         </CardContent>
       </Card>
     );
@@ -78,7 +76,9 @@ export function RecentActivity() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Recent Activity
+          </CardTitle>
           <button className="text-sm text-blue-600 hover:text-blue-800">
             View All
           </button>
@@ -88,7 +88,10 @@ export function RecentActivity() {
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-lg border"
+              >
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-8 w-8 rounded" />
                   <div className="space-y-1">
@@ -110,24 +113,32 @@ export function RecentActivity() {
           <div className="space-y-4">
             {data.activities.map((activity) => {
               const getActivityIcon = (activityType: string) => {
-                if (activityType.includes('transaction')) {
-                  return activityType.includes('created') ? 'bg-blue-500' : 'bg-green-500';
+                if (activityType.includes("transaction")) {
+                  return activityType.includes("created")
+                    ? "bg-blue-500"
+                    : "bg-green-500";
                 } else {
-                  return activityType.includes('created') ? 'bg-purple-500' : 'bg-orange-500';
+                  return activityType.includes("created")
+                    ? "bg-purple-500"
+                    : "bg-orange-500";
                 }
               };
-              
+
               return (
-                <div key={activity.id} className="flex items-center justify-between">
+                <div
+                  key={activity.id}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${getActivityIcon(activity.type)}`} />
+                    <div
+                      className={`w-2 h-2 rounded-full ${getActivityIcon(activity.type)}`}
+                    />
                     <div>
-                      <p className="font-medium">
-                        {activity.title}
-                      </p>
+                      <p className="font-medium">{activity.title}</p>
                       <p className="text-sm text-muted-foreground">
                         {activity.description}
-                        {activity.amount && ` - ${formatCurrency(activity.amount)}`}
+                        {activity.amount &&
+                          ` - ${formatCurrency(activity.amount)}`}
                       </p>
                     </div>
                   </div>

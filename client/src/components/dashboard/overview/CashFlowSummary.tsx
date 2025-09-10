@@ -18,11 +18,11 @@ import { CashFlowTrendData } from "@/lib/db/analytics/queries";
 const chartConfig = {
   income: {
     label: "Revenue",
-    color: "orange",
+    color: "var(--color-success)",
   },
   expenses: {
     label: "Expenses",
-    color: "var(--color-primary)",
+    color: "var(--color-destructive)",
   },
 } as const;
 
@@ -111,98 +111,48 @@ export function CashFlowSummary() {
             No cash flow data available for the last 6 months.
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <AreaChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-            >
-              <defs>
-                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="var(--color-income)"
-                    stopOpacity={0.4}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--color-income)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-                <linearGradient
-                  id="expensesGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor="var(--color-expenses)"
-                    stopOpacity={0.4}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--color-expenses)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid
-                strokeDasharray="1 3"
-                className="stroke-muted/20"
-                horizontal={true}
-                vertical={false}
-              />
+          <ChartContainer config={chartConfig}>
+            <AreaChart accessibilityLayer data={chartData}>
+              <CartesianGrid vertical={false} />
 
               <XAxis
                 dataKey="monthLabel"
-                className="text-xs fill-muted-foreground"
-                axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
+                axisLine={false}
+                tickMargin={8}
               />
 
               <YAxis
-                className="text-xs fill-muted-foreground"
-                tickFormatter={formatCurrency}
-                axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={formatCurrency}
               />
 
               <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value, name) => [
-                      formatCurrency(Number(value)),
-                      name,
-                    ]}
-                    className="rounded-lg border bg-background/95 backdrop-blur-sm p-3 shadow-lg"
-                  />
-                }
+                cursor={false}
+                content={<ChartTooltipContent indicator="line" />}
               />
 
               <ChartLegend content={<ChartLegendContent />} />
 
               <Area
-                type="monotone"
+                type="natural"
                 dataKey="income"
-                stroke="var(--color-income)"
-                strokeWidth={3}
-                fill="url(#incomeGradient)"
-                dot={{ fill: "var(--color-income)", strokeWidth: 2, r: 4 }}
+                stroke="var(--color-success)"
+                fill="var(--color-success)"
+                fillOpacity={0.4}
               />
 
               <Area
-                type="monotone"
+                type="natural"
                 dataKey="expenses"
-                stroke="var(--color-expenses)"
-                strokeWidth={3}
-                fill="url(#expensesGradient)"
-                dot={{ fill: "var(--color-expenses)", strokeWidth: 2, r: 4 }}
+                stroke="var(--color-destructive)"
+                fill="var(--color-destructive)"
+                fillOpacity={0.4}
               />
+
+              <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>
         )}

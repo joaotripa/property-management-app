@@ -27,7 +27,7 @@ import type {
 } from "@/types/transactions";
 import { TransactionType } from "@prisma/client";
 import { toCamelCase } from "@/lib/utils";
-import { Separator } from "../ui/separator";
+import { Separator } from "@/components/ui/separator";
 
 export function TransactionFilters({
   onFiltersChange,

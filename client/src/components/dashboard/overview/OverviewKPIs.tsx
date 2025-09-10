@@ -7,7 +7,7 @@ import {
   formatPercentage,
   getTrendData,
   KPICardConfig,
-} from "@/components/analytics/KPICards";
+} from "@/components/dashboard/analytics/KPICards";
 import { getAnalyticsKPIs } from "@/lib/services/analyticsService";
 import { getProperties } from "@/lib/services/propertiesService";
 import { getTransactionStats } from "@/lib/services/transactionsService";

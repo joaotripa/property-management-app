@@ -11,13 +11,13 @@ import {
   PropertyOption,
   Transaction,
 } from "@/types/transactions";
-import { TransactionFilters } from "@/components/filters/TransactionFilters";
-import TransactionStats from "@/components/transactions/TransactionStats";
-import { TransactionTableWithActions } from "@/components/transactions/TransactionTableWithActions";
-import { TransactionsPagination } from "@/components/transactions/TransactionsPagination";
-import { TransactionCreateDialog } from "@/components/transactions/TransactionCreateDialog";
-import { TransactionEditDialog } from "@/components/transactions/TransactionEditDialog";
-import { TransactionDeleteDialog } from "@/components/transactions/TransactionDeleteDialog";
+import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
+import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
+import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
+import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
+import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
+import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
 
 export default function TransactionsPage() {
   const [availableCategories, setAvailableCategories] = useState<
