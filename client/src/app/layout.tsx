@@ -1,20 +1,14 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { Montserrat } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+
 import Script from "next/script";
 import AuthProvider from "@/components/providers/AuthProvider";
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable}`}>
+    <html lang="en" className={GeistSans.className}>
       <head>
         <Script
           defer
