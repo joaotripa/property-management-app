@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 export interface KPICardConfig {
   title: string;
@@ -13,9 +13,7 @@ export interface KPICardConfig {
 
 interface KPICardsProps {
   kpiConfigs: KPICardConfig[];
-  isLoading?: boolean;
-  error?: string;
-  columns?: 2 | 3 | 4 | 5;
+  columns: number;
 }
 
 export function formatCurrency(amount: number): string {
@@ -73,31 +71,22 @@ export function getTrendData(
   };
 }
 
-function KPICard({
-  title,
-  value,
-  trend,
-  trendValue,
-}: KPICardConfig & { isLoading?: boolean }) {
+function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   return (
-    <Card className="border-secondary hover:bg-muted/60 py-3 gap-2">
-      <CardHeader className="pb-1 px-6 pt-0">
-        <CardTitle className="text-md font-semibold text-muted-foreground">
+    <Card className="border-secondary py-4 gap-2">
+      <CardHeader className="px-6">
+        <CardTitle className="text-sm font-semibold text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-row items-end pt-0 px-6 pb-0">
-        <div className="text-4xl font-medium">{value}</div>
+      <CardContent className="flex flex-row items-end px-6 gap-2  ">
+        <div className="text-3xl font-medium">{value}</div>
         {trendValue && (
-          <div className="flex text-sm gap-1">
-            {trend === "up" && (
-              <TrendingUp className="h-3 w-3 text-emerald-600" />
-            )}
-            {trend === "down" && (
-              <TrendingDown className="h-3 w-3 text-red-600" />
-            )}
+          <div className="flex items-center mb-1">
+            {trend === "up" && <ArrowUp className="h-3 w-3 text-emerald-600" />}
+            {trend === "down" && <ArrowDown className="h-4 w-4 text-red-600" />}
             <span
-              className={`text-xs ${
+              className={`text-sm ${
                 trend === "up"
                   ? "text-emerald-600"
                   : trend === "down"
@@ -114,34 +103,13 @@ function KPICard({
   );
 }
 
-export function KPICards({ kpiConfigs, error, columns = 5 }: KPICardsProps) {
-  const gridCols = {
-    2: "md:grid-cols-2",
-    3: "lg:grid-cols-3",
-    4: "lg:grid-cols-4",
-    5: "lg:grid-cols-5",
+export function KPICards({ kpiConfigs, columns = 5 }: KPICardsProps) {
+  const getResponsiveGridClasses = (cols: number) => {
+    return `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${cols} gap-4 mb-6`;
   };
 
-  if (error) {
-    return (
-      <div
-        className={`grid grid-cols-1 md:grid-cols-2 ${gridCols[columns]} gap-4 mb-6`}
-      >
-        <Card className="col-span-full">
-          <CardContent className="p-6">
-            <div className="text-center text-destructive">
-              Error loading KPIs.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className={`grid grid-cols-1 md:grid-cols-2 ${gridCols[columns]} gap-4 mb-6`}
-    >
+    <div className={getResponsiveGridClasses(columns)}>
       {kpiConfigs.map((kpi) => (
         <KPICard
           key={kpi.title}

@@ -61,8 +61,8 @@
 
 /* CLEAN MODERN BLUE THEME - Inspired by PromptWatch */
 :root {
-  --background: oklch(0.985 0.003 262.8);
-  --foreground: oklch(0.15 0.025 262.8);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.1889 0.0145 253.19);
 
   --dashboard-background: oklch(0.995 0.002 262.8);
 
@@ -173,23 +173,7 @@
 
   * {
     border-color: var(--color-border);
-  }
-}
-
-.hover-scale {
-  transition: transform 0.2s;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+    outline: hsl(var(--ring) / 0.5);
   }
 
   html {
@@ -219,7 +203,7 @@
   }
 
   [data-slot="dialog-close"] {
-    @apply hover:bg-primary !rounded-sm hover:text-dashboard-background hover:cursor-pointer;
+    @apply hover:bg-primary !rounded-sm hover:text-background hover:cursor-pointer;
   }
 
   [data-slot="button"] {
@@ -229,4 +213,15 @@
   [data-slot="sidebar-menu-button"] {
     @apply hover:cursor-pointer;
   }
+}
+
+.hover-scale {
+  transition: transform 0.2s;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+@layer base {
 }

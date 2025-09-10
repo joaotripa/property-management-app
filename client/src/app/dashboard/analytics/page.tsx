@@ -238,9 +238,7 @@ export default function AnalyticsPage() {
     return [
       {
         title: "Cash-on-Cash Return",
-        value: loading.kpis
-          ? "..."
-          : formatPercentage(current?.cashOnCashReturn || 0),
+        value: formatPercentage(current?.cashOnCashReturn || 0),
         ...getTrendData(
           current?.cashOnCashReturn || 0,
           previous?.cashOnCashReturn
@@ -248,16 +246,12 @@ export default function AnalyticsPage() {
       },
       {
         title: "Average Cap Rate",
-        value: loading.kpis
-          ? "..."
-          : formatPercentage(current?.averageCapRate || 0),
+        value: formatPercentage(current?.averageCapRate || 0),
         ...getTrendData(current?.averageCapRate || 0, previous?.averageCapRate),
       },
       {
-        title: "Expense-to-Income Ratio",
-        value: loading.kpis
-          ? "..."
-          : formatPercentage(current?.expenseToIncomeRatio || 0),
+        title: "Expense/Income Ratio",
+        value: formatPercentage(current?.expenseToIncomeRatio || 0),
         ...getTrendData(
           current?.expenseToIncomeRatio || 0,
           previous?.expenseToIncomeRatio
@@ -265,25 +259,22 @@ export default function AnalyticsPage() {
       },
       {
         title: "Average ROI",
-        value: loading.kpis
-          ? "..."
-          : formatPercentage(current?.averageROI || 0),
+        value: formatPercentage(current?.averageROI || 0),
         ...getTrendData(current?.averageROI || 0, previous?.averageROI),
       },
     ];
   };
 
   const isAnyLoading = Object.values(loading).some(Boolean);
+  const kpiConfigs = getAnalyticsKPIConfigs();
+  console.log(kpiConfigs.length);
 
   return (
-    <div className="container mx-auto p-6 space-y-8 animate-in fade-in-50 duration-500">
+    <div className="container flex flex-col mx-auto px-6 gap-8 animate-in fade-in-50 duration-500">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10 ring-1 ring-primary/20 shadow-sm">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
             Analytics Dashboard
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -309,11 +300,7 @@ export default function AnalyticsPage() {
 
       {/* KPI Cards */}
       <section>
-        <KPICards
-          kpiConfigs={getAnalyticsKPIConfigs()}
-          isLoading={loading.kpis}
-          error={errors.kpis}
-        />
+        <KPICards kpiConfigs={kpiConfigs} columns={kpiConfigs.length} />
       </section>
 
       {/* Charts Section */}

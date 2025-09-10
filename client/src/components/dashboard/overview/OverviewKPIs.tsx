@@ -25,7 +25,7 @@ interface DashboardKPIData {
   } | null;
 }
 
-export function DashboardKPIs() {
+export function OverviewKPIs() {
   const [data, setData] = useState<DashboardKPIData>({
     kpis: null,
     previousKpis: null,
@@ -36,12 +36,11 @@ export function DashboardKPIs() {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchOverviewData = async () => {
       try {
         setIsLoading(true);
         setError("");
 
-        // Get current month and previous month date ranges
         const now = new Date();
         const currentMonth = {
           dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
@@ -93,7 +92,6 @@ export function DashboardKPIs() {
               : null,
         });
 
-        // Show error only if critical data failed
         if (kpisResult.status === "rejected") {
           setError("Failed to load dashboard data");
         }
@@ -105,10 +103,10 @@ export function DashboardKPIs() {
       }
     };
 
-    fetchDashboardData();
+    fetchOverviewData();
   }, []);
 
-  const getDashboardKPIConfigs = (): KPICardConfig[] => {
+  const getOverviewPIConfigs = (): KPICardConfig[] => {
     const properties = data.properties;
     const occupiedCount = properties.filter(
       (p) => p.occupancy === "OCCUPIED"
@@ -128,37 +126,37 @@ export function DashboardKPIs() {
     return [
       {
         title: "Monthly Revenue",
-        value: isLoading ? "..." : formatCurrency(currentIncome),
+        value: formatCurrency(currentIncome),
         trend: incomeTrend.trend,
         trendValue: incomeTrend.trendValue
-          ? `${incomeTrend.trendValue} vs last month`
+          ? `${incomeTrend.trendValue}`
           : undefined,
       },
       {
         title: "Total Properties",
-        value: isLoading ? "..." : totalProperties.toString(),
+        value: totalProperties.toString(),
       },
       {
         title: "Occupied",
-        value: isLoading ? "..." : occupiedCount.toString(),
+        value: occupiedCount.toString(),
       },
       {
         title: "Vacant",
-        value: isLoading ? "..." : vacantCount.toString(),
+        value: vacantCount.toString(),
       },
       {
         title: "Occupancy Rate",
-        value: isLoading ? "..." : formatPercentage(occupancyRate),
+        value: formatPercentage(occupancyRate),
       },
     ];
   };
 
+  const overviewKPIConfigs = getOverviewPIConfigs();
+
   return (
     <KPICards
-      kpiConfigs={getDashboardKPIConfigs()}
-      isLoading={isLoading}
-      error={error}
-      columns={5}
+      kpiConfigs={overviewKPIConfigs}
+      columns={overviewKPIConfigs.length}
     />
   );
 }
