@@ -1,7 +1,7 @@
 "use client";
 
 import { OverviewKPIs } from "@/components/dashboard/overview/OverviewKPIs";
-import { CashFlowSummary } from "@/components/dashboard/overview/CashFlowSummary";
+import { RevenueTrend } from "@/components/dashboard/overview/RevenueTrend";
 import { TopPropertiesCard } from "@/components/dashboard/overview/TopPropertiesCard";
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 
@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
       {/* Middle Section: Cash Flow & Top Properties */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CashFlowSummary />
+        <RevenueTrend />
         <TopPropertiesCard />
       </section>
 

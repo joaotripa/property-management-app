@@ -85,13 +85,13 @@ export function TopPropertiesCard() {
                 className="flex items-center justify-between p-4 rounded-lg border"
               >
                 <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full bg-muted" />
                   <div>
-                    <Skeleton className="h-4 w-32 mb-2" />
-                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-32 mb-2 bg-muted" />
+                    <Skeleton className="h-3 w-20 bg-muted" />
                   </div>
                 </div>
-                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-6 w-16 bg-muted" />
               </div>
             ))}
           </div>
@@ -100,13 +100,13 @@ export function TopPropertiesCard() {
             No property data available for this month.
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-6 mb-4">
             {data.properties.map((property, index) => {
               const colors = [
-                "bg-blue-500",
-                "bg-cyan-500",
-                "bg-green-500",
-                "bg-orange-500",
+                { bg: "bg-primary", bgLight: "bg-primary/10" },
+                { bg: "bg-cyan-500", bgLight: "bg-cyan-500/10" },
+                { bg: "bg-success", bgLight: "bg-success/10" },
+                { bg: "bg-orange-500", bgLight: "bg-orange-500/10" },
               ];
 
               return (
@@ -115,7 +115,11 @@ export function TopPropertiesCard() {
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${colors[index]}`} />
+                    <div
+                      className={`w-10 h-10 ${colors[index].bgLight} rounded-lg flex items-center justify-center`}
+                    >
+                      <div className={`w-4 h-4 ${colors[index].bg} rounded`} />
+                    </div>
                     <div>
                       <h4 className="font-semibold text-base">
                         {property.propertyName}
