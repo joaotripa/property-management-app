@@ -83,14 +83,16 @@ function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
         <div className="text-3xl font-medium">{value}</div>
         {trendValue && (
           <div className="flex items-center mb-1">
-            {trend === "up" && <ArrowUp className="h-3 w-3 text-emerald-600" />}
-            {trend === "down" && <ArrowDown className="h-4 w-4 text-red-600" />}
+            {trend === "up" && <ArrowUp className="h-3 w-3 text-success" />}
+            {trend === "down" && (
+              <ArrowDown className="h-4 w-4 text-destructive" />
+            )}
             <span
               className={`text-sm ${
                 trend === "up"
-                  ? "text-emerald-600"
+                  ? "text-success"
                   : trend === "down"
-                    ? "text-red-600"
+                    ? "text-destructive"
                     : "text-muted-foreground"
               }`}
             >
@@ -105,7 +107,19 @@ function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
 
 export function KPICards({ kpiConfigs, columns }: KPICardsProps) {
   const getResponsiveGridClasses = (cols: number) => {
-    return `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${cols} gap-4 mb-6`;
+    const gridClassMap = {
+      3: "lg:grid-cols-3",
+      4: "lg:grid-cols-4",
+      5: "lg:grid-cols-5",
+      6: "lg:grid-cols-6",
+    } as const;
+
+    const clampedCols = Math.min(
+      Math.max(cols, 3),
+      6
+    ) as keyof typeof gridClassMap;
+
+    return `grid grid-cols-1 md:grid-cols-2 ${gridClassMap[clampedCols]} gap-4 mb-6`;
   };
 
   return (
