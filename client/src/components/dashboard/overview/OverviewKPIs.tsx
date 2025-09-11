@@ -32,15 +32,10 @@ export function OverviewKPIs() {
     properties: [],
     monthlyStats: null,
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchOverviewData = async () => {
       try {
-        setIsLoading(true);
-        setError("");
-
         const now = new Date();
         const currentMonth = {
           dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
@@ -93,13 +88,10 @@ export function OverviewKPIs() {
         });
 
         if (kpisResult.status === "rejected") {
-          setError("Failed to load dashboard data");
         }
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        setError("Failed to load dashboard data");
       } finally {
-        setIsLoading(false);
       }
     };
 

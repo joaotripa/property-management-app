@@ -5,9 +5,20 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function toCamelCase(str: string): string {
-  return str.toLowerCase().split('_').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
+  if (!str) return "";
+  
+  const normalized = str
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) return "";
+
+  return normalized
+    .split(' ')
+    .filter(Boolean)
+    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
 }
 
 export function getAuthErrorMessage(err: unknown): string {

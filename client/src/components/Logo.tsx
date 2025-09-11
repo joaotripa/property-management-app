@@ -8,7 +8,7 @@ interface LogoProps {
 
 const Logo = ({ size = "32px", className = "" }: LogoProps) => {
   return (
-    <div className={`flex flex-row items-center gap-2 ${className}`}>
+    <div className={`flex flex-row items-center gap-1 ${className}`}>
       <div className="relative" style={{ width: size, height: size }}>
         <Image
           alt="domari-logo"
@@ -19,7 +19,7 @@ const Logo = ({ size = "32px", className = "" }: LogoProps) => {
           className="object-contain"
         />
       </div>
-      <h1 className="font-bold italic">Domari</h1>
+      <h1 className="font-bold">Domari</h1>
     </div>
   );
 };

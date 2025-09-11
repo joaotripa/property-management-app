@@ -1,19 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Building2 } from "lucide-react";
+import { Building2, ArrowUp, ArrowDown } from "lucide-react";
 import { getPropertyComparison } from "@/lib/services/analyticsService";
-import { formatCurrency } from "@/components/dashboard/analytics/KPICards";
+import {
+  formatCurrency,
+  getTrendData,
+} from "@/components/dashboard/analytics/KPICards";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 
 interface TopPropertiesData {
   properties: PropertyRankingData[];
+  previousProperties: PropertyRankingData[];
 }
 
 export function TopPropertiesCard() {
-  const [data, setData] = useState<TopPropertiesData>({ properties: [] });
+  const [data, setData] = useState<TopPropertiesData>({
+    properties: [],
+    previousProperties: [],
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -25,20 +38,48 @@ export function TopPropertiesCard() {
 
         // Get current month date range
         const now = new Date();
-        const dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-        const dateTo = new Date(
+        const currentDateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+        const currentDateTo = new Date(
           now.getFullYear(),
           now.getMonth(),
           now.getDate()
         );
 
-        const result = await getPropertyComparison({
-          dateFrom,
-          dateTo,
-          sortBy: "netIncome",
+        // Get previous month date range
+        const previousDateFrom = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          1
+        );
+        const previousDateTo = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        const [currentResult, previousResult] = await Promise.allSettled([
+          getPropertyComparison({
+            dateFrom: currentDateFrom,
+            dateTo: currentDateTo,
+            sortBy: "netIncome",
+          }),
+          getPropertyComparison({
+            dateFrom: previousDateFrom,
+            dateTo: previousDateTo,
+            sortBy: "netIncome",
+          }),
+        ]);
+
+        setData({
+          properties:
+            currentResult.status === "fulfilled"
+              ? currentResult.value.propertyRanking.slice(0, 4)
+              : [],
+          previousProperties:
+            previousResult.status === "fulfilled"
+              ? previousResult.value.propertyRanking
+              : [],
         });
 
-        setData({ properties: result.propertyRanking.slice(0, 4) });
+        if (currentResult.status === "rejected") {
+          setError("Failed to load top properties data");
+        }
       } catch (err) {
         console.error("Error fetching top properties:", err);
         setError("Failed to load top properties data");
@@ -75,6 +116,9 @@ export function TopPropertiesCard() {
           </CardTitle>
           <div className="text-sm text-muted-foreground">This month</div>
         </div>
+        <CardDescription>
+          Ranking of properties based on net income
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -85,7 +129,7 @@ export function TopPropertiesCard() {
                 className="flex items-center justify-between p-4 rounded-lg border"
               >
                 <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-full bg-muted" />
+                  <Skeleton className="h-10 w-10 rounded-lg bg-muted" />
                   <div>
                     <Skeleton className="h-4 w-32 mb-2 bg-muted" />
                     <Skeleton className="h-3 w-20 bg-muted" />
@@ -109,6 +153,15 @@ export function TopPropertiesCard() {
                 { bg: "bg-orange-500", bgLight: "bg-orange-500/10" },
               ];
 
+              const previousProperty = data.previousProperties.find(
+                (p) => p.propertyId === property.propertyId
+              );
+
+              const trendData = getTrendData(
+                property.netIncome,
+                previousProperty?.netIncome
+              );
+
               return (
                 <div
                   key={property.propertyId}
@@ -121,20 +174,42 @@ export function TopPropertiesCard() {
                       <div className={`w-4 h-4 ${colors[index].bg} rounded`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-base">
-                        {property.propertyName}
-                      </h4>
+                      <h4 className="font-medium">{property.propertyName}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Rank #{index + 1} by net income
+                        Rank #{index + 1}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-lg">
+                    <div className="font-semibold">
                       {formatCurrency(property.netIncome)}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      ROI: {property.roi.toFixed(1)}%
+                    <div className="flex items-center justify-end gap-1 text-sm">
+                      {trendData.trendValue ? (
+                        <>
+                          {trendData.trend === "up" && (
+                            <ArrowUp className="h-3 w-3 text-success" />
+                          )}
+                          {trendData.trend === "down" && (
+                            <ArrowDown className="h-3 w-3 text-destructive" />
+                          )}
+                          <span
+                            className={`${
+                              trendData.trend === "up"
+                                ? "text-success"
+                                : trendData.trend === "down"
+                                  ? "text-destructive"
+                                  : "text-muted-foreground"
+                            }`}
+                          >
+                            {trendData.trendValue}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          vs last month
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

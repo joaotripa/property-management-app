@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Activity as ActivityIcon } from "lucide-react";
 import { getRecentActivities, Activity } from "@/lib/services/activityService";
 import { formatCurrency } from "@/components/dashboard/analytics/KPICards";
+import Link from "next/link";
 
 interface RecentActivityData {
   activities: Activity[];
@@ -79,9 +80,11 @@ export function RecentActivity() {
           <CardTitle className="text-lg font-semibold">
             Recent Activity
           </CardTitle>
-          <button className="text-sm text-blue-600 hover:text-blue-800">
-            View All
-          </button>
+          <Link href="/dashboard/transactions" passHref>
+            <button className="text-sm text-blue-600 hover:text-blue-800 hover:cursor-pointer">
+              View All
+            </button>
+          </Link>
         </div>
       </CardHeader>
       <CardContent>
@@ -93,14 +96,14 @@ export function RecentActivity() {
                 className="flex items-center justify-between p-3 rounded-lg border"
               >
                 <div className="flex items-center gap-3">
-                  <Skeleton className="h-8 w-8 rounded" />
+                  <Skeleton className="h-8 w-8 rounded-full bg-muted" />
                   <div className="space-y-1">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-32 bg-muted" />
+                    <Skeleton className="h-3 w-24 bg-muted" />
                   </div>
                 </div>
                 <div className="text-right">
-                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-3 w-12 bg-muted" />
                 </div>
               </div>
             ))}
@@ -115,12 +118,12 @@ export function RecentActivity() {
               const getActivityIcon = (activityType: string) => {
                 if (activityType.includes("transaction")) {
                   return activityType.includes("created")
-                    ? "bg-blue-500"
-                    : "bg-green-500";
+                    ? { bg: "bg-blue-500", bgLight: "bg-blue-500/10" }
+                    : { bg: "bg-green-500", bgLight: "bg-green-500/10" };
                 } else {
                   return activityType.includes("created")
-                    ? "bg-purple-500"
-                    : "bg-orange-500";
+                    ? { bg: "bg-purple-500", bgLight: "bg-purple-500/10" }
+                    : { bg: "bg-orange-500", bgLight: "bg-orange-500/10" };
                 }
               };
 
@@ -131,8 +134,12 @@ export function RecentActivity() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${getActivityIcon(activity.type)}`}
-                    />
+                      className={`w-8 h-8 ${getActivityIcon(activity.type).bgLight} rounded-full flex items-center justify-center`}
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full ${getActivityIcon(activity.type).bg}`}
+                      />
+                    </div>
                     <div>
                       <p className="font-medium">{activity.title}</p>
                       <p className="text-sm text-muted-foreground">
