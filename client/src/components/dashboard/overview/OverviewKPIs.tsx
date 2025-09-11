@@ -153,10 +153,5 @@ export function OverviewKPIs() {
 
   const overviewKPIConfigs = getOverviewPIConfigs();
 
-  return (
-    <KPICards
-      kpiConfigs={overviewKPIConfigs}
-      columns={overviewKPIConfigs.length}
-    />
-  );
+  return <KPICards kpiConfigs={overviewKPIConfigs} />;
 }

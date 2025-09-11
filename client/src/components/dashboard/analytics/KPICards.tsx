@@ -13,7 +13,6 @@ export interface KPICardConfig {
 
 interface KPICardsProps {
   kpiConfigs: KPICardConfig[];
-  columns: number;
 }
 
 export function formatCurrency(amount: number): string {
@@ -73,9 +72,9 @@ export function getTrendData(
 
 function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   return (
-    <Card className="border-secondary py-4 justify-between">
+    <Card className="border-secondary py-4 justify-between !gap-2">
       <CardHeader className="px-6">
-        <CardTitle className="text-sm font-semibold text-muted-foreground">
+        <CardTitle className="font-medium text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>
@@ -105,25 +104,14 @@ function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   );
 }
 
-export function KPICards({ kpiConfigs, columns }: KPICardsProps) {
-  const getResponsiveGridClasses = (cols: number) => {
-    const gridClassMap = {
-      3: "lg:grid-cols-3",
-      4: "lg:grid-cols-4",
-      5: "lg:grid-cols-5",
-      6: "lg:grid-cols-6",
-    } as const;
-
-    const clampedCols = Math.min(
-      Math.max(cols, 3),
-      6
-    ) as keyof typeof gridClassMap;
-
-    return `grid grid-cols-1 md:grid-cols-2 ${gridClassMap[clampedCols]} gap-4 mb-6`;
-  };
-
+export function KPICards({ kpiConfigs }: KPICardsProps) {
   return (
-    <div className={getResponsiveGridClasses(columns)}>
+    <div
+      className="grid gap-4 mb-6"
+      style={{
+        gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))",
+      }}
+    >
       {kpiConfigs.map((kpi) => (
         <KPICard
           key={kpi.title}

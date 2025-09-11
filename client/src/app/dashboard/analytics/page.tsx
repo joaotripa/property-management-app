@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, TrendingUp, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
-// Analytics components
 import {
   KPICards,
   formatPercentage,
@@ -21,7 +20,6 @@ import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
 import { ROICapRateChart } from "@/components/dashboard/analytics/ROICapRateChart";
 import { PropertyOption } from "@/components/dashboard/analytics/PropertySelector";
 
-// Services and types
 import {
   getAnalyticsKPIs,
   getAnalyticsCharts,
@@ -34,13 +32,12 @@ import { getProperties } from "@/lib/services/propertiesService";
 
 interface AnalyticsState {
   kpis: KPIResponse | null;
-  previousKpis: KPIResponse | null; // For trend calculations
+  previousKpis: KPIResponse | null;
   charts: ChartsResponse | null;
   propertyComparison: PropertyComparisonResponse | null;
   properties: PropertyOption[];
 }
 
-// Fixed 6-month date range for all charts
 function getFixedDateRange(): {
   dateFrom: Date;
   dateTo: Date;
@@ -71,7 +68,7 @@ function getPreviousMonthRange(): { dateFrom: Date; dateTo: Date } {
   const now = new Date();
   return {
     dateFrom: new Date(now.getFullYear(), now.getMonth() - 1, 1),
-    dateTo: new Date(now.getFullYear(), now.getMonth(), 0), // Last day of previous month
+    dateTo: new Date(now.getFullYear(), now.getMonth(), 0),
   };
 }
 
@@ -104,7 +101,6 @@ export default function AnalyticsPage() {
     const previousMonth = getPreviousMonthRange();
 
     try {
-      // Set loading states
       setLoading((prev) => ({
         ...prev,
         kpis: true,
@@ -300,7 +296,7 @@ export default function AnalyticsPage() {
 
       {/* KPI Cards */}
       <section>
-        <KPICards kpiConfigs={kpiConfigs} columns={kpiConfigs.length} />
+        <KPICards kpiConfigs={kpiConfigs} />
       </section>
 
       {/* Charts Section */}
