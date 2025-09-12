@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import {
   KPICards,
-  formatCurrency,
-  formatPercentage,
-  getTrendData,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { getTrendData } from "@/lib/analytics";
 import { getAnalyticsKPIs } from "@/lib/services/analyticsService";
 import { getProperties } from "@/lib/services/propertiesService";
 import { getTransactionStats } from "@/lib/services/transactionsService";

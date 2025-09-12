@@ -16,6 +16,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import { getCashFlowTrend } from "@/lib/services/analyticsService";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
+import { formatCurrency } from "@/lib/utils";
 
 const chartConfig = {
   income: {
@@ -27,15 +28,6 @@ const chartConfig = {
     color: "var(--color-destructive)",
   },
 } as const;
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function formatMonthYear(monthString: string): string {
   const [year, month] = monthString.split("-");

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity as ActivityIcon } from "lucide-react";
 import { getRecentActivities, Activity } from "@/lib/services/activityService";
-import { formatCurrency } from "@/components/dashboard/analytics/KPICards";
+import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
 interface RecentActivityData {

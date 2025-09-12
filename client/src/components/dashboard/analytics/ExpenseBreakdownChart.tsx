@@ -16,6 +16,7 @@ import { ExpenseBreakdownData } from "@/lib/db/analytics/queries";
 import { PropertySelector, PropertyOption } from "./PropertySelector";
 import { useState, useEffect, useCallback } from "react";
 import { getExpenseBreakdown } from "@/lib/services/analyticsService";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
 
 interface ExpenseBreakdownChartProps {
   properties: PropertyOption[];
@@ -32,19 +33,6 @@ const COLORS = [
   "var(--color-amber-500)",    // amber
   "var(--color-indigo-500)",   // indigo
 ];
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatPercentage(percentage: number): string {
-  return `${percentage.toFixed(1)}%`;
-}
 
 
 export function ExpenseBreakdownChart({ properties }: ExpenseBreakdownChartProps) {

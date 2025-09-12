@@ -14,6 +14,7 @@ import { CashFlowTrendData } from "@/lib/db/analytics/queries";
 import { PropertySelector, PropertyOption } from "./PropertySelector";
 import { useState, useEffect, useCallback } from "react";
 import { getCashFlowTrend } from "@/lib/services/analyticsService";
+import { formatCurrency } from "@/lib/utils";
 
 interface CashFlowChartProps {
   properties: PropertyOption[];
@@ -33,15 +34,6 @@ const chartConfig = {
     color: "var(--color-indigo-500)",
   },
 } as const;
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function formatMonthYear(monthString: string): string {
   const [year, month] = monthString.split("-");

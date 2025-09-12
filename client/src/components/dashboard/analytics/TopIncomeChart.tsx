@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
+import { formatCurrency } from "@/lib/utils";
 
 interface TopIncomeChartProps {
   data?: PropertyRankingData[];
@@ -29,15 +30,6 @@ const chartConfig = {
     color: "var(--color-emerald-500)",
   },
 } as const;
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;

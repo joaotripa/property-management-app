@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { Percent } from "lucide-react";
+import { formatPercentage } from "@/lib/utils";
 
 interface ROIChartProps {
   data?: PropertyRankingData[];
@@ -30,10 +31,6 @@ const chartConfig = {
     color: "var(--color-violet-500)",
   },
 } as const;
-
-function formatPercentage(value: number): string {
-  return `${value.toFixed(1)}%`;
-}
 
 function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;

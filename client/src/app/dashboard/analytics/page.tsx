@@ -8,10 +8,10 @@ import { toast } from "sonner";
 
 import {
   KPICards,
-  formatPercentage,
-  getTrendData,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
+import { formatPercentage } from "@/lib/utils";
+import { getTrendData } from "@/lib/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
 import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
