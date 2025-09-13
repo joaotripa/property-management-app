@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -38,6 +39,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -47,6 +49,14 @@ export function NavUser({
       toast.error("Failed to log out");
       console.log(error);
     }
+  };
+
+  const handleAccountClick = () => {
+    router.push("/dashboard/settings?tab=account");
+  };
+
+  const handleBillingClick = () => {
+    router.push("/dashboard/settings?tab=billing");
   };
 
   return (
@@ -96,11 +106,11 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAccountClick}>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleBillingClick}>
                 <CreditCard />
                 Billing
               </DropdownMenuItem>

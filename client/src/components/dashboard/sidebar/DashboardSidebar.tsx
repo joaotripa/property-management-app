@@ -6,6 +6,7 @@ import {
   Building2,
   CreditCard,
   LayoutDashboard,
+  Settings,
 } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/sidebar/NavMain";
@@ -47,6 +48,11 @@ const data = {
       title: "Analytics",
       url: "/dashboard/analytics",
       icon: BarChart3,
+    },
+    {
+      title: "Settings",
+      url: "/dashboard/settings",
+      icon: Settings,
     },
   ],
 };

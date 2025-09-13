@@ -16,6 +16,7 @@ model User {
   phone         String?
   emailVerified DateTime?     @map("email_verified")
   image         String?
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz(6)
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
   accounts      Account[]
@@ -24,6 +25,7 @@ model User {
   transactions  Transaction[]
   monthlyMetrics MonthlyMetrics[]
 
+  @@index([deletedAt])
   @@map("users")
 }
 
