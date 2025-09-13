@@ -1,3 +1,5 @@
+import React from "react";
+
 export function calculateTrend(
   current: number,
   previous: number
@@ -37,4 +39,45 @@ export function getTrendData(
         ? `${trendData.percentage.toFixed(1)}%`
         : undefined,
   };
+}
+
+interface TooltipProps {
+  payload?: {
+    fill?: string;
+  };
+  color?: string;
+}
+
+interface ChartConfig {
+  [key: string]: {
+    label?: string;
+    color?: string;
+  };
+}
+
+export function createChartTooltipFormatter(
+  valueFormatter: (value: number) => string = (value) => value.toLocaleString(),
+  chartConfig?: ChartConfig
+) {
+  const TooltipFormatter = (value: unknown, name: unknown, props: TooltipProps) => {
+    const displayName = chartConfig?.[String(name)]?.label || String(name);
+    
+    return React.createElement("div", { className: "flex items-center gap-2 w-full" },
+      React.createElement("div", {
+        className: "h-2.5 w-2.5 shrink-0 rounded-[2px]",
+        style: {
+          backgroundColor: props.payload?.fill || props.color,
+        }
+      }),
+      React.createElement("div", { className: "flex justify-between items-center flex-1" },
+        React.createElement("span", { className: "text-muted-foreground" }, displayName),
+        React.createElement("span", { className: "text-foreground font-mono font-medium tabular-nums ml-4" },
+          valueFormatter(Number(value))
+        )
+      )
+    );
+  };
+  
+  TooltipFormatter.displayName = "ChartTooltipFormatter";
+  return TooltipFormatter;
 }

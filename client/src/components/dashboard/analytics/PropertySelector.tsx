@@ -1,7 +1,12 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building, Home } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface PropertyOption {
   id: string;
@@ -57,25 +62,20 @@ export function PropertySelector({
     <div className={`min-w-[200px] ${className}`}>
       <Select value={getCurrentValue()} onValueChange={handleValueChange}>
         <SelectTrigger>
-          <div className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
+          <div className="flex items-center">
             <SelectValue placeholder={placeholder} />
           </div>
         </SelectTrigger>
         <SelectContent>
           {includeAllOption && (
             <SelectItem value="all">
-              <div className="flex items-center gap-2">
-                <Home className="h-4 w-4" />
-                All Properties
-              </div>
+              <div className="flex items-center">All Properties</div>
             </SelectItem>
           )}
           {properties.map((property) => (
             <SelectItem key={property.id} value={property.id}>
               <div className="flex flex-col">
-                <span className="font-medium">{property.name}</span>
-                <span className="text-xs text-muted-foreground">{property.address}</span>
+                <span>{property.name}</span>
               </div>
             </SelectItem>
           ))}

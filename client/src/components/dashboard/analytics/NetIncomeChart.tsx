@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartContainer,
   ChartTooltip,
@@ -18,21 +17,20 @@ import {
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { createChartTooltipFormatter } from "@/lib/analytics";
 
 interface NetIncomeChartProps {
   data?: PropertyRankingData[];
-  isLoading?: boolean;
-  error?: string;
 }
 
 const chartConfig = {
   netIncome: {
     label: "Net Income",
-    color: "var(--color-teal-500)",
+    color: "var(--color-primary)",
   },
   negativeNetIncome: {
     label: "Net Loss",
-    color: "var(--color-rose-500)",
+    color: "var(--color-destructive)",
   },
 } as const;
 
@@ -40,29 +38,7 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function NetIncomeChart({
-  data = [],
-  isLoading,
-  error,
-}: NetIncomeChartProps) {
-  if (error) {
-    return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50/50 to-green-50/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-emerald-900">
-            <DollarSign className="h-5 w-5" />
-            Net Income Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-red-600 py-8">
-            Error loading net income data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+export function NetIncomeChart({ data = [] }: NetIncomeChartProps) {
   const sortedData = [...data]
     .sort((a, b) => b.netIncome - a.netIncome)
     .slice(0, 8);
@@ -70,9 +46,11 @@ export function NetIncomeChart({
   const chartData = sortedData.map((item) => ({
     ...item,
     shortName: truncatePropertyName(item.propertyName),
-    fill: item.netIncome >= 0 ? "hsl(142, 76%, 36%)" : "hsl(0, 84%, 60%)",
+    fill:
+      item.netIncome >= 0
+        ? chartConfig.netIncome.color
+        : chartConfig.negativeNetIncome.color,
   }));
-
 
   return (
     <Card>
@@ -84,13 +62,8 @@ export function NetIncomeChart({
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : chartData.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
+        {chartData.length === 0 ? (
+          <div className="text-center text-muted-foreground p-8">
             No net income data available.
           </div>
         ) : (
@@ -116,7 +89,14 @@ export function NetIncomeChart({
 
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
+                    content={
+                      <ChartTooltipContent
+                        formatter={createChartTooltipFormatter(
+                          formatCurrency,
+                          chartConfig
+                        )}
+                      />
+                    }
                   />
 
                   <Bar dataKey="netIncome" radius={8} barSize={50} />

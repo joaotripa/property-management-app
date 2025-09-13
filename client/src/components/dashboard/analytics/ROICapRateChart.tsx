@@ -16,6 +16,8 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PropertyKPIMetrics } from "@/lib/db/analytics/queries";
+import { formatPercentage } from "@/lib/utils";
+import { createChartTooltipFormatter } from "@/lib/analytics";
 
 interface ROICapRateChartProps {
   data?: PropertyKPIMetrics[];
@@ -171,7 +173,12 @@ export function ROICapRateChart({
 
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent indicator="line" />}
+                  content={
+                    <ChartTooltipContent 
+                      indicator="line"
+                      formatter={createChartTooltipFormatter(formatPercentage, chartConfig)}
+                    />
+                  }
                 />
 
                 <Scatter

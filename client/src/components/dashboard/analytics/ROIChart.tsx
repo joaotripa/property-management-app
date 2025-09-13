@@ -18,17 +18,20 @@ import {
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { Percent } from "lucide-react";
 import { formatPercentage } from "@/lib/utils";
+import { createChartTooltipFormatter } from "@/lib/analytics";
 
 interface ROIChartProps {
   data?: PropertyRankingData[];
-  isLoading?: boolean;
-  error?: string;
 }
 
 const chartConfig = {
   roi: {
     label: "ROI",
-    color: "var(--color-violet-500)",
+    color: "var(--color-primary)",
+  },
+  negativeRoi: {
+    label: "Negative ROI",
+    color: "var(--color-destructive)",
   },
 } as const;
 
@@ -36,33 +39,14 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function ROIChart({ data = [], isLoading, error }: ROIChartProps) {
-  if (error) {
-    return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50/50 to-violet-50/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-purple-900">
-            <Percent className="h-5 w-5" />
-            ROI Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-red-600 py-8">
-            Error loading ROI data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+export function ROIChart({ data = [] }: ROIChartProps) {
   const sortedData = [...data].sort((a, b) => b.roi - a.roi).slice(0, 8);
 
   const chartData = sortedData.map((item) => ({
     ...item,
     shortName: truncatePropertyName(item.propertyName),
-    fill: item.roi >= 0 ? "hsl(271, 81%, 56%)" : "hsl(0, 84%, 60%)",
+    fill: item.roi >= 0 ? chartConfig.roi.color : chartConfig.negativeRoi.color,
   }));
-
 
   return (
     <Card>
@@ -72,12 +56,7 @@ export function ROIChart({ data = [], isLoading, error }: ROIChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : chartData.length === 0 ? (
+        {chartData.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             No ROI data available.
           </div>
@@ -104,7 +83,15 @@ export function ROIChart({ data = [], isLoading, error }: ROIChartProps) {
 
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
+                    content={
+                      <ChartTooltipContent
+                        indicator="line"
+                        formatter={createChartTooltipFormatter(
+                          formatPercentage,
+                          chartConfig
+                        )}
+                      />
+                    }
                   />
 
                   <Bar dataKey="roi" radius={8} barSize={50} />

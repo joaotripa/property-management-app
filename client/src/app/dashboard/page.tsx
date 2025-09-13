@@ -9,15 +9,11 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 pb-6">
       {/* Welcome Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Welcome back,</h1>
-            <p className="text-gray-600 mt-1">
-              Here&apos;s what&apos;s happening with your properties today
-            </p>
-          </div>
-        </div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold text-foreground">Welcome back,</h1>
+        <p className="text-muted-foreground">
+          Here&apos;s what&apos;s happening with your properties today
+        </p>
       </div>
 
       {/* KPI Cards */}

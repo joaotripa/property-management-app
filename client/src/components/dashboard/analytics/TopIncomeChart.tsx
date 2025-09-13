@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,17 +16,16 @@ import {
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { formatCurrency } from "@/lib/utils";
+import { createChartTooltipFormatter } from "@/lib/analytics";
 
 interface TopIncomeChartProps {
   data?: PropertyRankingData[];
-  isLoading?: boolean;
-  error?: string;
 }
 
 const chartConfig = {
   totalIncome: {
     label: "Total Income",
-    color: "var(--color-emerald-500)",
+    color: "var(--color-primary)",
   },
 } as const;
 
@@ -35,28 +33,7 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function TopIncomeChart({
-  data = [],
-  isLoading,
-  error,
-}: TopIncomeChartProps) {
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center ">
-            Top Income Properties
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-destructive py-8">
-            Error loading top income data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+export function TopIncomeChart({ data = [] }: TopIncomeChartProps) {
   const sortedData = [...data]
     .sort((a, b) => b.totalIncome - a.totalIncome)
     .slice(0, 8);
@@ -64,9 +41,8 @@ export function TopIncomeChart({
   const chartData = sortedData.map((item) => ({
     ...item,
     shortName: truncatePropertyName(item.propertyName),
-    fill: "var(--color-emerald-500)",
+    fill: chartConfig.totalIncome.color,
   }));
-
 
   return (
     <Card>
@@ -78,13 +54,8 @@ export function TopIncomeChart({
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : chartData.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
+        {chartData.length === 0 ? (
+          <div className="text-center text-muted-foreground p-8">
             No income data available.
           </div>
         ) : (
@@ -110,7 +81,14 @@ export function TopIncomeChart({
 
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
+                    content={
+                      <ChartTooltipContent
+                        formatter={createChartTooltipFormatter(
+                          formatCurrency,
+                          chartConfig
+                        )}
+                      />
+                    }
                   />
 
                   <Bar dataKey="totalIncome" barSize={50} radius={8}></Bar>

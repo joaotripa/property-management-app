@@ -5,7 +5,6 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { useTransactionStats } from "@/hooks/useTransactionStats";
 import { TransactionFilters } from "@/types/transactions";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface TransactionStatsProps {
   filters: TransactionFilters;

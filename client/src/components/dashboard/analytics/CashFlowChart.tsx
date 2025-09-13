@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartContainer,
   ChartTooltip,
@@ -9,12 +8,16 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
-import { PropertySelector, PropertyOption } from "./PropertySelector";
+import {
+  PropertySelector,
+  PropertyOption,
+} from "@/components/dashboard/analytics/PropertySelector";
 import { useState, useEffect, useCallback } from "react";
 import { getCashFlowTrend } from "@/lib/services/analyticsService";
 import { formatCurrency } from "@/lib/utils";
+import { createChartTooltipFormatter } from "@/lib/analytics";
 
 interface CashFlowChartProps {
   properties: PropertyOption[];
@@ -121,124 +124,71 @@ export function CashFlowChart({ properties }: CashFlowChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : chartData.length === 0 ? (
+        {chartData.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             No cash flow data available for the selected period.
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[400px] w-full">
-            <AreaChart
+            <LineChart
+              accessibilityLayer
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              margin={{
+                left: 20,
+                right: 20,
+              }}
             >
-              <defs>
-                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-income)" stopOpacity={0.6}/>
-                  <stop offset="100%" stopColor="var(--color-income)" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-expenses)" stopOpacity={0.6}/>
-                  <stop offset="100%" stopColor="var(--color-expenses)" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="netIncomeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-netIncome)" stopOpacity={0.6}/>
-                  <stop offset="100%" stopColor="var(--color-netIncome)" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-              
-              <CartesianGrid 
-                strokeDasharray="2 4" 
-                className="stroke-muted/25" 
-                horizontal={true}
-                vertical={false}
-              />
-              
+              <CartesianGrid vertical={false} />
+
               <XAxis
                 dataKey="monthLabel"
-                className="text-xs fill-muted-foreground"
-                interval="preserveStartEnd"
-                axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, dy: 10 }}
+                axisLine={false}
+                tickMargin={8}
               />
-              
-              <YAxis 
-                className="text-xs fill-muted-foreground" 
+
+              <YAxis
+                className="text-xs fill-muted-foreground"
                 tickFormatter={formatCurrency}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, dx: -10 }}
               />
-              
-              <ChartTooltip
+
+              <ChartTooltip 
                 content={
                   <ChartTooltipContent
-                    formatter={(value, name) => [
-                      formatCurrency(Number(value)),
-                      name,
-                    ]}
-                    className="rounded-lg border bg-background/95 backdrop-blur-sm p-3 shadow-lg"
+                    formatter={createChartTooltipFormatter(formatCurrency, chartConfig)}
                   />
-                }
-                cursor={{ strokeDasharray: "4 4", strokeWidth: 1, stroke: "var(--color-border)" }}
+                } 
               />
-              
+
               <ChartLegend content={<ChartLegendContent />} />
-              
-              <Area
-                type="monotone"
+
+              <Line
+                type="linear"
                 dataKey="income"
-                stroke="var(--color-income)"
-                strokeWidth={2.5}
-                fill="url(#incomeGradient)"
-                dot={{ fill: "var(--color-income)", strokeWidth: 2, r: 4 }}
-                activeDot={{ 
-                  r: 6, 
-                  strokeWidth: 2,
-                  fill: "var(--color-income)",
-                  stroke: "hsl(var(--background))",
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                }}
+                stroke="var(--color-success)"
+                strokeWidth={2}
+                dot={false}
               />
-              
-              <Area
-                type="monotone"
+
+              <Line
+                type="linear"
                 dataKey="expenses"
-                stroke="var(--color-expenses)"
-                strokeWidth={2.5}
-                fill="url(#expensesGradient)"
-                dot={{ fill: "var(--color-expenses)", strokeWidth: 2, r: 4 }}
-                activeDot={{ 
-                  r: 6, 
-                  strokeWidth: 2,
-                  fill: "var(--color-expenses)",
-                  stroke: "hsl(var(--background))",
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                }}
+                stroke="var(--color-destructive)"
+                strokeWidth={2}
+                dot={false}
               />
-              
-              <Area
-                type="monotone"
+
+              <Line
+                type="linear"
                 dataKey="netIncome"
-                stroke="var(--color-netIncome)"
-                strokeWidth={2.5}
-                fill="url(#netIncomeGradient)"
-                dot={{ fill: "var(--color-netIncome)", strokeWidth: 2, r: 4 }}
-                activeDot={{ 
-                  r: 6, 
-                  strokeWidth: 2,
-                  fill: "var(--color-netIncome)",
-                  stroke: "hsl(var(--background))",
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                }}
-                strokeDasharray="6 4"
+                stroke="var(--color-primary)"
+                strokeWidth={2}
+                dot={false}
               />
-            </AreaChart>
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

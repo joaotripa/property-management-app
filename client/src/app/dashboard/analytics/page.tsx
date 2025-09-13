@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, TrendingUp, BarChart3 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -17,7 +17,6 @@ import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseB
 import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
 import { NetIncomeChart } from "@/components/dashboard/analytics/NetIncomeChart";
 import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
-import { ROICapRateChart } from "@/components/dashboard/analytics/ROICapRateChart";
 import { PropertyOption } from "@/components/dashboard/analytics/PropertySelector";
 
 import {
@@ -152,7 +151,6 @@ export default function AnalyticsPage() {
       if (previousKpisData.status === "fulfilled") {
         setData((prev) => ({ ...prev, previousKpis: previousKpisData.value }));
       } else {
-        // Previous month data is optional, don't show error
         console.warn(
           "Failed to load previous month KPIs:",
           previousKpisData.reason
@@ -196,7 +194,6 @@ export default function AnalyticsPage() {
     }
   };
 
-  // Fetch properties list
   const fetchProperties = async () => {
     try {
       setLoading((prev) => ({ ...prev, properties: true }));
@@ -214,19 +211,16 @@ export default function AnalyticsPage() {
     }
   };
 
-  // Initial data load
   useEffect(() => {
     fetchProperties();
     fetchAnalyticsData();
   }, []);
 
-  // Manual refresh
   const handleRefresh = () => {
     toast.info("Refreshing analytics data...");
     fetchAnalyticsData();
   };
 
-  // Generate KPI configs for analytics page
   const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
     const current = data.kpis?.portfolio;
     const previous = data.previousKpis?.portfolio;
@@ -266,14 +260,12 @@ export default function AnalyticsPage() {
   console.log(kpiConfigs.length);
 
   return (
-    <div className="container flex flex-col mx-auto px-6 gap-8 animate-in fade-in-50 duration-500">
+    <div className="flex flex-col px-6 pb-6 gap-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            Analytics Dashboard
-          </h1>
-          <p className="text-muted-foreground text-lg">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-bold">Analytics Dashboard</h1>
+          <p className="text-muted-foreground">
             Comprehensive insights into your property portfolio performance
           </p>
         </div>
@@ -300,75 +292,36 @@ export default function AnalyticsPage() {
       </section>
 
       {/* Charts Section */}
-      <section className="space-y-8">
+      <section className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-lg bg-primary/10 ring-1 ring-primary/20">
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </div>
             <h2 className="text-2xl font-semibold tracking-tight">
               Performance Charts
             </h2>
           </div>
-          <Badge variant="secondary" className="text-xs shadow-sm">
+          <Badge variant="default" className="text-xs shadow-sm">
             6 Months Data
           </Badge>
         </div>
 
-        <div className="space-y-8">
-          {/* Cash Flow Trend */}
-          <div className="animate-in slide-in-from-left duration-700">
-            <CashFlowChart properties={data.properties} />
-          </div>
-
-          {/* Expense Breakdown - spans full width */}
-          <div className="animate-in slide-in-from-right duration-700 delay-150">
-            <ExpenseBreakdownChart properties={data.properties} />
-          </div>
+        <div className="flex flex-col gap-8">
+          <CashFlowChart properties={data.properties} />
+          <ExpenseBreakdownChart properties={data.properties} />
         </div>
       </section>
 
       {/* Property Comparison Section */}
-      <section className="space-y-8">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-lg bg-primary/10 ring-1 ring-primary/20">
-            <BarChart3 className="h-4 w-4 text-primary" />
-          </div>
+      <section className="flex flex-col gap-8">
+        <div className="flex items-center">
           <h2 className="text-2xl font-semibold tracking-tight">
             Property Analysis
           </h2>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Property Ranking */}
-          <div className="animate-in slide-in-from-left duration-700 delay-300">
-            <TopIncomeChart
-              data={data.propertyComparison?.propertyRanking}
-              isLoading={loading.propertyComparison}
-              error={errors.propertyComparison}
-            />
-          </div>
-          <div className="animate-in slide-in-from-right duration-700 delay-450">
-            <NetIncomeChart
-              data={data.propertyComparison?.propertyRanking}
-              isLoading={loading.propertyComparison}
-              error={errors.propertyComparison}
-            />
-          </div>
-          <div className="animate-in slide-in-from-left duration-700 delay-300">
-            <ROIChart
-              data={data.propertyComparison?.propertyRanking}
-              isLoading={loading.propertyComparison}
-              error={errors.propertyComparison}
-            />
-          </div>
-          <div className="animate-in slide-in-from-right duration-700 delay-450">
-            <ROICapRateChart
-              data={data.propertyComparison?.propertyKPIs}
-              isLoading={loading.propertyComparison}
-              error={errors.propertyComparison}
-            />
-          </div>
+          <TopIncomeChart data={data.propertyComparison?.propertyRanking} />
+          <NetIncomeChart data={data.propertyComparison?.propertyRanking} />
+          <ROIChart data={data.propertyComparison?.propertyRanking} />
         </div>
       </section>
     </div>
