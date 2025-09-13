@@ -95,9 +95,9 @@ export default function PropertiesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col">
-        <h2 className="text-3xl font-bold tracking-tight">Properties</h2>
+    <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-3xl md:text-4xl font-bold">Properties</h2>
         <p className="text-muted-foreground">
           Think of this as your property shelf. Add, update, or tidy it up
           anytime.

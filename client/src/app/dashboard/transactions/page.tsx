@@ -115,11 +115,11 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="flex flex-col max-w-7xl p-6 gap-6 mx-auto">
+    <div className="flex flex-col max-w-7xl px-6 pb-6 gap-8 mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col">
-          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-3xl md:text-4xl font-bold">Transactions</h2>
           <p className="text-muted-foreground">
             See what&apos;s coming in and what&apos;s heading out.
           </p>

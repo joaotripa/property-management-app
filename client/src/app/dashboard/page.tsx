@@ -7,10 +7,10 @@ import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-1 flex-col gap-6 px-6 pb-6">
+    <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
       {/* Welcome Section */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-bold text-foreground">Welcome back,</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">Welcome back,</h1>
         <p className="text-muted-foreground">
           Here&apos;s what&apos;s happening with your properties today
         </p>

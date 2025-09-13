@@ -260,11 +260,13 @@ export default function AnalyticsPage() {
   console.log(kpiConfigs.length);
 
   return (
-    <div className="flex flex-col px-6 pb-6 gap-6">
+    <div className="flex flex-col px-6 pb-6 gap-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold">Analytics Dashboard</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">
+            Analytics Dashboard
+          </h1>
           <p className="text-muted-foreground">
             Comprehensive insights into your property portfolio performance
           </p>

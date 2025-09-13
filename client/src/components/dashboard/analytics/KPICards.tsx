@@ -52,7 +52,7 @@ function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
 export function KPICards({ kpiConfigs }: KPICardsProps) {
   return (
     <div
-      className="grid gap-4 mb-6"
+      className="grid gap-4"
       style={{
         gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))",
       }}
