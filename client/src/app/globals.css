@@ -152,18 +152,18 @@
   --color-sidebar: var(--sidebar);
 
   /* Chart colors - highly distinguishable palette */
-  --color-chart-1: oklch(0.574 0.2103 262.8);  /* primary blue */
-  --color-chart-2: oklch(0.65 0.19 142);       /* success green */
-  --color-chart-3: oklch(0.78 0.17 78);        /* warning amber */
-  --color-chart-4: oklch(0.62 0.21 18);        /* destructive red */
-  --color-chart-5: oklch(0.68 0.18 308);       /* magenta */
-  --color-chart-6: oklch(0.6 0.16 200);        /* cyan */
-  --color-chart-7: oklch(0.72 0.15 35);        /* orange */
-  --color-chart-8: oklch(0.55 0.12 120);       /* forest green */
-  --color-chart-9: oklch(0.63 0.17 290);       /* purple */
-  --color-chart-10: oklch(0.58 0.14 25);       /* brown */
-  --color-chart-11: oklch(0.65 0.15 180);      /* teal */
-  --color-chart-12: oklch(0.69 0.16 340);      /* rose */
+  --color-chart-1: oklch(0.574 0.2103 262.8); /* primary blue */
+  --color-chart-2: oklch(0.65 0.19 142); /* success green */
+  --color-chart-3: oklch(0.78 0.17 78); /* warning amber */
+  --color-chart-4: oklch(0.62 0.21 18); /* destructive red */
+  --color-chart-5: oklch(0.68 0.18 308); /* magenta */
+  --color-chart-6: oklch(0.6 0.16 200); /* cyan */
+  --color-chart-7: oklch(0.72 0.15 35); /* orange */
+  --color-chart-8: oklch(0.55 0.12 120); /* forest green */
+  --color-chart-9: oklch(0.63 0.17 290); /* purple */
+  --color-chart-10: oklch(0.58 0.14 25); /* brown */
+  --color-chart-11: oklch(0.65 0.15 180); /* teal */
+  --color-chart-12: oklch(0.69 0.16 340); /* rose */
 }
 
 @layer base {
@@ -175,10 +175,6 @@
   * {
     border-color: var(--color-border);
     outline: hsl(var(--ring) / 0.5);
-  }
-
-  html {
-    scroll-behavior: smooth;
   }
 
   input[type="checkbox"] {
@@ -222,7 +218,4 @@
 
 .hover-scale:hover {
   transform: scale(1.05);
-}
-
-@layer base {
 }

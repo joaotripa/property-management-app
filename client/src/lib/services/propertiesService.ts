@@ -1,10 +1,24 @@
 import { PropertyOption } from "@/types/transactions";
+import { Property } from "@/types/properties";
+import { UpdatePropertyInput, ErrorResponse } from "@/lib/validations/property";
 
 interface PropertiesResponse {
   success: boolean;
   properties: PropertyOption[];
   message?: string;
   count?: number;
+}
+
+interface PropertyResponse {
+  success: boolean;
+  property?: Property;
+  message?: string;
+}
+
+interface UpdatePropertyResponse {
+  success: boolean;
+  property?: Property;
+  message?: string;
 }
 
 export class PropertiesServiceError extends Error {
@@ -52,6 +66,159 @@ export async function getProperties(signal?: AbortSignal): Promise<PropertyOptio
     
     throw new PropertiesServiceError(
       'Network error while fetching properties'
+    );
+  }
+}
+
+export async function getPropertyById(id: string, signal?: AbortSignal): Promise<Property | null> {
+  try {
+    const response = await fetch(`/api/properties/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal,
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new PropertiesServiceError(
+        `Failed to fetch property: ${response.statusText}`,
+        response.status
+      );
+    }
+
+    const data: PropertyResponse = await response.json();
+
+    if (!data.success) {
+      throw new PropertiesServiceError(
+        data.message || 'Failed to fetch property'
+      );
+    }
+
+    return data.property || null;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return null;
+    }
+
+    if (error instanceof PropertiesServiceError) {
+      throw error;
+    }
+
+    throw new PropertiesServiceError(
+      'Network error while fetching property'
+    );
+  }
+}
+
+export async function updateProperty(id: string, data: UpdatePropertyInput, signal?: AbortSignal): Promise<Property> {
+  try {
+    const response = await fetch(`/api/properties/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      signal,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to update property: ${response.statusText}`;
+
+      try {
+        const errorData: ErrorResponse = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+
+        if (errorData.errors) {
+          const fieldErrors = Object.entries(errorData.errors)
+            .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+            .join('; ');
+          errorMessage += ` (${fieldErrors})`;
+        }
+      } catch {
+        // If we can't parse the error response, use the default message
+      }
+
+      throw new PropertiesServiceError(errorMessage, response.status);
+    }
+
+    const responseData: UpdatePropertyResponse = await response.json();
+
+    if (!responseData.success) {
+      throw new PropertiesServiceError(
+        responseData.message || 'Failed to update property'
+      );
+    }
+
+    if (!responseData.property) {
+      throw new PropertiesServiceError('Property data missing from response');
+    }
+
+    return responseData.property;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new PropertiesServiceError('Request cancelled', 0);
+    }
+
+    if (error instanceof PropertiesServiceError) {
+      throw error;
+    }
+
+    throw new PropertiesServiceError(
+      'Network error while updating property'
+    );
+  }
+}
+
+export async function deleteProperty(id: string, signal?: AbortSignal): Promise<void> {
+  try {
+    const response = await fetch(`/api/properties/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to delete property: ${response.statusText}`;
+
+      try {
+        const errorData: ErrorResponse = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // If we can't parse the error response, use the default message
+      }
+
+      throw new PropertiesServiceError(errorMessage, response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new PropertiesServiceError(
+        data.message || 'Failed to delete property'
+      );
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new PropertiesServiceError('Request cancelled', 0);
+    }
+
+    if (error instanceof PropertiesServiceError) {
+      throw error;
+    }
+
+    throw new PropertiesServiceError(
+      'Network error while deleting property'
     );
   }
 }

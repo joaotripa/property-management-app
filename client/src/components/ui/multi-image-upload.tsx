@@ -15,9 +15,17 @@ export interface FileWithPreview {
   id: string;
 }
 
+export interface ExistingImageItem {
+  url: string;
+  id: string;
+  isExisting: true;
+}
+
 export interface MultiImageUploadProps {
   files: FileWithPreview[];
   onFilesChange: (files: FileWithPreview[]) => void;
+  existingImages?: ExistingImageItem[];
+  onRemoveExistingImage?: (id: string) => void;
   coverImageIndex: number;
   onCoverImageChange: (index: number) => void;
   accept?: string;
@@ -35,6 +43,8 @@ export interface MultiImageUploadProps {
 export function MultiImageUpload({
   files,
   onFilesChange,
+  existingImages = [],
+  onRemoveExistingImage,
   coverImageIndex,
   onCoverImageChange,
   accept = "image/*",
@@ -45,8 +55,8 @@ export function MultiImageUpload({
   error,
   disabled = false,
   className,
-  label = "Property Images",
-  description = "Add images of your property",
+  label,
+  description,
 }: MultiImageUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -206,20 +216,40 @@ export function MultiImageUpload({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const allItems: (FileWithPreview | ExistingImageItem)[] = [
+    ...existingImages,
+    ...files,
+  ];
+
+  const hasAnyImages = allItems.length > 0;
+
   return (
     <div className={cn("space-y-4", className)}>
-      <div>
-        <Label className="text-base font-medium">{label}</Label>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
-      </div>
+      {(label || description) && (
+        <div>
+          {label && <Label className="text-base font-medium">{label}</Label>}
+          {description && (
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+      )}
 
       {/* Image Grid */}
-      {files.length > 0 && (
+      {hasAnyImages && (
         <ImageGrid
-          files={files}
+          items={allItems}
           coverImageIndex={coverImageIndex}
           onCoverImageChange={onCoverImageChange}
-          onRemoveFile={handleRemoveFile}
+          onRemoveItem={(index) => {
+            if (index < existingImages.length) {
+              // Removing existing image
+              const existingImage = existingImages[index];
+              onRemoveExistingImage?.(existingImage.id);
+            } else {
+              // Removing new file - adjust index for new files array
+              handleRemoveFile(index - existingImages.length);
+            }
+          }}
           onAddMore={handleAddMore}
           maxFiles={maxFiles}
           isUploading={isUploading}
@@ -234,7 +264,7 @@ export function MultiImageUpload({
       )}
 
       {/* Initial Upload Area */}
-      {files.length === 0 && (
+      {!hasAnyImages && (
         <Card
           className={cn(
             "border-2 border-dashed transition-colors cursor-pointer",
@@ -260,12 +290,19 @@ export function MultiImageUpload({
               </p>
               {isUploading && uploadProgress.length > 0 ? (
                 <div className="w-full max-w-xs space-y-2">
-                  <Progress 
-                    value={Math.round(uploadProgress.reduce((acc, prog) => acc + prog, 0) / uploadProgress.length)} 
-                    className="h-2" 
+                  <Progress
+                    value={Math.round(
+                      uploadProgress.reduce((acc, prog) => acc + prog, 0) /
+                        uploadProgress.length
+                    )}
+                    className="h-2"
                   />
                   <p className="text-xs text-muted-foreground">
-                    {Math.round(uploadProgress.reduce((acc, prog) => acc + prog, 0) / uploadProgress.length)}% complete
+                    {Math.round(
+                      uploadProgress.reduce((acc, prog) => acc + prog, 0) /
+                        uploadProgress.length
+                    )}
+                    % complete
                   </p>
                 </div>
               ) : (

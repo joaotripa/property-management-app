@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  MapPin,
   Euro,
   Users,
   Edit,
@@ -20,10 +19,14 @@ import {
   ArrowLeft,
   ChevronRight,
   Trash2,
+  LandPlot,
+  MapPinHouse,
+  Building2,
+  Globe,
 } from "lucide-react";
 import { ImageCarousel } from "@/components/ui/image-carousel";
-import { getPropertyImageUrls } from "@/lib/supabase/uploads";
 import { PropertyEditForm } from "./PropertyEditForm";
+import { FileWithPreview } from "@/components/ui/multi-image-upload";
 import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
 import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
 import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
@@ -32,6 +35,18 @@ import { CategoryOption } from "@/types/transactions";
 import { Property } from "@/types/properties";
 import { OccupancyStatus } from "@prisma/client";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
+import {
+  updateProperty,
+  PropertiesServiceError,
+} from "@/lib/services/propertiesService";
+import {
+  uploadPropertyImages,
+  getPropertyImages,
+  updatePropertyCoverImage,
+  ImageServiceError,
+} from "@/lib/services/imageService";
+import { UpdatePropertyInput } from "@/lib/validations/property";
+import { useToast } from "@/hooks/useToast";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -48,6 +63,7 @@ export function PropertyDetailsDialog({
   onSave,
   onDelete,
 }: PropertyDetailsDialogProps) {
+  const { toast } = useToast();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [availableCategories, setAvailableCategories] = useState<
@@ -93,7 +109,7 @@ export function PropertyDetailsDialog({
       }
 
       try {
-        const images = await getPropertyImageUrls(property.id);
+        const images = await getPropertyImages(property.id);
         setPropertyImages(images);
       } catch (error) {
         console.error("Failed to load property images:", error);
@@ -124,11 +140,84 @@ export function PropertyDetailsDialog({
     setEditProperty(null);
   };
 
-  const handleSave = () => {
-    if (editProperty) {
-      onSave(editProperty);
+  const handleSave = async (
+    data: UpdatePropertyInput,
+    newImages?: FileWithPreview[],
+    coverImageIndex: number = 0,
+    hasCoverImageChanged: boolean = false
+  ) => {
+    if (!editProperty || !property) return;
+
+    try {
+      const updatedProperty = await updateProperty(property.id, data);
+
+      onSave(updatedProperty);
+
+      // Handle cover image update for existing images
+      if (hasCoverImageChanged && coverImageIndex < propertyImages.length) {
+        // Need to get the image ID for the existing image at coverImageIndex
+        try {
+          const { getPropertyImageData } = await import('@/lib/services/imageService');
+          const existingImageData = await getPropertyImageData(property.id);
+
+          if (existingImageData && existingImageData[coverImageIndex]) {
+            const targetImageId = existingImageData[coverImageIndex].filename;
+            await updatePropertyCoverImage(property.id, targetImageId);
+          }
+        } catch (error) {
+          console.error("Failed to update cover image:", error);
+          // Don't throw - let the save operation continue
+        }
+      }
+
+      if (newImages && newImages.length > 0) {
+        const existingImageCount = propertyImages.length;
+        let finalCoverImageIndex = 0;
+
+        if (coverImageIndex >= existingImageCount) {
+          finalCoverImageIndex = coverImageIndex - existingImageCount;
+        } else if (existingImageCount === 0) {
+          finalCoverImageIndex = 0;
+        } else {
+          finalCoverImageIndex = -1;
+        }
+
+        await uploadPropertyImages(
+          property.id,
+          newImages,
+          finalCoverImageIndex
+        );
+
+        try {
+          const images = await getPropertyImages(property.id);
+          setPropertyImages(images);
+        } catch (error) {
+          console.error("Failed to reload property images:", error);
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: "Property updated successfully",
+      });
+
       setMode("view");
       setEditProperty(null);
+    } catch (error) {
+      console.error("Error saving property:", error);
+
+      let errorMessage = "Failed to save property changes";
+      if (
+        error instanceof PropertiesServiceError ||
+        error instanceof ImageServiceError
+      ) {
+        errorMessage = error.message;
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+      });
     }
   };
 
@@ -229,7 +318,31 @@ export function PropertyDetailsDialog({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                        <Home className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          Property Name
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">
+                        {currentProperty.name}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <LandPlot className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          Property Type
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">
+                        {currentProperty.type}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <MapPinHouse className="w-4 h-4" />
                         <span className="text-sm font-medium">Address</span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
@@ -239,7 +352,7 @@ export function PropertyDetailsDialog({
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                        <Building2 className="w-4 h-4" />
                         <span className="text-sm font-medium">City</span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
@@ -249,7 +362,7 @@ export function PropertyDetailsDialog({
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                        <Globe className="w-4 h-4" />
                         <span className="text-sm font-medium">Country</span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
@@ -259,13 +372,15 @@ export function PropertyDetailsDialog({
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <Home className="w-4 h-4" />
+                        <Euro className="w-4 h-4" />
                         <span className="text-sm font-medium">
-                          Property Type
+                          Purchase Price
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
-                        {currentProperty.type}
+                        {currentProperty.purchasePrice
+                          ? `€${currentProperty.purchasePrice.toLocaleString()}`
+                          : "Not specified"}
                       </p>
                     </div>
                   </div>
@@ -394,7 +509,6 @@ export function PropertyDetailsDialog({
               property={currentProperty}
               onSave={handleSave}
               onCancel={handleCancel}
-              onChange={(updatedProperty) => setEditProperty(updatedProperty)}
             />
           )}
         </div>

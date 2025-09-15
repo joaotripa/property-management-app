@@ -37,11 +37,10 @@ export function ThumbnailCarousel({
     index: number;
   }) => (
     <button
-      key={index}
       onClick={() => onThumbnailClick(index)}
       className={cn(
-        "flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all hover:border-primary/50",
-        currentIndex === index ? "border-primary  " : "border-transparent",
+        "flex-shrink-0 rounded-lg overflow-hidden border-2 transition-colors hover:border-primary/50",
+        currentIndex === index ? "border-primary" : "border-transparent",
         shouldUseCarousel ? "w-full h-full" : ""
       )}
       style={

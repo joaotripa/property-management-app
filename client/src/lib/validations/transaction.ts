@@ -85,7 +85,7 @@ export const transactionFormSchema = z.object({
 export const createTransactionSchema = baseTransactionSchema;
 
 export const updateTransactionSchema = baseTransactionSchema.extend({
-  id: z.string().uuid("Invalid transaction ID"),
+  id: z.uuid("Invalid transaction ID"),
 });
 
 export const transactionQuerySchema = z.object({
@@ -144,7 +144,7 @@ export const transactionQuerySchema = z.object({
       return undefined;
     }),
 
-  propertyId: z.string().uuid("Invalid property ID").optional(),
+  propertyId: z.uuid("Invalid property ID").optional(),
 
   search: z.string().trim().optional(),
 
@@ -179,7 +179,7 @@ export const transactionQuerySchema = z.object({
 
 export const transactionResponseSchema = z.object({
   transaction: z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     amount: z.number(),
     type: z.enum(TRANSACTION_TYPES),
     description: z.string().optional(),
@@ -187,9 +187,9 @@ export const transactionResponseSchema = z.object({
     isRecurring: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
-    userId: z.string().uuid(),
-    propertyId: z.string().uuid(),
-    categoryId: z.string().uuid(),
+    userId: z.uuid(),
+    propertyId: z.uuid(),
+    categoryId: z.uuid(),
     category: z.object({
       id: z.string().uuid(),
       name: z.string(),
@@ -197,7 +197,7 @@ export const transactionResponseSchema = z.object({
       description: z.string().optional(),
     }).optional(),
     property: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
       name: z.string(),
       address: z.string(),
     }).optional(),

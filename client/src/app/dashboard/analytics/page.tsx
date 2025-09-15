@@ -79,13 +79,6 @@ export default function AnalyticsPage() {
     properties: true,
   });
 
-  const [errors, setErrors] = useState({
-    kpis: "",
-    charts: "",
-    propertyComparison: "",
-    properties: "",
-  });
-
   const [data, setData] = useState<AnalyticsState>({
     kpis: null,
     previousKpis: null,
@@ -106,13 +99,6 @@ export default function AnalyticsPage() {
         charts: true,
         propertyComparison: true,
       }));
-
-      setErrors({
-        kpis: "",
-        charts: "",
-        propertyComparison: "",
-        properties: "",
-      });
 
       const [kpisData, previousKpisData, chartsData, comparisonData] =
         await Promise.allSettled([
@@ -141,10 +127,6 @@ export default function AnalyticsPage() {
       if (kpisData.status === "fulfilled") {
         setData((prev) => ({ ...prev, kpis: kpisData.value }));
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          kpis: kpisData.reason?.message || "Failed to load KPIs",
-        }));
         toast.error("Failed to load KPI data");
       }
 
@@ -160,10 +142,6 @@ export default function AnalyticsPage() {
       if (chartsData.status === "fulfilled") {
         setData((prev) => ({ ...prev, charts: chartsData.value }));
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          charts: chartsData.reason?.message || "Failed to load charts",
-        }));
         toast.error("Failed to load chart data");
       }
 
@@ -173,12 +151,6 @@ export default function AnalyticsPage() {
           propertyComparison: comparisonData.value,
         }));
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          propertyComparison:
-            comparisonData.reason?.message ||
-            "Failed to load property comparison",
-        }));
         toast.error("Failed to load property comparison data");
       }
     } catch (error) {
@@ -201,10 +173,6 @@ export default function AnalyticsPage() {
       setData((prev) => ({ ...prev, properties }));
     } catch (error) {
       console.error("Error fetching properties:", error);
-      setErrors((prev) => ({
-        ...prev,
-        properties: "Failed to load properties",
-      }));
       toast.error("Failed to load properties");
     } finally {
       setLoading((prev) => ({ ...prev, properties: false }));
@@ -227,7 +195,7 @@ export default function AnalyticsPage() {
 
     return [
       {
-        title: "Cash-on-Cash Return",
+        title: "Total Invested",
         value: formatPercentage(current?.cashOnCashReturn || 0),
         ...getTrendData(
           current?.cashOnCashReturn || 0,
@@ -235,9 +203,9 @@ export default function AnalyticsPage() {
         ),
       },
       {
-        title: "Average Cap Rate",
-        value: formatPercentage(current?.averageCapRate || 0),
-        ...getTrendData(current?.averageCapRate || 0, previous?.averageCapRate),
+        title: "Cash Flow",
+        value: formatPercentage(current?.netIncome || 0),
+        ...getTrendData(current?.netIncome || 0, previous?.netIncome),
       },
       {
         title: "Expense/Income Ratio",

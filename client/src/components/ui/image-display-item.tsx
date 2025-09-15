@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Home } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImageLoading } from "@/components/ui/image-loading";
 
 export interface ImageDisplayItemProps {
   src: string;
@@ -31,9 +29,6 @@ export function ImageDisplayItem({
   onLoad,
   aspectRatio = "video",
 }: ImageDisplayItemProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-
   const getAspectRatioClass = () => {
     switch (aspectRatio) {
       case "square":
@@ -45,33 +40,17 @@ export function ImageDisplayItem({
     }
   };
 
-  const handleImageError = () => {
-    setHasError(true);
-    setIsLoading(false);
-    onError?.();
-  };
-
-  const handleImageLoad = () => {
-    setIsLoading(false);
-    onLoad?.();
-  };
-
-  if (!src || hasError) {
+  if (!src) {
     return (
       <div
         className={cn(
-          "bg-muted-foreground/10 flex items-center justify-center",
+          "bg-muted/20 flex items-center justify-center",
           !fill && getAspectRatioClass(),
           fill && "w-full h-full",
           className
         )}
       >
-        <div className="text-center">
-          <div className="w-12 h-12 bg-primary/60 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Home className="w-6 h-6 text-background" />
-          </div>
-          <p className="text-xs text-muted-foreground">Image not available</p>
-        </div>
+        <Home className="w-8 h-8 text-muted-foreground" />
       </div>
     );
   }
@@ -92,13 +71,15 @@ export function ImageDisplayItem({
         height={fill ? undefined : height}
         fill={fill}
         className="object-cover"
-        onError={handleImageError}
-        onLoad={handleImageLoad}
+        sizes={
+          fill
+            ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            : undefined
+        }
+        onError={onError}
+        onLoad={onLoad}
         priority={priority}
       />
-
-      {/* Loading overlay */}
-      {isLoading && <ImageLoading overlay />}
     </div>
   );
 }

@@ -17,9 +17,6 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo") ? new Date(searchParams.get("dateTo")!) : undefined;
     const includePropertyDetails = searchParams.get("includePropertyDetails") === "true";
 
-    console.log(dateFrom);
-    console.log(dateTo);
-
     if (dateFrom && isNaN(dateFrom.getTime())) {
       return NextResponse.json({ error: "Invalid dateFrom parameter" }, { status: 400 });
     }

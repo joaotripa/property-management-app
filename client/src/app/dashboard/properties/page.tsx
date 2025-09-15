@@ -76,8 +76,7 @@ export default function PropertiesPage() {
           <CardContent className="p-6 text-center">
             <p className="text-destructive font-medium">
               Failed to load properties
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">{error}</p>
+            </p>{" "}
             <Button
               onClick={() => {
                 refetch();
@@ -191,7 +190,10 @@ export default function PropertiesPage() {
       <PropertyDetailsDialog
         property={selectedProperty}
         isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedProperty(null);
+        }}
         onSave={handleSaveProperty}
         onDelete={handleDeleteProperty}
       />

@@ -35,7 +35,7 @@ import { z } from "zod";
 import {
   uploadPropertyImages,
   validatePropertyFiles,
-} from "@/lib/supabase/uploads";
+} from "@/lib/services/imageService";
 import {
   MultiImageUpload,
   type FileWithPreview,
@@ -158,10 +158,9 @@ export function PropertyAddForm({
 
       if (selectedFiles.length > 0) {
         try {
-          const files = selectedFiles.map((f) => f.file);
           await uploadPropertyImages(
-            files,
             createdProperty.id,
+            selectedFiles,
             coverImageIndex,
             handleUploadProgress
           );

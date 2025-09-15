@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ImageDisplayItem } from "@/components/ui/image-display-item";
+import { getPropertyCoverImage } from "@/lib/services/imageService";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -21,65 +22,55 @@ export function PropertyImage({
   aspectRatio = "video",
 }: PropertyImageProps) {
   const [imageSrc, setImageSrc] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [imageError, setImageError] = useState<boolean>(false);
-  const [urlExpiry, setUrlExpiry] = useState<number>(0);
 
   useEffect(() => {
     if (!propertyId) return;
 
+    const abortController = new AbortController();
+
     const fetchCoverImage = async () => {
       try {
+        setIsLoading(true);
         setImageError(false);
 
-        const response = await fetch(
-          `/api/properties/${propertyId}/images?action=cover`
+        const coverImageUrl = await getPropertyCoverImage(
+          propertyId,
+          abortController.signal
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch cover image");
-        }
-
-        const data = await response.json();
-
-        if (data.coverImageUrl) {
-          setImageSrc(data.coverImageUrl);
-          setUrlExpiry(Date.now() + 3600 * 1000);
+        if (coverImageUrl) {
+          setImageSrc(coverImageUrl);
         } else {
           setImageError(true);
         }
       } catch {
-        setImageError(true);
+        if (!abortController.signal.aborted) {
+          setImageError(true);
+        }
+      } finally {
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    const shouldRefresh = Date.now() > urlExpiry - 300000;
+    fetchCoverImage();
 
-    if (!imageSrc || shouldRefresh) {
-      fetchCoverImage();
-    }
-  }, [propertyId, imageSrc, urlExpiry]);
+    return () => {
+      abortController.abort();
+    };
+  }, [propertyId]);
 
   const handleImageError = () => {
     setImageError(true);
+    setIsLoading(false);
   };
-
-  if (imageError || (!imageSrc && !imageError)) {
-    return (
-      <ImageDisplayItem
-        src=""
-        alt={propertyName}
-        className={className}
-        width={width}
-        height={height}
-        aspectRatio={aspectRatio}
-        onError={handleImageError}
-      />
-    );
-  }
 
   return (
     <ImageDisplayItem
-      src={imageSrc}
+      src={imageError || isLoading ? "" : imageSrc}
       alt={propertyName}
       className={className}
       width={width}

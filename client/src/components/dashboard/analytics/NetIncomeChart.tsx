@@ -15,7 +15,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
-import { DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { createChartTooltipFormatter } from "@/lib/analytics";
 

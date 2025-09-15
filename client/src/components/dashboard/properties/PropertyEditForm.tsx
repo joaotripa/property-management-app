@@ -1,12 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { PropertyType, OccupancyStatus } from "@prisma/client";
 import { Property } from "@/types/properties";
+import {
+  basePropertySchema,
+  UpdatePropertyInput,
+} from "@/lib/validations/property";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -14,8 +34,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X } from "lucide-react";
+import {
+  MultiImageUpload,
+  FileWithPreview,
+  ExistingImageItem,
+} from "@/components/ui/multi-image-upload";
+import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
+import { Loading } from "@/components/ui/loading";
+import {
+  getPropertyImageData,
+  deletePropertyImage,
+  ImageServiceError,
+} from "@/lib/services/imageService";
 
 const getPropertyTypeOptions = () => {
   return Object.values(PropertyType).map((type) => ({
@@ -26,9 +57,14 @@ const getPropertyTypeOptions = () => {
 
 interface PropertyEditFormProps {
   property: Property;
-  onSave: (property: Property) => void;
+  onSave: (
+    data: UpdatePropertyInput,
+    images?: FileWithPreview[],
+    coverImageIndex?: number,
+    hasCoverImageChanged?: boolean
+  ) => Promise<void>;
   onCancel: () => void;
-  onChange: (property: Property) => void;
+  onChange?: (property: Property) => void;
 }
 
 export function PropertyEditForm({
@@ -37,199 +73,431 @@ export function PropertyEditForm({
   onCancel,
   onChange,
 }: PropertyEditFormProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [newImages, setNewImages] = useState<FileWithPreview[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImageItem[]>([]);
+  const [removedExistingImageIds, setRemovedExistingImageIds] = useState<Set<string>>(new Set());
+  const [coverImageIndex, setCoverImageIndex] = useState(0);
+  const [initialCoverImageIndex, setInitialCoverImageIndex] = useState(0);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const propertyTypeOptions = getPropertyTypeOptions();
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const form = useForm<UpdatePropertyInput>({
+    resolver: zodResolver(
+      basePropertySchema.extend({
+        id: z.uuid(),
+      })
+    ),
+    defaultValues: {
+      id: property.id!,
+      name: property.name || "",
+      address: property.address || "",
+      type: property.type,
+      rent: property.rent || 0,
+      tenants: property.tenants || 0,
+      occupancy: property.occupancy,
+      purchasePrice: property.purchasePrice || undefined,
+    },
+  });
 
-    if (!property.name.trim()) {
-      newErrors.name = "Property name is required";
+  useEffect(() => {
+    const loadExistingImages = async () => {
+      if (!property.id) return;
+
+      setIsLoadingImages(true);
+      setImageError(null);
+
+      try {
+        const imageData = await getPropertyImageData(property.id);
+        const existingImageItems: ExistingImageItem[] = imageData.map(
+          (imgData) => ({
+            url: imgData.url,
+            id: imgData.filename,
+            isExisting: true as const,
+          })
+        );
+        setExistingImages(existingImageItems);
+
+        const coverImageIndex = imageData.findIndex((img) => img.isCover);
+        if (coverImageIndex !== -1) {
+          setCoverImageIndex(coverImageIndex);
+          setInitialCoverImageIndex(coverImageIndex);
+        } else {
+          setCoverImageIndex(0);
+          setInitialCoverImageIndex(0);
+        }
+      } catch (error) {
+        console.error("Failed to load existing images:", error);
+
+        let errorMessage = "Failed to load existing images";
+        if (error instanceof ImageServiceError) {
+          errorMessage = error.message;
+        }
+
+        setImageError(errorMessage);
+      } finally {
+        setIsLoadingImages(false);
+      }
+    };
+
+    loadExistingImages();
+  }, [property.id]);
+
+  const handleRemoveExistingImage = (imageId: string) => {
+    setImageError(null);
+
+    // Stage the image for deletion - don't call API immediately
+    setRemovedExistingImageIds(prev => new Set(prev).add(imageId));
+
+    // Find the index of the removed image in the visible images list
+    const visibleImages = existingImages.filter(img => !removedExistingImageIds.has(img.id));
+    const removedImageIndex = visibleImages.findIndex(img => img.id === imageId);
+
+    // Adjust cover image index if necessary
+    if (removedImageIndex === coverImageIndex && coverImageIndex > 0) {
+      setCoverImageIndex(0);
+    } else if (removedImageIndex < coverImageIndex) {
+      setCoverImageIndex((prev) => Math.max(0, prev - 1));
     }
-
-    if (!property.address.trim()) {
-      newErrors.address = "Address is required";
-    }
-
-    if (!property.type) {
-      newErrors.type = "Property type is required";
-    }
-
-    if (property.rent <= 0) {
-      newErrors.rent = "Rent must be greater than 0";
-    }
-
-    if (property.tenants < 0) {
-      newErrors.tenants = "Tenants cannot be negative";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(property);
-    }
+  const handleCoverImageChange = (index: number) => {
+    // Only update local state - don't save to database until form save
+    setCoverImageIndex(index);
   };
 
-  const handleInputChange = (field: keyof Property, value: string | number) => {
-    const updatedProperty = { ...property, [field]: value };
-    onChange(updatedProperty);
-
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+  const handleCancel = () => {
+    // Reset staged deletions when canceling
+    setRemovedExistingImageIds(new Set());
+    setNewImages([]);
+    setImageError(null);
+    onCancel();
   };
+
+  const handleSave = form.handleSubmit(async (data) => {
+    setIsSaving(true);
+    try {
+      // Check if cover image has changed from initial state
+      const hasCoverImageChanged = coverImageIndex !== initialCoverImageIndex;
+
+      // Save the property with new images first
+      await onSave(data, newImages, coverImageIndex, hasCoverImageChanged);
+
+      // Process staged deletions after successful save
+      if (removedExistingImageIds.size > 0) {
+        const deletionPromises = Array.from(removedExistingImageIds).map(async (imageId) => {
+          try {
+            await deletePropertyImage(property.id!, imageId);
+          } catch (error) {
+            console.error(`Failed to delete image ${imageId}:`, error);
+            // Continue with other deletions even if one fails
+          }
+        });
+
+        await Promise.all(deletionPromises);
+      }
+
+      // Reset states
+      setNewImages([]);
+      setRemovedExistingImageIds(new Set());
+      setCoverImageIndex(0);
+
+      // Reload images from server to get the updated state
+      try {
+        const imageData = await getPropertyImageData(property.id!);
+        const existingImageItems: ExistingImageItem[] = imageData.map(
+          (imgData) => ({
+            url: imgData.url,
+            id: imgData.filename,
+            isExisting: true as const,
+          })
+        );
+        setExistingImages(existingImageItems);
+
+        const newCoverImageIndex = imageData.findIndex((img) => img.isCover);
+        if (newCoverImageIndex !== -1) {
+          setCoverImageIndex(newCoverImageIndex);
+          setInitialCoverImageIndex(newCoverImageIndex);
+        } else {
+          setCoverImageIndex(0);
+          setInitialCoverImageIndex(0);
+        }
+      } catch (error) {
+        console.error("Failed to reload images after save:", error);
+      }
+    } catch (error) {
+      console.error("Error saving property:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  });
+
+  const formValues = form.watch();
+  useEffect(() => {
+    if (onChange) {
+      const updatedProperty: Property = {
+        ...property,
+        ...formValues,
+      };
+      onChange(updatedProperty);
+    }
+  }, [formValues, onChange, property]);
 
   return (
-    <div className="flex flex-col space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Property Information */}
+    <Form {...form}>
+      <form onSubmit={handleSave} className="flex flex-col space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Property Information */}
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Property Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Property Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={isSaving}
+                          placeholder="Enter property name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Property Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={isSaving}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select property type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {propertyTypeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            disabled={isSaving}
+                            placeholder="Enter property address"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial Information */}
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Financial Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="rent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Monthly Rent (€)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          disabled={isSaving}
+                          placeholder="Enter monthly rent"
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="purchasePrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Purchase Price (€)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          disabled={isSaving}
+                          placeholder="Enter purchase price"
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tenants"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Tenants</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          disabled={isSaving}
+                          placeholder="Number of tenants"
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="occupancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Occupancy Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={isSaving}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select occupancy status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={OccupancyStatus.AVAILABLE}>
+                            Available
+                          </SelectItem>
+                          <SelectItem value={OccupancyStatus.OCCUPIED}>
+                            Occupied
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Property Images */}
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>Property Information</CardTitle>
+            <CardTitle>Property Images</CardTitle>
+            <CardDescription>
+              Upload new images for this property. Existing images will be
+              preserved.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Property Name</Label>
-                <Input
-                  id="name"
-                  value={property.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={errors.name ? "border-destructive" : ""}
-                />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
-                )}
+          <CardContent>
+            {isLoadingImages ? (
+              <div className="flex items-center justify-center p-6">
+                <Loading />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="type">Property Type</Label>
-                <Select
-                  value={property.type}
-                  onValueChange={(value) =>
-                    handleInputChange("type", value as PropertyType)
-                  }
-                >
-                  <SelectTrigger
-                    className={errors.type ? "border-destructive" : ""}
-                  >
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {propertyTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.type && (
-                  <p className="text-sm text-destructive">{errors.type}</p>
-                )}
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={property.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  className={errors.address ? "border-destructive" : ""}
-                />
-                {errors.address && (
-                  <p className="text-sm text-destructive">{errors.address}</p>
-                )}
-              </div>
-            </div>
+            ) : (
+              <MultiImageUpload
+                files={newImages}
+                onFilesChange={setNewImages}
+                existingImages={existingImages.filter(img => !removedExistingImageIds.has(img.id))}
+                onRemoveExistingImage={handleRemoveExistingImage}
+                coverImageIndex={coverImageIndex}
+                onCoverImageChange={handleCoverImageChange}
+                error={imageError}
+                maxFiles={10}
+                disabled={isSaving}
+              />
+            )}
           </CardContent>
         </Card>
 
-        {/* Rental Information */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Rental Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rent">Monthly Rent (€)</Label>
-                <Input
-                  id="rent"
-                  type="number"
-                  value={property.rent}
-                  onChange={(e) =>
-                    handleInputChange("rent", parseInt(e.target.value) || 0)
-                  }
-                  className={errors.rent ? "border-destructive" : ""}
-                />
-                {errors.rent && (
-                  <p className="text-sm text-destructive">{errors.rent}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tenants">Current Tenants</Label>
-                <Input
-                  id="tenants"
-                  type="number"
-                  value={property.tenants}
-                  onChange={(e) =>
-                    handleInputChange("tenants", parseInt(e.target.value) || 0)
-                  }
-                  className={errors.tenants ? "border-destructive" : ""}
-                />
-                {errors.tenants && (
-                  <p className="text-sm text-destructive">{errors.tenants}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="occupancy">Occupancy Status</Label>
-                <Select
-                  value={property.occupancy}
-                  onValueChange={(value) =>
-                    handleInputChange("occupancy", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select occupancy status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={OccupancyStatus.AVAILABLE}>
-                      Available
-                    </SelectItem>
-                    <SelectItem value={OccupancyStatus.OCCUPIED}>
-                      Occupied
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          className="hover:bg-destructive hover:border-destructive"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          className="hover:bg-primary/90 hover:border-primary"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save Changes
-        </Button>
-      </div>
-    </div>
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancel}
+            className="hover:bg-destructive hover:border-destructive"
+            disabled={isSaving}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="hover:bg-primary/90 hover:border-primary"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

@@ -8,7 +8,11 @@ import AuthProvider from "@/components/providers/AuthProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={GeistSans.className}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={GeistSans.className}
+    >
       <head>
         <Script
           defer

@@ -103,6 +103,9 @@ All API operations use dedicated service functions:
 - `transactionsService.ts`: Transaction CRUD and stats
 - `propertiesService.ts`: Property management
 - `categoriesService.ts`: Category operations
+- `analyticsService.ts`: Analytics operations
+- `imageService.ts`: Image operations
+- `activityService.ts`: Activities operations
 
 #### Validation Layer
 
