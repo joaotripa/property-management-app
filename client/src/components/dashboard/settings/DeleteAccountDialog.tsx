@@ -21,8 +21,8 @@ import { toast } from "sonner";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 
 const deleteAccountSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  confirmDeletion: z.boolean().refine(val => val === true, {
+  email: z.email("Please enter a valid email address"),
+  confirmDeletion: z.boolean().refine((val) => val === true, {
     message: "You must confirm that you want to delete your account",
   }),
 });
@@ -34,7 +34,10 @@ interface DeleteAccountDialogProps {
   onClose: () => void;
 }
 
-export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProps) {
+export function DeleteAccountDialog({
+  isOpen,
+  onClose,
+}: DeleteAccountDialogProps) {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +67,7 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
     }
 
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/user/delete", {
         method: "DELETE",
@@ -82,16 +85,18 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
       }
 
       toast.success("Account deleted successfully. You will be signed out.");
-      
+
       // Sign out user after successful deletion
       setTimeout(async () => {
         await signOut({ callbackUrl: "/" });
       }, 2000);
-      
+
       handleClose();
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete account");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete account"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +140,8 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">
-              Type your email address <span className="font-mono">({userEmail})</span> to confirm:
+              Type your email address{" "}
+              <span className="font-mono">({userEmail})</span> to confirm:
             </Label>
             <Input
               id="email"
@@ -154,14 +160,22 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
             <Checkbox
               id="confirmDeletion"
               checked={confirmDeletion}
-              onCheckedChange={(checked) => setValue("confirmDeletion", checked === true)}
+              onCheckedChange={(checked) =>
+                setValue("confirmDeletion", checked === true)
+              }
             />
-            <Label htmlFor="confirmDeletion" className="text-sm leading-relaxed">
-              I understand that deleting my account is permanent and cannot be undone
+            <Label
+              htmlFor="confirmDeletion"
+              className="text-sm leading-relaxed"
+            >
+              I understand that deleting my account is permanent and cannot be
+              undone
             </Label>
           </div>
           {errors.confirmDeletion && (
-            <p className="text-sm text-destructive">{errors.confirmDeletion.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.confirmDeletion.message}
+            </p>
           )}
 
           <DialogFooter>
@@ -173,10 +187,10 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              variant="destructive" 
-              disabled={isLoading} 
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={isLoading}
               className="min-w-[120px]"
             >
               {isLoading ? (

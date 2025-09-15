@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   phone: z.string().optional().refine((value) => {
     if (!value) return true;
     // Basic phone validation - allows various formats

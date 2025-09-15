@@ -12,14 +12,20 @@ import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
 
 const profileSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional().refine((value) => {
-    if (!value) return true;
-    // Basic phone validation - allows various formats
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''));
-  }, "Please enter a valid phone number"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name must be less than 100 characters"),
+  email: z.email("Please enter a valid email address"),
+  phone: z
+    .string()
+    .optional()
+    .refine((value) => {
+      if (!value) return true;
+      // Basic phone validation - allows various formats
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      return phoneRegex.test(value.replace(/[\s\-\(\)]/g, ""));
+    }, "Please enter a valid phone number"),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -44,7 +50,7 @@ export function ProfileForm() {
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/user/profile", {
         method: "PUT",
@@ -60,7 +66,7 @@ export function ProfileForm() {
       }
 
       const updatedUser = await response.json();
-      
+
       // Update the session with new user data
       await update({
         ...session,
@@ -74,7 +80,9 @@ export function ProfileForm() {
       reset(data); // Reset form state to remove isDirty
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
     } finally {
       setIsLoading(false);
     }
