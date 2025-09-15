@@ -31,8 +31,6 @@ export interface MultiImageUploadProps {
   accept?: string;
   maxFiles?: number;
   maxSize?: number;
-  isUploading?: boolean;
-  uploadProgress?: number[];
   error?: string | null;
   disabled?: boolean;
   className?: string;
@@ -50,8 +48,6 @@ export function MultiImageUpload({
   accept = "image/*",
   maxFiles = 10,
   maxSize = 10 * 1024 * 1024, // 10MB
-  isUploading = false,
-  uploadProgress = [],
   error,
   disabled = false,
   className,
@@ -81,7 +77,7 @@ export function MultiImageUpload({
   };
 
   const handleFileSelect = async (selectedFiles: FileList | null) => {
-    if (!selectedFiles || disabled || isUploading) return;
+    if (!selectedFiles || disabled) return;
 
     // Clear previous validation errors
     setValidationErrors([]);
@@ -161,7 +157,7 @@ export function MultiImageUpload({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled && !isUploading) {
+    if (!disabled) {
       setIsDragOver(true);
     }
   };
@@ -175,13 +171,13 @@ export function MultiImageUpload({
     e.preventDefault();
     setIsDragOver(false);
 
-    if (disabled || isUploading) return;
+    if (disabled) return;
 
     handleFileSelect(e.dataTransfer.files);
   };
 
   const handleRemoveFile = (index: number) => {
-    if (disabled || isUploading) return;
+    if (disabled) return;
 
     // Clear validation errors when user removes files
     if (validationErrors.length > 0) {
@@ -199,7 +195,7 @@ export function MultiImageUpload({
   };
 
   const handleAddMore = () => {
-    if (!disabled && !isUploading) {
+    if (!disabled) {
       // Clear validation errors when user tries to add more files
       if (validationErrors.length > 0) {
         setValidationErrors([]);
@@ -252,8 +248,6 @@ export function MultiImageUpload({
           }}
           onAddMore={handleAddMore}
           maxFiles={maxFiles}
-          isUploading={isUploading}
-          uploadProgress={uploadProgress}
           disabled={disabled}
           showAddMore={true}
           isDragOver={isDragOver}
@@ -285,37 +279,14 @@ export function MultiImageUpload({
             </div>
 
             <div className="space-y-2">
-              <p className="text-lg font-medium">
-                {isUploading ? "Uploading..." : "Add Property Images"}
+              <p className="text-lg font-medium">Add Property Images</p>
+              <p className="text-sm text-muted-foreground">
+                Click to upload or drag and drop
               </p>
-              {isUploading && uploadProgress.length > 0 ? (
-                <div className="w-full max-w-xs space-y-2">
-                  <Progress
-                    value={Math.round(
-                      uploadProgress.reduce((acc, prog) => acc + prog, 0) /
-                        uploadProgress.length
-                    )}
-                    className="h-2"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {Math.round(
-                      uploadProgress.reduce((acc, prog) => acc + prog, 0) /
-                        uploadProgress.length
-                    )}
-                    % complete
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Images up to {formatFileSize(maxSize)} each (max {maxFiles}{" "}
-                    files)
-                  </p>
-                </>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Images up to {formatFileSize(maxSize)} each (max {maxFiles}{" "}
+                files)
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -328,7 +299,7 @@ export function MultiImageUpload({
         accept={accept}
         onChange={handleInputChange}
         className="hidden"
-        disabled={disabled || isUploading || files.length >= maxFiles}
+        disabled={disabled || files.length >= maxFiles}
         multiple
       />
 

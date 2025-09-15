@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, X, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
-import { Loading } from "@/components/ui/loading";
 import { ImageDisplayItem } from "@/components/ui/image-display-item";
 
 export interface FileWithPreview {
@@ -29,8 +27,6 @@ export interface ImageGridProps {
   onRemoveItem: (index: number) => void;
   onAddMore?: () => void;
   maxFiles?: number;
-  isUploading?: boolean;
-  uploadProgress?: number[];
   disabled?: boolean;
   className?: string;
   showAddMore?: boolean;
@@ -47,8 +43,6 @@ export function ImageGrid({
   onRemoveItem,
   onAddMore,
   maxFiles = 10,
-  isUploading = false,
-  uploadProgress = [],
   disabled = false,
   className,
   showAddMore = true,
@@ -57,20 +51,19 @@ export function ImageGrid({
   onDragLeave,
   onDrop,
 }: ImageGridProps) {
-  const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set());
 
   const handleSetCoverImage = (index: number) => {
-    if (disabled || isUploading) return;
+    if (disabled) return;
     onCoverImageChange(index);
   };
 
   const handleRemove = (index: number) => {
-    if (disabled || isUploading) return;
+    if (disabled) return;
     onRemoveItem(index);
   };
 
   const handleAddMoreClick = () => {
-    if (!disabled && !isUploading && onAddMore) {
+    if (!disabled && onAddMore) {
       onAddMore();
     }
   };
@@ -117,25 +110,12 @@ export function ImageGrid({
                   </div>
                 )}
 
-                {/* Upload Progress */}
-                {isUploading &&
-                  uploadProgress[index] !== undefined &&
-                  uploadProgress[index] < 100 && (
-                    <div className="absolute inset-0 bg-muted/50 flex flex-col items-center justify-center rounded-md p-4">
-                      <div className="w-full max-w-[80%] gap-2">
-                        <Progress
-                          value={uploadProgress[index]}
-                          className="h-2"
-                        />
-                      </div>
-                    </div>
-                  )}
 
                 {/* Remove Button */}
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  disabled={disabled || isUploading}
+                  disabled={disabled}
                   className="absolute top-2 right-2 bg-destructive/90 hover:bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 hover:cursor-pointer"
                   aria-label={`Remove ${itemName}`}
                 >
@@ -147,7 +127,7 @@ export function ImageGrid({
                   <button
                     type="button"
                     onClick={() => handleSetCoverImage(index)}
-                    disabled={disabled || isUploading}
+                    disabled={disabled}
                     className="absolute top-2 left-2 bg-secondary/90 hover:bg-secondary text-secondary-foreground rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 hover:cursor-pointer"
                     aria-label={`Set ${itemName} as cover image`}
                   >

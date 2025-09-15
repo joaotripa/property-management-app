@@ -167,6 +167,7 @@ export function PropertyEditForm({
     setCoverImageIndex(index);
   };
 
+
   const handleCancel = () => {
     // Reset staged deletions when canceling
     setRemovedExistingImageIds(new Set());
