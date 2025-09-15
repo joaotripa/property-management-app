@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { Transaction } from "@/types/transactions";
 import { TransactionType } from "@prisma/client";
+import { Transaction } from "@/types/transactions";
 
 /**
  * Soft delete all transactions for a specific property
@@ -179,7 +179,7 @@ export async function restoreTransaction(
       category: transaction.category
         ? { ...transaction.category, description: transaction.category.description ?? undefined }
         : undefined,
-    };
+    } as Transaction;
   } catch (error) {
     console.error('Error restoring transaction:', error);
     throw new Error('Failed to restore transaction');
@@ -303,7 +303,7 @@ export async function createTransaction(
       category: transaction.category
         ? { ...transaction.category, description: transaction.category.description ?? undefined }
         : undefined,
-    };
+    } as Transaction;
   } catch (error) {
     console.error('Error creating transaction:', error);
     throw new Error('Failed to create transaction');
@@ -404,7 +404,7 @@ export async function updateTransaction(
       category: transaction.category
         ? { ...transaction.category, description: transaction.category.description ?? undefined }
         : undefined,
-    };
+    } as Transaction;
   } catch (error) {
     console.error('Error updating transaction:', error);
     throw new Error('Failed to update transaction');
@@ -456,7 +456,7 @@ export async function getTransactionById(
       category: transaction.category
         ? { ...transaction.category, description: transaction.category.description ?? undefined }
         : undefined,
-    };
+    } as Transaction;
   } catch (error) {
     console.error('Error getting transaction by ID:', error);
     throw new Error('Failed to get transaction');

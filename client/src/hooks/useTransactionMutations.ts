@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Transaction } from "@/types/transactions";
-import { TransactionType } from "@prisma/client";
+import { TransactionType } from "@/types/transactions";
 
 export interface CreateTransactionData {
   amount: number;

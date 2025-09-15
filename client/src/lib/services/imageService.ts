@@ -279,19 +279,16 @@ async function uploadWithProgress(
       }
     });
 
-    // Handle network errors
     xhr.addEventListener('error', () => {
       reject(new ImageServiceError('Network error occurred during upload'));
     });
 
-    // Handle timeout
     xhr.addEventListener('timeout', () => {
       reject(new ImageServiceError('Upload timed out'));
     });
 
-    // Configure and send request
     xhr.open('POST', url);
-    xhr.timeout = 5 * 60 * 1000; // 5 minutes timeout
+    xhr.timeout = 2 * 60 * 1000; // 5 minutes timeout
     xhr.send(formData);
   });
 }
@@ -315,12 +312,10 @@ export async function uploadPropertyImages(
       throw new ImageServiceError('Valid property ID is required');
     }
 
-    // Convert to File[] for validation if needed
     const files = images.map(img =>
       'file' in img ? (img as FileWithPreview).file : (img as File)
     );
 
-    // Client-side validation
     for (let i = 0; i < files.length; i++) {
       const validation = validateImageFile(files[i]);
       if (!validation.isValid) {
@@ -328,7 +323,6 @@ export async function uploadPropertyImages(
       }
     }
 
-    // Prepare form data
     const formData = new FormData();
     formData.append('coverImageIndex', coverImageIndex.toString());
 
@@ -336,7 +330,6 @@ export async function uploadPropertyImages(
       formData.append(`file-${index}`, file);
     });
 
-    // Initialize progress for all files
     files.forEach((_, index) => {
       onProgress?.(index, 0);
     });
@@ -344,7 +337,6 @@ export async function uploadPropertyImages(
     let response: { results: UploadResult[] };
 
     if (signal) {
-      // Use regular fetch with abort signal
       const fetchResponse = await fetch(`/api/properties/${propertyId}/images`, {
         method: 'POST',
         body: formData,
@@ -359,19 +351,16 @@ export async function uploadPropertyImages(
             errorMessage = errorData.error;
           }
         } catch {
-          // Use default message
         }
         throw new ImageServiceError(errorMessage, fetchResponse.status);
       }
 
       response = await fetchResponse.json();
     } else {
-      // Use XMLHttpRequest with progress tracking
       response = await uploadWithProgress(
         formData,
         `/api/properties/${propertyId}/images`,
         (overallProgress) => {
-          // Distribute progress evenly across all files
           files.forEach((_, index) => {
             onProgress?.(index, overallProgress);
           });
@@ -379,7 +368,6 @@ export async function uploadPropertyImages(
       );
     }
 
-    // Validate response structure
     if (!response?.results || !Array.isArray(response.results)) {
       throw new ImageServiceError('Invalid response structure from server');
     }
@@ -387,7 +375,6 @@ export async function uploadPropertyImages(
     return { results: response.results };
 
   } catch (error) {
-    // Reset progress on error
     if (onProgress) {
       const files = images.map(img =>
         'file' in img ? (img as FileWithPreview).file : (img as File)
@@ -405,7 +392,6 @@ export async function uploadPropertyImages(
       throw error;
     }
 
-    // Log error for debugging (in development)
     if (process.env.NODE_ENV === 'development') {
       console.error('Upload error:', error);
     }
@@ -451,6 +437,68 @@ export async function getPropertyCoverImage(propertyId: string, signal?: AbortSi
 
     throw new ImageServiceError(
       'Network error while fetching cover image'
+    );
+  }
+}
+
+/**
+ * Update which image is the cover image for a property
+ */
+export async function updatePropertyCoverImage(
+  propertyId: string,
+  imageFilename: string,
+  signal?: AbortSignal
+): Promise<void> {
+  try {
+    if (!propertyId || typeof propertyId !== 'string') {
+      throw new ImageServiceError('Valid property ID is required');
+    }
+
+    if (!imageFilename || typeof imageFilename !== 'string') {
+      throw new ImageServiceError('Valid image filename is required');
+    }
+
+    const response = await fetch(`/api/properties/${propertyId}/images/cover`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ imageFilename }),
+      signal,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to update cover image: ${response.statusText}`;
+
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // If we can't parse the error response, use the default message
+      }
+
+      throw new ImageServiceError(errorMessage, response.status);
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new ImageServiceError(
+        data.message || 'Failed to update cover image'
+      );
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ImageServiceError('Request cancelled', 0);
+    }
+
+    if (error instanceof ImageServiceError) {
+      throw error;
+    }
+
+    throw new ImageServiceError(
+      'Network error while updating cover image'
     );
   }
 }
@@ -600,7 +648,6 @@ export async function handlePropertyImageUpload(
     const fileExtension = file.name.split('.').pop();
     const isCover = i === coverImageIndex;
 
-    // Generate unique filename for all images (no special cover naming)
     let fileName: string;
     let counter = 1;
     do {
@@ -625,7 +672,7 @@ export async function handlePropertyImageUpload(
           'property-id': propertyId,
           'file-index': i.toString(),
           'is-cover': isCover.toString(),
-        }
+        },
       });
 
       await s3Client.send(uploadCommand);
@@ -651,140 +698,4 @@ export async function handlePropertyImageUpload(
   return results;
 }
 
-/**
- * Update which existing image is the cover image for a property
- */
-export async function updatePropertyCoverImage(
-  propertyId: string,
-  newCoverImageId: string,
-  signal?: AbortSignal
-): Promise<void> {
-  try {
-    if (!propertyId || typeof propertyId !== 'string') {
-      throw new ImageServiceError('Valid property ID is required');
-    }
 
-    if (!newCoverImageId || typeof newCoverImageId !== 'string') {
-      throw new ImageServiceError('Valid image ID is required');
-    }
-
-    const response = await fetch(`/api/properties/${propertyId}/images/cover`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ imageId: newCoverImageId }),
-      signal,
-    });
-
-    if (!response.ok) {
-      let errorMessage = `Failed to update cover image: ${response.statusText}`;
-
-      try {
-        const errorData = await response.json();
-        if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-      } catch {
-      }
-
-      throw new ImageServiceError(errorMessage, response.status);
-    }
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ImageServiceError('Request cancelled', 0);
-    }
-
-    if (error instanceof ImageServiceError) {
-      throw error;
-    }
-
-    throw new ImageServiceError(
-      'Network error while updating cover image'
-    );
-  }
-}
-
-/**
- * Server-side function to handle cover image designation using metadata (no file renaming)
- */
-export async function handleCoverImageUpdate(
-  propertyId: string,
-  imageId: string
-): Promise<void> {
-  if (!propertyId || typeof propertyId !== 'string') {
-    throw new ImageServiceError('Valid property ID is required');
-  }
-
-  if (!imageId || typeof imageId !== 'string') {
-    throw new ImageServiceError('Valid image ID is required');
-  }
-
-  const { getS3Client, STORAGE_BUCKET } = await import('@/lib/supabase/s3-client');
-  const { CopyObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-
-  const s3Client = getS3Client();
-
-  try {
-    const listCommand = new ListObjectsV2Command({
-      Bucket: STORAGE_BUCKET,
-      Prefix: `${propertyId}/`,
-    });
-
-    const existingFiles = await s3Client.send(listCommand);
-    const images = existingFiles.Contents || [];
-
-    const targetImage = images.find(obj => {
-      if (!obj.Key) return false;
-      const filename = obj.Key.split('/').pop()?.split('?')[0];
-      return filename === imageId;
-    });
-
-    if (!targetImage || !targetImage.Key) {
-      throw new ImageServiceError(`Target image not found. Looking for: ${imageId}`);
-    }
-
-    for (const image of images) {
-      if (!image.Key) continue;
-
-      const copyCommand = new CopyObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        CopySource: `${STORAGE_BUCKET}/${image.Key}`,
-        Key: image.Key,
-        MetadataDirective: 'REPLACE',
-        Metadata: {
-          'uploaded-by': 'domari.app',
-          'property-id': propertyId,
-          'is-cover': 'false',
-        },
-      });
-
-      await s3Client.send(copyCommand);
-    }
-
-    const setCoverCommand = new CopyObjectCommand({
-      Bucket: STORAGE_BUCKET,
-      CopySource: `${STORAGE_BUCKET}/${targetImage.Key}`,
-      Key: targetImage.Key,
-      MetadataDirective: 'REPLACE',
-      Metadata: {
-        'uploaded-by': 'domari.app',
-        'property-id': propertyId,
-        'is-cover': 'true',
-      },
-    });
-
-    await s3Client.send(setCoverCommand);
-
-  } catch (error) {
-    console.error('Error updating cover image:', error);
-
-    if (error instanceof ImageServiceError) {
-      throw error;
-    }
-
-    throw new ImageServiceError(
-      `Failed to update cover image: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-}

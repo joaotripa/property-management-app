@@ -79,10 +79,10 @@ export async function getUserProperties(
     return properties.map((property) => ({
       ...property,
       rent: Number(property.rent),
-      city: property.city ?? undefined,
-      country: property.country ?? undefined,
-      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : undefined,
-    }));
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
+    })) as Property[];
   } catch (error) {
     console.error('Error fetching user properties:', error);
     throw new Error('Failed to fetch properties');
@@ -125,10 +125,10 @@ export async function getPropertyById(
     return {
       ...property,
       rent: Number(property.rent),
-      city: property.city ?? undefined,
-      country: property.country ?? undefined,
-      purchasePrice: property.purchasePrice != null ? Number(property.purchasePrice) : undefined,
-    };
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice != null ? Number(property.purchasePrice) : null,
+    } as Property;
   } catch (error) {
     console.error('Error fetching property:', error);
     throw new Error('Failed to fetch property');

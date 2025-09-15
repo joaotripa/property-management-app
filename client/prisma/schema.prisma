@@ -51,12 +51,31 @@ model Property {
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
   monthlyMetrics MonthlyMetrics[]
+  images        PropertyImage[]
 
   @@index([userId])
   @@index([isActive])
   @@index([deletedAt])
   @@index([occupancy])
   @@map("properties")
+}
+
+model PropertyImage {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId String    @map("property_id") @db.Uuid
+  filename   String
+  url        String
+  isCover    Boolean   @default(false) @map("is_cover")
+  sortOrder  Int       @default(0) @map("sort_order")
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([propertyId, isCover])
+  @@index([deletedAt])
+  @@map("property_images")
 }
 
 model Category {

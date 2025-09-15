@@ -7,7 +7,6 @@ import { Upload, AlertTriangle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageGrid } from "@/components/ui/image-grid";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 
 export interface FileWithPreview {
   file: File;
@@ -36,6 +35,8 @@ export interface MultiImageUploadProps {
   className?: string;
   label?: string;
   description?: string;
+  isUploading?: boolean;
+  uploadProgress?: { [key: number]: number };
 }
 
 export function MultiImageUpload({
@@ -49,6 +50,8 @@ export function MultiImageUpload({
   maxFiles = 10,
   maxSize = 10 * 1024 * 1024, // 10MB
   error,
+  isUploading = false,
+  uploadProgress = {},
   disabled = false,
   className,
   label,
@@ -77,9 +80,8 @@ export function MultiImageUpload({
   };
 
   const handleFileSelect = async (selectedFiles: FileList | null) => {
-    if (!selectedFiles || disabled) return;
+    if (!selectedFiles || disabled || isUploading) return;
 
-    // Clear previous validation errors
     setValidationErrors([]);
 
     const currentFileCount = files.length;
@@ -88,7 +90,6 @@ export function MultiImageUpload({
 
     const filesToProcess = fileArray.slice(0, maxFiles - currentFileCount);
 
-    // Check if too many files were selected
     if (fileArray.length > maxFiles - currentFileCount) {
       newErrors.push(
         `Only ${maxFiles - currentFileCount} more files can be added. ${fileArray.length - (maxFiles - currentFileCount)} files were ignored.`
@@ -140,7 +141,6 @@ export function MultiImageUpload({
     );
     console.log("Valid files processed:", validFiles.length, "files");
 
-    // Set validation errors if any
     if (newErrors.length > 0) {
       setValidationErrors(newErrors);
     }
@@ -196,7 +196,6 @@ export function MultiImageUpload({
 
   const handleAddMore = () => {
     if (!disabled) {
-      // Clear validation errors when user tries to add more files
       if (validationErrors.length > 0) {
         setValidationErrors([]);
       }
@@ -218,6 +217,8 @@ export function MultiImageUpload({
   ];
 
   const hasAnyImages = allItems.length > 0;
+
+  const hasUploadProgress = Object.keys(uploadProgress).length > 0;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -263,7 +264,8 @@ export function MultiImageUpload({
           className={cn(
             "border-2 border-dashed transition-colors cursor-pointer",
             isDragOver && "border-primary bg-primary/5",
-            disabled && "opacity-50 cursor-not-allowed",
+            (disabled || isUploading || hasUploadProgress) &&
+              "opacity-50 cursor-not-allowed",
             error && "border-destructive"
           )}
           onClick={handleAddMore}

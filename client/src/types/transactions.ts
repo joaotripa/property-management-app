@@ -1,4 +1,9 @@
-import { TransactionType } from "@prisma/client";
+export const TransactionType = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+} as const;
+
+export type TransactionType = typeof TransactionType[keyof typeof TransactionType];
 
 // Core transaction interface matching Prisma model
 export interface Transaction {

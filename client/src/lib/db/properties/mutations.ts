@@ -5,10 +5,9 @@ import {
   basePropertySchema,
   updatePropertySchema 
 } from "@/lib/validations/property";
+import { OccupancyStatus } from "@prisma/client";
 import { Property } from "@/types/properties";
 import { generateUUID } from "@/lib/utils";
-import { OccupancyStatus } from "@prisma/client";
-
 /**
  * Create a new property for a user
  */
@@ -35,6 +34,9 @@ export async function createProperty(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -45,7 +47,10 @@ export async function createProperty(
     return {
       ...property,
       rent: Number(property.rent),
-    };
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
+    } as Property;
   } catch (error) {
     console.error('Error creating property:', error);
     throw new Error('Failed to create property');
@@ -93,6 +98,9 @@ export async function updateProperty(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -104,7 +112,10 @@ export async function updateProperty(
     return {
       ...property,
       rent: Number(property.rent),
-    };
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
+    } as Property;
   } catch (error) {
     console.error('Error updating property:', error);
     throw new Error('Failed to update property');
@@ -183,6 +194,9 @@ export async function restoreProperty(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -194,7 +208,10 @@ export async function restoreProperty(
     return {
       ...property,
       rent: Number(property.rent),
-    };
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
+    } as Property;
   } catch (error) {
     console.error('Error restoring property:', error);
     throw new Error('Failed to restore property');
@@ -245,6 +262,9 @@ export async function updatePropertyOccupancy(
         id: true,
         name: true,
         address: true,
+        city: true,
+        country: true,
+        purchasePrice: true,
         type: true,
         rent: true,
         occupancy: true,
@@ -256,7 +276,10 @@ export async function updatePropertyOccupancy(
     return {
       ...property,
       rent: Number(property.rent),
-    };
+      city: property.city,
+      country: property.country,
+      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
+    } as Property;
   } catch (error) {
     console.error('Error updating property occupancy:', error);
     throw new Error('Failed to update property occupancy');

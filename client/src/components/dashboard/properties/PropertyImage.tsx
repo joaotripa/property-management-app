@@ -42,6 +42,7 @@ export function PropertyImage({
 
         if (coverImageUrl) {
           setImageSrc(coverImageUrl);
+          setImageError(false);
         } else {
           setImageError(true);
         }
@@ -70,12 +71,14 @@ export function PropertyImage({
 
   return (
     <ImageDisplayItem
-      src={imageError || isLoading ? "" : imageSrc}
+      src={imageError ? "" : imageSrc}
       alt={propertyName}
       className={className}
       width={width}
       height={height}
+      priority={true}
       aspectRatio={aspectRatio}
+      isLoading={isLoading}
       onError={handleImageError}
     />
   );

@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { updateTransaction } from "@/lib/services/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
-import { TransactionType } from "@prisma/client";
+import { TransactionType } from "@/types/transactions";
 
 interface TransactionEditDialogProps {
   transaction: Transaction | null;

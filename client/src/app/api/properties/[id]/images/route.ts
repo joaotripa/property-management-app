@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { getS3Client, STORAGE_BUCKET } from '@/lib/supabase/s3-client';
-import { ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { handlePropertyImageUpload, ImageServiceError } from '@/lib/services/imageService';
+import { getPropertyImages, hasPropertyImages, bulkCreatePropertyImages, softDeleteAllPropertyImages } from '@/lib/db/propertyImages';
+import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
@@ -17,73 +20,24 @@ export async function GET(
       return NextResponse.json({ error: 'Property ID is required' }, { status: 400 });
     }
 
-    const s3Client = getS3Client();
-    const listCommand = new ListObjectsV2Command({
-      Bucket: STORAGE_BUCKET,
-      Prefix: `${propertyId}/`,
-      MaxKeys: action === 'check' ? 1 : undefined,
-    });
-
-    const result = await s3Client.send(listCommand);
-    
     if (action === 'check') {
-      return NextResponse.json({ 
-        hasImages: Boolean(result.Contents && result.Contents.length > 0) 
-      });
+      const hasImages = await hasPropertyImages(propertyId);
+      return NextResponse.json({ hasImages });
     }
 
-    if (!result.Contents || result.Contents.length === 0) {
+    const images = await getPropertyImages(propertyId);
+
+    if (images.length === 0) {
       return NextResponse.json({ imageUrls: [] });
     }
 
-    const imageObjectsWithMetadata = await Promise.all(
-      result.Contents
-        .filter(obj => obj.Key && obj.Key.match(/\.(jpg|jpeg|png|webp|gif)$/i))
-        .map(async (obj) => {
-          let isCover = false;
-          try {
-            const { HeadObjectCommand } = await import('@aws-sdk/client-s3');
-            const headCommand = new HeadObjectCommand({
-              Bucket: STORAGE_BUCKET,
-              Key: obj.Key!,
-            });
-            const metadata = await s3Client.send(headCommand);
-            isCover = Boolean(metadata.Metadata && metadata.Metadata['is-cover'] === 'true');
-          } catch (error) {
-            console.warn(`Failed to get metadata for ${obj.Key}:`, error);
-          }
-
-          return { ...obj, isCover };
-        })
-    );
-
-    const imageObjects = imageObjectsWithMetadata.sort((a, b) => {
-      if (a.isCover && !b.isCover) return -1;
-      if (!a.isCover && b.isCover) return 1;
-      return (a.Key || '').localeCompare(b.Key || '');
-    });
-
-    if (imageObjects.length > 0 && !imageObjects.some(obj => obj.isCover)) {
-      imageObjects[0].isCover = true;
-    }
-
-    const imageData = await Promise.all(
-      imageObjects.map(async (obj) => {
-        const getCommand = new GetObjectCommand({
-          Bucket: STORAGE_BUCKET,
-          Key: obj.Key!,
-        });
-        const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
-        const filename = obj.Key!.split('/').pop()?.split('?')[0] || '';
-
-        return {
-          url: signedUrl,
-          filename: filename,
-          key: obj.Key!,
-          isCover: obj.isCover || false
-        };
-      })
-    );
+    // Format images for backwards compatibility
+    const imageData = images.map(image => ({
+      url: image.url,
+      filename: image.filename,
+      key: image.filename, // Use filename as key for backwards compatibility
+      isCover: image.isCover
+    }));
 
     const imageUrls = imageData.map(item => item.url);
 
@@ -93,8 +47,8 @@ export async function GET(
     });
   } catch (error) {
     console.error('Property images API error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch property images' 
+    return NextResponse.json({
+      error: 'Failed to fetch property images'
     }, { status: 500 });
   }
 }
@@ -119,7 +73,42 @@ export async function POST(
       }
     });
 
+    if (files.length === 0) {
+      return NextResponse.json({ error: 'No files provided' }, { status: 400 });
+    }
+
+    // Upload files to S3
     const results = await handlePropertyImageUpload(propertyId, files, coverImageIndex);
+
+    // Get the highest existing sortOrder for this property
+    const existingImages = await prisma.propertyImage.findMany({
+      where: {
+        propertyId,
+        deletedAt: null,
+      },
+      select: {
+        sortOrder: true,
+      },
+      orderBy: {
+        sortOrder: 'desc',
+      },
+      take: 1,
+    });
+
+    const nextSortOrder = existingImages.length > 0 ? existingImages[0].sortOrder + 1 : 0;
+
+    // Save image records to database
+    const imagesToCreate = results.map((result, index) => ({
+      filename: result.path.split('/').pop() || '',
+      url: result.url,
+      isCover: index === coverImageIndex,
+      sortOrder: nextSortOrder + index,
+    }));
+
+    await bulkCreatePropertyImages({
+      propertyId,
+      images: imagesToCreate,
+    });
 
     return NextResponse.json({ results });
   } catch (error) {
@@ -140,38 +129,71 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: propertyId } = await params;
-    
+
     if (!propertyId) {
       return NextResponse.json({ error: 'Property ID is required' }, { status: 400 });
     }
 
-    const s3Client = getS3Client();
-
-    const listCommand = new ListObjectsV2Command({
-      Bucket: STORAGE_BUCKET,
-      Prefix: `${propertyId}/`,
+    // Verify the property belongs to the authenticated user
+    const property = await prisma.property.findFirst({
+      where: {
+        id: propertyId,
+        userId: session.user.id,
+        deletedAt: null,
+      },
     });
 
-    const listResult = await s3Client.send(listCommand);
-
-    if (listResult.Contents && listResult.Contents.length > 0) {
-      for (const obj of listResult.Contents) {
-        if (obj.Key) {
-          const deleteCommand = new DeleteObjectCommand({
-            Bucket: STORAGE_BUCKET,
-            Key: obj.Key,
-          });
-          await s3Client.send(deleteCommand);
-        }
-      }
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found or access denied' }, { status: 403 });
     }
 
-    return NextResponse.json({ success: true });
+    // Soft delete all images in database
+    const result = await softDeleteAllPropertyImages(propertyId);
+
+    // Optional: Also delete from S3 if needed (for complete cleanup)
+    try {
+      const s3Client = getS3Client();
+      const listCommand = new ListObjectsV2Command({
+        Bucket: STORAGE_BUCKET,
+        Prefix: `${propertyId}/`,
+      });
+
+      const listResult = await s3Client.send(listCommand);
+
+      if (listResult.Contents && listResult.Contents.length > 0) {
+        for (const obj of listResult.Contents) {
+          if (obj.Key) {
+            const deleteCommand = new DeleteObjectCommand({
+              Bucket: STORAGE_BUCKET,
+              Key: obj.Key,
+            });
+            await s3Client.send(deleteCommand);
+          }
+        }
+      }
+    } catch (s3Error) {
+      console.warn('Failed to delete some images from S3, but database records were updated:', s3Error);
+      // Don't fail the request if S3 deletion fails
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully deleted ${result.count} images`
+    });
   } catch (error) {
     console.error('Delete all images API error:', error);
-    return NextResponse.json({ 
-      error: 'Delete operation failed' 
+    return NextResponse.json({
+      error: 'Delete operation failed'
     }, { status: 500 });
   }
 }

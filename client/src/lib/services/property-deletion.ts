@@ -10,16 +10,18 @@ export interface DeletePropertyResult {
 }
 
 /**
- * Deletes a property and all its associated transactions
- * This is a two-step process:
+ * Deletes a property and all its associated data
+ * This is a three-step process:
  * 1. Delete all transactions associated with the property
- * 2. Delete the property itself
+ * 2. Delete all images associated with the property
+ * 3. Delete the property itself
  */
 export async function deletePropertyWithTransactions(
   propertyId: string,
   propertyName: string
 ): Promise<DeletePropertyResult> {
   try {
+    // Step 1: Delete all transactions associated with the property
     const transactionsResponse = await fetch(
       `/api/transactions/property/${propertyId}`,
       {
@@ -35,6 +37,23 @@ export async function deletePropertyWithTransactions(
     const transactionsData = await transactionsResponse.json();
     const transactionCount = transactionsData.count || 0;
 
+    // Step 2: Delete all images associated with the property
+    try {
+      const imagesResponse = await fetch(`/api/properties/${propertyId}/images`, {
+        method: "DELETE",
+      });
+
+      if (!imagesResponse.ok) {
+        const errorData = await imagesResponse.json().catch(() => ({}));
+        console.warn("Failed to delete property images:", errorData.message);
+        // Don't fail the entire operation if image deletion fails
+      }
+    } catch (imageError) {
+      console.warn("Error deleting property images:", imageError);
+      // Continue with property deletion even if image deletion fails
+    }
+
+    // Step 3: Delete the property itself
     const propertyResponse = await fetch(`/api/properties/${propertyId}`, {
       method: "DELETE",
     });
@@ -51,11 +70,11 @@ export async function deletePropertyWithTransactions(
     };
   } catch (error) {
     console.error("Error in deletePropertyWithTransactions:", error);
-    
+
     return {
       success: false,
-      message: error instanceof Error 
-        ? error.message 
+      message: error instanceof Error
+        ? error.message
         : "Failed to delete property. Please try again.",
     };
   }

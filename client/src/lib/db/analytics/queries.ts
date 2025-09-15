@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma, TransactionType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { TransactionType } from "@prisma/client";
 
 export interface KPIMetrics {
   totalProperties: number;

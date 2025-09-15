@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { TransactionType } from "@prisma/client";
-
+import { TransactionType } from "@prisma/client"
 const TRANSACTION_TYPES = Object.values(TransactionType) as [TransactionType, ...TransactionType[]];
 
 export const baseTransactionSchema = z.object({

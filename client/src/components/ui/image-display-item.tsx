@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Loading } from "@/components/ui/loading";
 
 export interface ImageDisplayItemProps {
   src: string;
@@ -12,6 +13,7 @@ export interface ImageDisplayItemProps {
   height?: number;
   fill?: boolean;
   priority?: boolean;
+  isLoading?: boolean;
   onError?: () => void;
   onLoad?: () => void;
   aspectRatio?: "video" | "square" | "auto";
@@ -25,6 +27,7 @@ export function ImageDisplayItem({
   height,
   fill = true,
   priority = false,
+  isLoading = false,
   onError,
   onLoad,
   aspectRatio = "video",
@@ -39,6 +42,21 @@ export function ImageDisplayItem({
         return "";
     }
   };
+
+  if (isLoading) {
+    return (
+      <div
+        className={cn(
+          "bg-muted/20 flex items-center justify-center animate-pulse",
+          !fill && getAspectRatioClass(),
+          fill && "w-full h-full",
+          className
+        )}
+      >
+        <Loading />
+      </div>
+    );
+  }
 
   if (!src) {
     return (

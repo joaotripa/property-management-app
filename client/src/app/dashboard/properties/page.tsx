@@ -16,10 +16,9 @@ import { PropertyImage } from "@/components/dashboard/properties/PropertyImage";
 import PropertiesStats from "@/components/dashboard/properties/PropertiesStats";
 import { PropertyCardSkeleton } from "@/components/dashboard/properties/PropertyCardSkeleton";
 import { EmptyPropertiesState } from "@/components/dashboard/properties/EmptyPropertiesState";
-import { Property } from "@/types/properties";
+import { Property, OccupancyStatus } from "@/types/properties";
 import { useUserProperties } from "@/hooks/useUserProperties";
 import { usePropertyStats } from "@/hooks/usePropertyStats";
-import { OccupancyStatus } from "@prisma/client";
 
 export default function PropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(

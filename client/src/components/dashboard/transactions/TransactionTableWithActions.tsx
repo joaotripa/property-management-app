@@ -4,10 +4,22 @@ import { format } from "date-fns";
 import { Edit, Trash2, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Transaction } from "@/types/transactions";
-import { TransactionType } from "@prisma/client";
+import { TransactionType } from "@/types/transactions";
 import { TransactionTableSkeleton } from "./TransactionTableSkeleton";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +43,12 @@ export function TransactionTableWithActions({
   className,
 }: TransactionTableWithActionsProps) {
   if (loading) {
-    return <TransactionTableSkeleton showPropertyColumn={showPropertyColumn} className={className} />;
+    return (
+      <TransactionTableSkeleton
+        showPropertyColumn={showPropertyColumn}
+        className={className}
+      />
+    );
   }
 
   if (!transactions.length) {
@@ -51,7 +68,8 @@ export function TransactionTableWithActions({
         type === TransactionType.INCOME ? "text-green-600" : "text-red-600"
       )}
     >
-      {type === TransactionType.INCOME ? "+" : "-"}€{Math.abs(amount).toFixed(2)}
+      {type === TransactionType.INCOME ? "+" : "-"}€
+      {Math.abs(amount).toFixed(2)}
     </span>
   );
 
@@ -66,25 +84,41 @@ export function TransactionTableWithActions({
             <TableHead>Date</TableHead>
             <TableHead>Category</TableHead>
             {showPropertyColumn && <TableHead>Property</TableHead>}
-            {(onEdit || onDelete) && <TableHead className="w-[70px]">Actions</TableHead>}
+            {(onEdit || onDelete) && (
+              <TableHead className="w-[70px]">Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
           {transactions.map((transaction) => (
             <TableRow key={transaction.id}>
-              <TableCell>{formatAmount(transaction.amount, transaction.type)}</TableCell>
               <TableCell>
-                <Badge variant={transaction.type === TransactionType.INCOME ? "default" : "destructive"}>
+                {formatAmount(transaction.amount, transaction.type)}
+              </TableCell>
+              <TableCell>
+                <Badge
+                  variant={
+                    transaction.type === TransactionType.INCOME
+                      ? "default"
+                      : "destructive"
+                  }
+                >
                   {transaction.type}
                 </Badge>
               </TableCell>
               <TableCell className="max-w-[200px] truncate">
                 {transaction.description || "—"}
               </TableCell>
-              <TableCell>{format(new Date(transaction.transactionDate), "MMM dd, yyyy")}</TableCell>
+              <TableCell>
+                {format(new Date(transaction.transactionDate), "MMM dd, yyyy")}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {transaction.isRecurring && <Badge variant="outline" className="text-xs">Recurring</Badge>}
+                  {transaction.isRecurring && (
+                    <Badge variant="outline" className="text-xs">
+                      Recurring
+                    </Badge>
+                  )}
                   <span>{transaction.category?.name || "Uncategorized"}</span>
                 </div>
               </TableCell>

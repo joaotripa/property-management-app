@@ -37,6 +37,7 @@ import { OccupancyStatus } from "@prisma/client";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
 import {
   updateProperty,
+  getPropertyById,
   PropertiesServiceError,
 } from "@/lib/services/propertiesService";
 import {
@@ -66,11 +67,15 @@ export function PropertyDetailsDialog({
   const { toast } = useToast();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
+  const [refreshedProperty, setRefreshedProperty] = useState<Property | null>(
+    null
+  );
   const [availableCategories, setAvailableCategories] = useState<
     CategoryOption[]
   >([]);
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [isRefreshingProperty, setIsRefreshingProperty] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { filters, setFilters } = useTransactionFilters({
@@ -86,6 +91,8 @@ export function PropertyDetailsDialog({
     if (!isOpen) {
       setMode("view");
       setEditProperty(null);
+      setRefreshedProperty(null);
+      setIsRefreshingProperty(false);
     }
   }, [isOpen, property?.id]);
 
@@ -124,14 +131,31 @@ export function PropertyDetailsDialog({
 
   if (!property) return null;
 
-  const currentProperty = editProperty || property;
+  const currentProperty = editProperty || refreshedProperty || property;
   const occupancyRate =
     currentProperty.occupancy === OccupancyStatus.OCCUPIED ? 100 : 0;
   const city = currentProperty.city || null;
   const country = currentProperty.country || null;
 
+  const refreshPropertyData = async () => {
+    if (!property?.id) return;
+
+    setIsRefreshingProperty(true);
+    try {
+      const freshProperty = await getPropertyById(property.id);
+      if (freshProperty) {
+        setRefreshedProperty(freshProperty);
+        onSave(freshProperty);
+      }
+    } catch (error) {
+      console.error("Failed to refresh property data:", error);
+    } finally {
+      setIsRefreshingProperty(false);
+    }
+  };
+
   const handleEdit = () => {
-    setEditProperty({ ...property });
+    setEditProperty({ ...currentProperty });
     setMode("edit");
   };
 
@@ -144,7 +168,8 @@ export function PropertyDetailsDialog({
     data: UpdatePropertyInput,
     newImages?: FileWithPreview[],
     coverImageIndex: number = 0,
-    hasCoverImageChanged: boolean = false
+    hasCoverImageChanged?: boolean,
+    selectedCoverImageFilename?: string
   ) => {
     if (!editProperty || !property) return;
 
@@ -153,20 +178,25 @@ export function PropertyDetailsDialog({
 
       onSave(updatedProperty);
 
-      // Handle cover image update for existing images
-      if (hasCoverImageChanged && coverImageIndex < propertyImages.length) {
-        // Need to get the image ID for the existing image at coverImageIndex
+      if (
+        hasCoverImageChanged &&
+        !newImages?.length &&
+        selectedCoverImageFilename
+      ) {
         try {
-          const { getPropertyImageData } = await import('@/lib/services/imageService');
-          const existingImageData = await getPropertyImageData(property.id);
+          await updatePropertyCoverImage(
+            property.id,
+            selectedCoverImageFilename
+          );
 
-          if (existingImageData && existingImageData[coverImageIndex]) {
-            const targetImageId = existingImageData[coverImageIndex].filename;
-            await updatePropertyCoverImage(property.id, targetImageId);
-          }
+          const images = await getPropertyImages(property.id);
+          setPropertyImages(images);
         } catch (error) {
           console.error("Failed to update cover image:", error);
-          // Don't throw - let the save operation continue
+          toast({
+            title: "Warning",
+            description: "Property updated but failed to update cover image",
+          });
         }
       }
 
@@ -195,6 +225,8 @@ export function PropertyDetailsDialog({
           console.error("Failed to reload property images:", error);
         }
       }
+
+      await refreshPropertyData();
 
       toast({
         title: "Success",
@@ -296,7 +328,7 @@ export function PropertyDetailsDialog({
 
           {/* Content based on active mode */}
           {mode === "view" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Property Images Carousel */}
               <div className="flex flex-col gap-4">
                 <ImageCarousel
@@ -388,7 +420,7 @@ export function PropertyDetailsDialog({
               </Card>
 
               {/* Financial & Occupancy Information */}
-              <Card className="md:col-span-2">
+              <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Rental Information</CardTitle>
                 </CardHeader>
@@ -460,7 +492,7 @@ export function PropertyDetailsDialog({
               </Card>
 
               {/* Transaction Details */}
-              <Card className="md:col-span-2">
+              <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Transaction Details</CardTitle>
                 </CardHeader>

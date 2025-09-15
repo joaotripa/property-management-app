@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { PropertyType, OccupancyStatus } from "@prisma/client";
-import { Property } from "@/types/properties";
+import { Property, PropertyType, OccupancyStatus } from "@/types/properties";
+
 import {
   basePropertySchema,
   UpdatePropertyInput,
@@ -61,7 +61,8 @@ interface PropertyEditFormProps {
     data: UpdatePropertyInput,
     images?: FileWithPreview[],
     coverImageIndex?: number,
-    hasCoverImageChanged?: boolean
+    hasCoverImageChanged?: boolean,
+    selectedCoverImageFilename?: string
   ) => Promise<void>;
   onCancel: () => void;
   onChange?: (property: Property) => void;
@@ -75,7 +76,9 @@ export function PropertyEditForm({
 }: PropertyEditFormProps) {
   const [newImages, setNewImages] = useState<FileWithPreview[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImageItem[]>([]);
-  const [removedExistingImageIds, setRemovedExistingImageIds] = useState<Set<string>>(new Set());
+  const [removedExistingImageIds, setRemovedExistingImageIds] = useState<
+    Set<string>
+  >(new Set());
   const [coverImageIndex, setCoverImageIndex] = useState(0);
   const [initialCoverImageIndex, setInitialCoverImageIndex] = useState(0);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
@@ -148,11 +151,15 @@ export function PropertyEditForm({
     setImageError(null);
 
     // Stage the image for deletion - don't call API immediately
-    setRemovedExistingImageIds(prev => new Set(prev).add(imageId));
+    setRemovedExistingImageIds((prev) => new Set(prev).add(imageId));
 
     // Find the index of the removed image in the visible images list
-    const visibleImages = existingImages.filter(img => !removedExistingImageIds.has(img.id));
-    const removedImageIndex = visibleImages.findIndex(img => img.id === imageId);
+    const visibleImages = existingImages.filter(
+      (img) => !removedExistingImageIds.has(img.id)
+    );
+    const removedImageIndex = visibleImages.findIndex(
+      (img) => img.id === imageId
+    );
 
     // Adjust cover image index if necessary
     if (removedImageIndex === coverImageIndex && coverImageIndex > 0) {
@@ -166,7 +173,6 @@ export function PropertyEditForm({
     // Only update local state - don't save to database until form save
     setCoverImageIndex(index);
   };
-
 
   const handleCancel = () => {
     // Reset staged deletions when canceling
@@ -182,19 +188,32 @@ export function PropertyEditForm({
       // Check if cover image has changed from initial state
       const hasCoverImageChanged = coverImageIndex !== initialCoverImageIndex;
 
+      // Get the filtered visible images (excluding removed ones)
+      const visibleImages = existingImages.filter(
+        (img) => !removedExistingImageIds.has(img.id)
+      );
+
+      // Get the filename of the selected cover image
+      let selectedCoverImageFilename: string | undefined;
+      if (hasCoverImageChanged && coverImageIndex < visibleImages.length) {
+        selectedCoverImageFilename = visibleImages[coverImageIndex].id; // id is the filename
+      }
+
       // Save the property with new images first
-      await onSave(data, newImages, coverImageIndex, hasCoverImageChanged);
+      await onSave(data, newImages, coverImageIndex, hasCoverImageChanged, selectedCoverImageFilename);
 
       // Process staged deletions after successful save
       if (removedExistingImageIds.size > 0) {
-        const deletionPromises = Array.from(removedExistingImageIds).map(async (imageId) => {
-          try {
-            await deletePropertyImage(property.id!, imageId);
-          } catch (error) {
-            console.error(`Failed to delete image ${imageId}:`, error);
-            // Continue with other deletions even if one fails
+        const deletionPromises = Array.from(removedExistingImageIds).map(
+          async (imageId) => {
+            try {
+              await deletePropertyImage(property.id!, imageId);
+            } catch (error) {
+              console.error(`Failed to delete image ${imageId}:`, error);
+              // Continue with other deletions even if one fails
+            }
           }
-        });
+        );
 
         await Promise.all(deletionPromises);
       }
@@ -456,7 +475,9 @@ export function PropertyEditForm({
               <MultiImageUpload
                 files={newImages}
                 onFilesChange={setNewImages}
-                existingImages={existingImages.filter(img => !removedExistingImageIds.has(img.id))}
+                existingImages={existingImages.filter(
+                  (img) => !removedExistingImageIds.has(img.id)
+                )}
                 onRemoveExistingImage={handleRemoveExistingImage}
                 coverImageIndex={coverImageIndex}
                 onCoverImageChange={handleCoverImageChange}
