@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getTransactionStats } from "@/lib/db/transactions/queries";
-import { TransactionType } from "@prisma/client";
+import { TransactionType } from "@/types/transactions";
 
 export async function GET(request: NextRequest) {
   try {

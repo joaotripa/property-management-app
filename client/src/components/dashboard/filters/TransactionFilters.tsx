@@ -25,7 +25,7 @@ import type {
   TransactionFiltersProps,
   TransactionFilters as TransactionFiltersType,
 } from "@/types/transactions";
-import { TransactionType } from "@prisma/client";
+import { TransactionType } from "@/types/transactions";
 import { toCamelCase } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
