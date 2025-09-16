@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageDisplayItem } from "./image-display-item";
 import { ThumbnailCarousel } from "./thumbnail-carousel";
-import { ImageLoading } from "./image-loading";
 import {
   Carousel,
   CarouselContent,
@@ -56,13 +55,6 @@ export function ImageCarousel({
     onImageChange?.(currentIndex);
   }, [currentIndex, onImageChange]);
 
-  if (isLoading) {
-    return (
-      <div className={cn("relative", getAspectRatioClass(), className)}>
-        <ImageLoading className={cn("rounded-lg", getAspectRatioClass())} />
-      </div>
-    );
-  }
 
   if (images.length === 0) {
     return (
@@ -73,6 +65,7 @@ export function ImageCarousel({
           className="rounded-lg"
           fill
           aspectRatio={aspectRatio}
+          isLoading={isLoading}
         />
       </div>
     );
@@ -95,6 +88,7 @@ export function ImageCarousel({
             onLoad={() => handleImageLoad(0)}
             onError={hasImageError(0) ? undefined : () => handleImageError(0)}
             hasError={hasImageError(0)}
+            isLoading={isLoading}
           />
         </div>
       </div>
@@ -130,6 +124,7 @@ export function ImageCarousel({
                     onLoad={() => handleImageLoad(index)}
                     onError={hasImageError(index) ? undefined : () => handleImageError(index)}
                     hasError={hasImageError(index)}
+                    isLoading={isLoading}
                   />
                 </div>
               </CarouselItem>

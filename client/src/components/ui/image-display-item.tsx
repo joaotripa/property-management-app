@@ -60,7 +60,6 @@ export function ImageDisplayItem({
     );
   }
 
-  // If image has permanently failed or no src, show placeholder immediately
   if (!src || hasError) {
     return (
       <div

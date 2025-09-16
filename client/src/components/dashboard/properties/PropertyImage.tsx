@@ -65,7 +65,6 @@ export function PropertyImage({
   }, [propertyId]);
 
   const handleImageError = () => {
-    // Only set error if not already in error state to prevent infinite loops
     if (!imageError) {
       setImageError(true);
       setIsLoading(false);
