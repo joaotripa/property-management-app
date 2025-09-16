@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getS3Client, STORAGE_BUCKET } from '@/lib/supabase/s3-client';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { handlePropertyImageUpload, ImageServiceError } from '@/lib/services/imageService';
+import { handlePropertyImageUpload } from '@/lib/services/imageService.server';
+import { ImageServiceError, STORAGE_BUCKET } from '@/lib/services/imageService';
 import { getPropertyImages, hasPropertyImages, bulkCreatePropertyImages, softDeleteAllPropertyImages } from '@/lib/db/propertyImages';
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { createServiceSupabaseClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
@@ -28,22 +27,15 @@ export async function GET(
     const images = await getPropertyImages(propertyId);
 
     if (images.length === 0) {
-      return NextResponse.json({ imageUrls: [] });
+      return NextResponse.json({ images: [], imageUrls: [] });
     }
 
-    // Format images for backwards compatibility
-    const imageData = images.map(image => ({
-      url: image.url,
-      filename: image.filename,
-      key: image.filename, // Use filename as key for backwards compatibility
-      isCover: image.isCover
-    }));
-
-    const imageUrls = imageData.map(item => item.url);
+    // Provide both formats for backwards compatibility
+    const imageUrls = images.map(image => image.url);
 
     return NextResponse.json({
-      imageUrls,
-      images: imageData
+      images, // Full PropertyImage objects
+      imageUrls // URLs only for backwards compatibility
     });
   } catch (error) {
     console.error('Property images API error:', error);
@@ -58,12 +50,34 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const { id: propertyId } = await params;
     const coverImageIndex = parseInt(formData.get('coverImageIndex') as string) || 0;
 
     if (!propertyId) {
       return NextResponse.json({ error: 'Property ID is required' }, { status: 400 });
+    }
+
+    // Verify the property belongs to the authenticated user
+    const property = await prisma.property.findFirst({
+      where: {
+        id: propertyId,
+        userId: session.user.id,
+        deletedAt: null,
+      },
+    });
+
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found or access denied' }, { status: 403 });
     }
 
     const files: File[] = [];
@@ -77,8 +91,8 @@ export async function POST(
       return NextResponse.json({ error: 'No files provided' }, { status: 400 });
     }
 
-    // Upload files to S3
-    const results = await handlePropertyImageUpload(propertyId, files, coverImageIndex);
+    // Upload files to Supabase Storage
+    const results = await handlePropertyImageUpload(propertyId, files);
 
     // Get the highest existing sortOrder for this property
     const existingImages = await prisma.propertyImage.findMany({
@@ -160,30 +174,29 @@ export async function DELETE(
     // Soft delete all images in database
     const result = await softDeleteAllPropertyImages(propertyId);
 
-    // Optional: Also delete from S3 if needed (for complete cleanup)
+    // Also delete from Supabase Storage for complete cleanup
     try {
-      const s3Client = getS3Client();
-      const listCommand = new ListObjectsV2Command({
-        Bucket: STORAGE_BUCKET,
-        Prefix: `${propertyId}/`,
-      });
+      const supabase = createServiceSupabaseClient();
 
-      const listResult = await s3Client.send(listCommand);
+      // List all files in the property folder
+      const { data: files } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(`${propertyId}/`);
 
-      if (listResult.Contents && listResult.Contents.length > 0) {
-        for (const obj of listResult.Contents) {
-          if (obj.Key) {
-            const deleteCommand = new DeleteObjectCommand({
-              Bucket: STORAGE_BUCKET,
-              Key: obj.Key,
-            });
-            await s3Client.send(deleteCommand);
-          }
+      if (files && files.length > 0) {
+        // Delete all files in the property folder
+        const filePaths = files.map(file => `${propertyId}/${file.name}`);
+        const { error: deleteError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .remove(filePaths);
+
+        if (deleteError) {
+          console.warn('Failed to delete some images from Supabase Storage:', deleteError);
         }
       }
-    } catch (s3Error) {
-      console.warn('Failed to delete some images from S3, but database records were updated:', s3Error);
-      // Don't fail the request if S3 deletion fails
+    } catch (storageError) {
+      console.warn('Failed to delete some images from Supabase Storage, but database records were updated:', storageError);
+      // Don't fail the request if storage deletion fails
     }
 
     return NextResponse.json({

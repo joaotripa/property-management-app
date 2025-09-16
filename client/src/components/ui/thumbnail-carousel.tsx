@@ -2,25 +2,20 @@
 
 import { memo } from "react";
 import { cn } from "@/lib/utils";
-import { ImageDisplayItem } from "./image-display-item";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "./carousel";
+import { ImageDisplayItem } from "@/components/ui/image-display-item";
+import { Carousel, CarouselContent, CarouselItem } from "./carousel";
+import type { PropertyImage } from "@prisma/client";
 
 export interface ThumbnailCarouselProps {
-  images: string[];
+  images: PropertyImage[];
   currentIndex: number;
-  onThumbnailClick: (index: number) => void;
+  onThumbnailClick: (imageId: string) => void;
   className?: string;
   thumbnailSize?: number;
   maxVisibleThumbnails?: number;
-  handleImageLoad: (index: number) => void;
-  handleImageError: (index: number) => void;
-  hasImageError: (index: number) => boolean;
+  handleImageLoad: (imageId: string) => void;
+  handleImageError: (imageId: string) => void;
+  hasImageError: (imageId: string) => boolean;
 }
 
 const ThumbnailCarouselComponent = ({
@@ -37,14 +32,15 @@ const ThumbnailCarouselComponent = ({
   const shouldUseCarousel = images.length > maxVisibleThumbnails;
 
   const ThumbnailButton = ({
-    imageUrl,
+    image,
     index,
   }: {
-    imageUrl: string;
+    image: PropertyImage;
     index: number;
   }) => (
     <button
-      onClick={() => onThumbnailClick(index)}
+      type="button"
+      onClick={() => onThumbnailClick(image.id)}
       className={cn(
         "flex-shrink-0 rounded-lg overflow-hidden border-2 transition-colors hover:border-primary/50",
         currentIndex === index ? "border-primary" : "border-transparent",
@@ -57,16 +53,16 @@ const ThumbnailCarouselComponent = ({
       }
     >
       <ImageDisplayItem
-        src={imageUrl}
+        src={image.url}
         alt={`Thumbnail ${index + 1}`}
         fill
         aspectRatio="square"
         className={cn(shouldUseCarousel ? "w-full h-full" : "", "rounded-lg")}
-        onLoad={() => handleImageLoad(index)}
+        onLoad={() => handleImageLoad(image.id)}
         onError={
-          hasImageError(index) ? undefined : () => handleImageError(index)
+          hasImageError(image.id) ? undefined : () => handleImageError(image.id)
         }
-        hasError={hasImageError(index)}
+        hasError={hasImageError(image.id)}
         iconSize="sm"
       />
     </button>
@@ -75,8 +71,8 @@ const ThumbnailCarouselComponent = ({
   if (!shouldUseCarousel) {
     return (
       <div className={cn("flex gap-2 overflow-x-auto pb-2", className)}>
-        {images.map((imageUrl, index) => (
-          <ThumbnailButton key={imageUrl} imageUrl={imageUrl} index={index} />
+        {images.map((image, index) => (
+          <ThumbnailButton key={image.id} image={image} index={index} />
         ))}
       </div>
     );
@@ -87,26 +83,22 @@ const ThumbnailCarouselComponent = ({
       <Carousel
         opts={{
           align: "start",
-          dragFree: true,
         }}
         className="w-full"
       >
         <CarouselContent className="-ml-2">
-          {images.map((imageUrl, index) => (
+          {images.map((image, index) => (
             <CarouselItem
-              key={imageUrl}
+              key={image.id}
               className="pl-2 basis-auto"
               style={{ flexBasis: `${thumbnailSize + 8}px` }}
             >
               <div style={{ width: thumbnailSize, height: thumbnailSize }}>
-                <ThumbnailButton imageUrl={imageUrl} index={index} />
+                <ThumbnailButton image={image} index={index} />
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-
-        <CarouselPrevious className="left-0 size-7 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-border" />
-        <CarouselNext className="right-0 size-7 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-border" />
       </Carousel>
     </div>
   );

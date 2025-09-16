@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { PropertyImage } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -73,7 +74,7 @@ export function PropertyDetailsDialog({
   const [availableCategories, setAvailableCategories] = useState<
     CategoryOption[]
   >([]);
-  const [propertyImages, setPropertyImages] = useState<string[]>([]);
+  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getS3Client, STORAGE_BUCKET, getPropertyImagePath } from '@/lib/supabase/s3-client';
-import { DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { STORAGE_BUCKET, getPropertyImagePath } from '@/lib/services/imageService';
+import { createServiceSupabaseClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
@@ -16,24 +15,22 @@ export async function GET(
       return NextResponse.json({ error: 'Property ID and Image ID are required' }, { status: 400 });
     }
 
-    const s3Client = getS3Client();
+    const supabase = createServiceSupabaseClient();
     const filePath = getPropertyImagePath(propertyId, imageId);
-    
-    const getCommand = new GetObjectCommand({
-      Bucket: STORAGE_BUCKET,
-      Key: filePath,
-    });
-    
-    const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
-    
-    return NextResponse.json({ 
-      url: signedUrl,
-      path: filePath 
+
+    // Get public URL (bucket is public, no signed URL needed)
+    const { data: publicUrlData } = supabase.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(filePath);
+
+    return NextResponse.json({
+      url: publicUrlData.publicUrl,
+      path: filePath
     });
   } catch (error) {
     console.error('Get image API error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to get image' 
+    return NextResponse.json({
+      error: 'Failed to get image'
     }, { status: 500 });
   }
 }
@@ -113,20 +110,21 @@ export async function DELETE(
       }
     }
 
-    // Delete from S3 storage (for cleanup, but not critical if it fails)
+    // Delete from Supabase Storage (for cleanup, but not critical if it fails)
     try {
-      const s3Client = getS3Client();
+      const supabase = createServiceSupabaseClient();
       const filePath = getPropertyImagePath(propertyId, filename);
 
-      const deleteCommand = new DeleteObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        Key: filePath,
-      });
+      const { error: deleteError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .remove([filePath]);
 
-      await s3Client.send(deleteCommand);
-    } catch (s3Error) {
-      console.warn('Failed to delete image from S3, but database record was updated:', s3Error);
-      // Don't fail the request if S3 deletion fails
+      if (deleteError) {
+        console.warn('Failed to delete image from Supabase Storage:', deleteError);
+      }
+    } catch (storageError) {
+      console.warn('Failed to delete image from Supabase Storage, but database record was updated:', storageError);
+      // Don't fail the request if storage deletion fails
     }
 
     return NextResponse.json({ success: true });

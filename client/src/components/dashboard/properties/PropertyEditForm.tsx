@@ -43,7 +43,7 @@ import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
 import { Loading } from "@/components/ui/loading";
 import {
-  getPropertyImageData,
+  getPropertyImages,
   deletePropertyImage,
   ImageServiceError,
 } from "@/lib/services/imageService";
@@ -112,7 +112,7 @@ export function PropertyEditForm({
       setImageError(null);
 
       try {
-        const imageData = await getPropertyImageData(property.id);
+        const imageData = await getPropertyImages(property.id);
         const existingImageItems: ExistingImageItem[] = imageData.map(
           (imgData) => ({
             url: imgData.url,
@@ -220,7 +220,7 @@ export function PropertyEditForm({
 
       // Reload images from server to get the updated state
       try {
-        const imageData = await getPropertyImageData(property.id!);
+        const imageData = await getPropertyImages(property.id!);
         const existingImageItems: ExistingImageItem[] = imageData.map(
           (imgData) => ({
             url: imgData.url,

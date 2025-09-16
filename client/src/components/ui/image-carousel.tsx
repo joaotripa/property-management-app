@@ -16,9 +16,10 @@ import {
   useImageCarouselSync,
   useImageLoading,
 } from "@/hooks/useImageCarousel";
+import type { PropertyImage } from "@prisma/client";
 
 export interface ImageCarouselProps {
-  images: string[];
+  images: PropertyImage[];
   propertyName?: string;
   className?: string;
   showThumbnails?: boolean;
@@ -36,7 +37,7 @@ export function ImageCarousel({
   onImageChange,
   isLoading = false,
 }: ImageCarouselProps) {
-  const { setMainApi, currentIndex, onThumbnailClick } = useImageCarouselSync();
+  const { setMainApi, currentIndex, onThumbnailClick } = useImageCarouselSync(images);
 
   const { handleImageLoad, handleImageError, hasImageError } = useImageLoading(images);
 
@@ -81,13 +82,13 @@ export function ImageCarousel({
           )}
         >
           <ImageDisplayItem
-            src={images[0]}
+            src={images[0].url}
             alt={propertyName}
             fill
             priority
-            onLoad={() => handleImageLoad(0)}
-            onError={hasImageError(0) ? undefined : () => handleImageError(0)}
-            hasError={hasImageError(0)}
+            onLoad={() => handleImageLoad(images[0].id)}
+            onError={hasImageError(images[0].id) ? undefined : () => handleImageError(images[0].id)}
+            hasError={hasImageError(images[0].id)}
             isLoading={isLoading}
           />
         </div>
@@ -108,8 +109,8 @@ export function ImageCarousel({
           className="w-full"
         >
           <CarouselContent>
-            {images.map((imageUrl, index) => (
-              <CarouselItem key={imageUrl}>
+            {images.map((image, index) => (
+              <CarouselItem key={image.id}>
                 <div
                   className={cn(
                     "relative rounded-lg overflow-hidden w-full",
@@ -117,13 +118,13 @@ export function ImageCarousel({
                   )}
                 >
                   <ImageDisplayItem
-                    src={imageUrl}
+                    src={image.url}
                     alt={`${propertyName} - Image ${index + 1}`}
                     fill
                     priority={index === 0}
-                    onLoad={() => handleImageLoad(index)}
-                    onError={hasImageError(index) ? undefined : () => handleImageError(index)}
-                    hasError={hasImageError(index)}
+                    onLoad={() => handleImageLoad(image.id)}
+                    onError={hasImageError(image.id) ? undefined : () => handleImageError(image.id)}
+                    hasError={hasImageError(image.id)}
                     isLoading={isLoading}
                   />
                 </div>
@@ -162,10 +163,10 @@ export function ImageCarousel({
       {/* Dot Indicators (alternative to thumbnails) */}
       {!showThumbnails && images.length > 1 && (
         <div className="flex justify-center gap-2">
-          {images.map((imageUrl, index) => (
+          {images.map((image, index) => (
             <button
-              key={imageUrl}
-              onClick={() => onThumbnailClick(index)}
+              key={image.id}
+              onClick={() => onThumbnailClick(image.id)}
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",
                 currentIndex === index ? "bg-primary" : "bg-muted-foreground/30"

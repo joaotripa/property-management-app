@@ -1,5 +1,6 @@
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
 import { generateUUID } from "@/lib/utils";
+import { PropertyImage } from "@prisma/client";
 
 export class ImageServiceError extends Error {
   constructor(message: string, public statusCode?: number) {
@@ -27,6 +28,8 @@ export interface UploadProgress {
   total: number;
   percentage: number;
 }
+
+export const STORAGE_BUCKET = 'property-images';
 
 /**
  * Validate file before upload
@@ -111,54 +114,11 @@ export function createFilePreview(file: File): Promise<string> {
   });
 }
 
-export interface PropertyImageData {
-  url: string;
-  filename: string;
-  key: string;
-  isCover: boolean;
-}
 
 /**
- * Get all property image URLs from API
+ * Get all property images as full PropertyImage objects from API
  */
-export async function getPropertyImages(propertyId: string, signal?: AbortSignal): Promise<string[]> {
-  try {
-    const response = await fetch(`/api/properties/${propertyId}/images`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal,
-    });
-
-    if (!response.ok) {
-      throw new ImageServiceError(
-        `Failed to fetch property images: ${response.statusText}`,
-        response.status
-      );
-    }
-
-    const data = await response.json();
-    return data.imageUrls || [];
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      return [];
-    }
-
-    if (error instanceof ImageServiceError) {
-      throw error;
-    }
-
-    throw new ImageServiceError(
-      'Network error while fetching property images'
-    );
-  }
-}
-
-/**
- * Get detailed property image data including filenames and keys
- */
-export async function getPropertyImageData(propertyId: string, signal?: AbortSignal): Promise<PropertyImageData[]> {
+export async function getPropertyImages(propertyId: string, signal?: AbortSignal): Promise<PropertyImage[]> {
   try {
     const response = await fetch(`/api/properties/${propertyId}/images`, {
       method: 'GET',
@@ -190,6 +150,14 @@ export async function getPropertyImageData(propertyId: string, signal?: AbortSig
       'Network error while fetching property images'
     );
   }
+}
+
+/**
+ * Get all property image URLs (backwards compatibility helper)
+ */
+export async function getPropertyImageUrls(propertyId: string, signal?: AbortSignal): Promise<string[]> {
+  const images = await getPropertyImages(propertyId, signal);
+  return images.map(image => image.url);
 }
 
 /**
@@ -236,6 +204,10 @@ export async function deletePropertyImage(
       'Network error while deleting property image'
     );
   }
+}
+
+export function getPropertyImagePath(propertyId: string, fileName: string): string {
+  return `${propertyId}/${fileName}`;
 }
 
 
@@ -521,97 +493,5 @@ export function resizeImage(
   });
 }
 
-/**
- * Internal function to handle S3 upload operations for API routes
- */
-export async function handlePropertyImageUpload(
-  propertyId: string,
-  files: File[],
-  coverImageIndex: number = 0
-): Promise<UploadResult[]> {
-  if (!propertyId || typeof propertyId !== 'string') {
-    throw new ImageServiceError('Valid property ID is required');
-  }
-
-  if (files.length === 0) {
-    throw new ImageServiceError('No files to upload');
-  }
-
-  const { getS3Client, STORAGE_BUCKET, getPropertyImagePath } = await import('@/lib/supabase/s3-client');
-  const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand } = await import('@aws-sdk/client-s3');
-  const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-
-  const results: UploadResult[] = [];
-  const s3Client = getS3Client();
-
-  const listCommand = new ListObjectsV2Command({
-    Bucket: STORAGE_BUCKET,
-    Prefix: `${propertyId}/`,
-  });
-  const existingFiles = await s3Client.send(listCommand);
-  const existingFileNames = new Set(
-    existingFiles.Contents?.map(obj => obj.Key?.split('/').pop()?.split('?')[0]) || []
-  );
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-
-    const validation = validateImageFile(file);
-    if (!validation.isValid) {
-      throw new ImageServiceError(`File ${i + 1}: ${validation.error}`);
-    }
-
-    const fileExtension = file.name.split('.').pop();
-    const isCover = i === coverImageIndex;
-
-    let fileName: string;
-    let counter = 1;
-    do {
-      fileName = `image-${Date.now()}-${counter}.${fileExtension}`;
-      counter++;
-    } while (existingFileNames.has(fileName));
-    existingFileNames.add(fileName);
-
-    const filePath = getPropertyImagePath(propertyId, fileName);
-
-    try {
-      const fileBuffer = await file.arrayBuffer();
-
-      const uploadCommand = new PutObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        Key: filePath,
-        Body: new Uint8Array(fileBuffer),
-        ContentType: file.type,
-        CacheControl: 'max-age=3600',
-        Metadata: {
-          'uploaded-by': 'domari.app',
-          'property-id': propertyId,
-          'file-index': i.toString(),
-          'is-cover': isCover.toString(),
-        },
-      });
-
-      await s3Client.send(uploadCommand);
-
-      const getCommand = new GetObjectCommand({
-        Bucket: STORAGE_BUCKET,
-        Key: filePath,
-      });
-
-      const publicUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
-
-      results.push({
-        url: publicUrl,
-        path: filePath,
-        size: file.size,
-      });
-    } catch (error) {
-      console.error(`Error uploading file ${i + 1}:`, error);
-      throw new ImageServiceError(`Upload failed for file ${i + 1}`);
-    }
-  }
-
-  return results;
-}
 
 
