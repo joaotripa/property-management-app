@@ -17,7 +17,8 @@ export interface ImageDisplayItemProps {
   onError?: () => void;
   onLoad?: () => void;
   aspectRatio?: "video" | "square" | "auto";
-  hasError?: boolean; // New prop to indicate permanent error state
+  hasError?: boolean;
+  iconSize?: "sm" | "md" | "lg";
 }
 
 export function ImageDisplayItem({
@@ -33,6 +34,7 @@ export function ImageDisplayItem({
   onLoad,
   aspectRatio = "video",
   hasError = false,
+  iconSize = "lg",
 }: ImageDisplayItemProps) {
   const getAspectRatioClass = () => {
     switch (aspectRatio) {
@@ -70,7 +72,29 @@ export function ImageDisplayItem({
           className
         )}
       >
-        <Home className="w-8 h-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center gap-2">
+          <Home
+            className={cn(
+              "text-muted-foreground",
+              iconSize === "sm"
+                ? "w-4 h-4"
+                : iconSize === "md"
+                  ? "w-6 h-6"
+                  : "w-8 h-8"
+            )}
+          />
+          <span
+            className={cn(
+              iconSize === "sm"
+                ? "hidden"
+                : iconSize === "md"
+                  ? "text-xs"
+                  : "text-sm"
+            )}
+          >
+            Image not available.
+          </span>
+        </div>
       </div>
     );
   }

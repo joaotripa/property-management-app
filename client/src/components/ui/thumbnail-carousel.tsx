@@ -18,7 +18,6 @@ export interface ThumbnailCarouselProps {
   className?: string;
   thumbnailSize?: number;
   maxVisibleThumbnails?: number;
-  // Image loading state props passed from parent
   handleImageLoad: (index: number) => void;
   handleImageError: (index: number) => void;
   hasImageError: (index: number) => boolean;
@@ -64,8 +63,11 @@ const ThumbnailCarouselComponent = ({
         aspectRatio="square"
         className={cn(shouldUseCarousel ? "w-full h-full" : "", "rounded-lg")}
         onLoad={() => handleImageLoad(index)}
-        onError={hasImageError(index) ? undefined : () => handleImageError(index)}
+        onError={
+          hasImageError(index) ? undefined : () => handleImageError(index)
+        }
         hasError={hasImageError(index)}
+        iconSize="sm"
       />
     </button>
   );
