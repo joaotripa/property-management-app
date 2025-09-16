@@ -150,10 +150,8 @@ export function PropertyEditForm({
   const handleRemoveExistingImage = (imageId: string) => {
     setImageError(null);
 
-    // Stage the image for deletion - don't call API immediately
     setRemovedExistingImageIds((prev) => new Set(prev).add(imageId));
 
-    // Find the index of the removed image in the visible images list
     const visibleImages = existingImages.filter(
       (img) => !removedExistingImageIds.has(img.id)
     );
@@ -161,7 +159,6 @@ export function PropertyEditForm({
       (img) => img.id === imageId
     );
 
-    // Adjust cover image index if necessary
     if (removedImageIndex === coverImageIndex && coverImageIndex > 0) {
       setCoverImageIndex(0);
     } else if (removedImageIndex < coverImageIndex) {
@@ -170,12 +167,10 @@ export function PropertyEditForm({
   };
 
   const handleCoverImageChange = (index: number) => {
-    // Only update local state - don't save to database until form save
     setCoverImageIndex(index);
   };
 
   const handleCancel = () => {
-    // Reset staged deletions when canceling
     setRemovedExistingImageIds(new Set());
     setNewImages([]);
     setImageError(null);
@@ -185,24 +180,25 @@ export function PropertyEditForm({
   const handleSave = form.handleSubmit(async (data) => {
     setIsSaving(true);
     try {
-      // Check if cover image has changed from initial state
       const hasCoverImageChanged = coverImageIndex !== initialCoverImageIndex;
 
-      // Get the filtered visible images (excluding removed ones)
       const visibleImages = existingImages.filter(
         (img) => !removedExistingImageIds.has(img.id)
       );
 
-      // Get the filename of the selected cover image
       let selectedCoverImageFilename: string | undefined;
       if (hasCoverImageChanged && coverImageIndex < visibleImages.length) {
         selectedCoverImageFilename = visibleImages[coverImageIndex].id; // id is the filename
       }
 
-      // Save the property with new images first
-      await onSave(data, newImages, coverImageIndex, hasCoverImageChanged, selectedCoverImageFilename);
+      await onSave(
+        data,
+        newImages,
+        coverImageIndex,
+        hasCoverImageChanged,
+        selectedCoverImageFilename
+      );
 
-      // Process staged deletions after successful save
       if (removedExistingImageIds.size > 0) {
         const deletionPromises = Array.from(removedExistingImageIds).map(
           async (imageId) => {
@@ -210,7 +206,6 @@ export function PropertyEditForm({
               await deletePropertyImage(property.id!, imageId);
             } catch (error) {
               console.error(`Failed to delete image ${imageId}:`, error);
-              // Continue with other deletions even if one fails
             }
           }
         );
@@ -483,6 +478,7 @@ export function PropertyEditForm({
                 onCoverImageChange={handleCoverImageChange}
                 error={imageError}
                 maxFiles={10}
+                maxSize={5 * 1024 * 1024}
                 disabled={isSaving}
               />
             )}

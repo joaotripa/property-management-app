@@ -238,69 +238,14 @@ export async function deletePropertyImage(
   }
 }
 
-/**
- * Upload multiple images with real-time progress tracking
- */
-async function uploadWithProgress(
-  formData: FormData,
-  url: string,
-  onProgress: (progress: number) => void
-): Promise<{ results: UploadResult[] }> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    // Track upload progress
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const progress = Math.round((event.loaded / event.total) * 100);
-        onProgress(Math.min(progress, 99)); // Keep at 99% until complete
-      }
-    });
-
-    // Handle successful completion
-    xhr.addEventListener('load', () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          onProgress(100);
-          resolve(response);
-        } catch (parseError) {
-          console.error('Invalid response format from server:', parseError);
-          reject(new ImageServiceError('Invalid response format from server'));
-        }
-      } else {
-        // Handle HTTP error responses
-        try {
-          const errorResponse = JSON.parse(xhr.responseText);
-          reject(new ImageServiceError(errorResponse.error || `HTTP ${xhr.status}: Upload failed`, xhr.status));
-        } catch {
-          reject(new ImageServiceError(`HTTP ${xhr.status}: Upload failed`, xhr.status));
-        }
-      }
-    });
-
-    xhr.addEventListener('error', () => {
-      reject(new ImageServiceError('Network error occurred during upload'));
-    });
-
-    xhr.addEventListener('timeout', () => {
-      reject(new ImageServiceError('Upload timed out'));
-    });
-
-    xhr.open('POST', url);
-    xhr.timeout = 2 * 60 * 1000; // 5 minutes timeout
-    xhr.send(formData);
-  });
-}
 
 /**
- * Upload property images with cover image support and progress tracking
+ * Upload property images with cover image support
  */
 export async function uploadPropertyImages(
   propertyId: string,
   images: FileWithPreview[] | File[],
   coverImageIndex: number = 0,
-  onProgress?: (fileIndex: number, progress: number) => void,
   signal?: AbortSignal
 ): Promise<PropertyImageUploadResult> {
   try {
@@ -330,43 +275,25 @@ export async function uploadPropertyImages(
       formData.append(`file-${index}`, file);
     });
 
-    files.forEach((_, index) => {
-      onProgress?.(index, 0);
+    const fetchResponse = await fetch(`/api/properties/${propertyId}/images`, {
+      method: 'POST',
+      body: formData,
+      signal,
     });
 
-    let response: { results: UploadResult[] };
-
-    if (signal) {
-      const fetchResponse = await fetch(`/api/properties/${propertyId}/images`, {
-        method: 'POST',
-        body: formData,
-        signal,
-      });
-
-      if (!fetchResponse.ok) {
-        let errorMessage = `Failed to upload images: ${fetchResponse.statusText}`;
-        try {
-          const errorData = await fetchResponse.json();
-          if (errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } catch {
+    if (!fetchResponse.ok) {
+      let errorMessage = `Failed to upload images: ${fetchResponse.statusText}`;
+      try {
+        const errorData = await fetchResponse.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
         }
-        throw new ImageServiceError(errorMessage, fetchResponse.status);
+      } catch {
       }
-
-      response = await fetchResponse.json();
-    } else {
-      response = await uploadWithProgress(
-        formData,
-        `/api/properties/${propertyId}/images`,
-        (overallProgress) => {
-          files.forEach((_, index) => {
-            onProgress?.(index, overallProgress);
-          });
-        }
-      );
+      throw new ImageServiceError(errorMessage, fetchResponse.status);
     }
+
+    const response = await fetchResponse.json();
 
     if (!response?.results || !Array.isArray(response.results)) {
       throw new ImageServiceError('Invalid response structure from server');
@@ -375,15 +302,6 @@ export async function uploadPropertyImages(
     return { results: response.results };
 
   } catch (error) {
-    if (onProgress) {
-      const files = images.map(img =>
-        'file' in img ? (img as FileWithPreview).file : (img as File)
-      );
-      files.forEach((_, index) => {
-        onProgress(index, 0);
-      });
-    }
-
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new ImageServiceError('Request cancelled', 0);
     }
@@ -508,14 +426,12 @@ export async function updatePropertyCoverImage(
  */
 export async function uploadPropertyImage(
   file: File,
-  propertyId: string,
-  onProgress?: (progress: number) => void
+  propertyId: string
 ): Promise<UploadResult> {
   const results = await uploadPropertyImages(
     propertyId,
     [file],
-    0,
-    onProgress ? (_, progress) => onProgress(progress) : undefined
+    0
   );
   return results.results[0];
 }

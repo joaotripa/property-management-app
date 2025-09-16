@@ -65,7 +65,6 @@ export function PropertyAddForm({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
   const [coverImageIndex, setCoverImageIndex] = useState(0);
-  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const propertyTypeOptions = getPropertyTypeOptions();
@@ -104,7 +103,6 @@ export function PropertyAddForm({
     setUploadError(null);
     setSelectedFiles(files);
 
-    setUploadProgress(new Array(files.length).fill(0));
 
     if (coverImageIndex >= files.length) {
       setCoverImageIndex(0);
@@ -115,13 +113,6 @@ export function PropertyAddForm({
     setCoverImageIndex(index);
   };
 
-  const handleUploadProgress = (fileIndex: number, progress: number) => {
-    setUploadProgress((prev) => {
-      const newProgress = [...prev];
-      newProgress[fileIndex] = progress;
-      return newProgress;
-    });
-  };
 
   const onSubmit = async (data: PropertyFormInput) => {
     try {
@@ -161,8 +152,7 @@ export function PropertyAddForm({
           await uploadPropertyImages(
             createdProperty.id,
             selectedFiles,
-            coverImageIndex,
-            handleUploadProgress
+            coverImageIndex
           );
           toast.success("Property created successfully!");
         } catch (error) {
@@ -368,7 +358,6 @@ export function PropertyAddForm({
           coverImageIndex={coverImageIndex}
           onCoverImageChange={handleCoverImageChange}
           isUploading={isLoading}
-          uploadProgress={uploadProgress}
           error={uploadError}
           disabled={isLoading || isSubmitting}
           label="Property Images"
