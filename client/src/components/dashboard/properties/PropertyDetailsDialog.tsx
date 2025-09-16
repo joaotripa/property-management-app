@@ -75,7 +75,6 @@ export function PropertyDetailsDialog({
   >([]);
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
-  const [isRefreshingProperty, setIsRefreshingProperty] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { filters, setFilters } = useTransactionFilters({
@@ -92,7 +91,6 @@ export function PropertyDetailsDialog({
       setMode("view");
       setEditProperty(null);
       setRefreshedProperty(null);
-      setIsRefreshingProperty(false);
     }
   }, [isOpen, property?.id]);
 
@@ -139,8 +137,6 @@ export function PropertyDetailsDialog({
 
   const refreshPropertyData = async () => {
     if (!property?.id) return;
-
-    setIsRefreshingProperty(true);
     try {
       const freshProperty = await getPropertyById(property.id);
       if (freshProperty) {
@@ -149,8 +145,6 @@ export function PropertyDetailsDialog({
       }
     } catch (error) {
       console.error("Failed to refresh property data:", error);
-    } finally {
-      setIsRefreshingProperty(false);
     }
   };
 

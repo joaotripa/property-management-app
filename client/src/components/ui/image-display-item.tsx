@@ -17,6 +17,7 @@ export interface ImageDisplayItemProps {
   onError?: () => void;
   onLoad?: () => void;
   aspectRatio?: "video" | "square" | "auto";
+  hasError?: boolean; // New prop to indicate permanent error state
 }
 
 export function ImageDisplayItem({
@@ -31,6 +32,7 @@ export function ImageDisplayItem({
   onError,
   onLoad,
   aspectRatio = "video",
+  hasError = false,
 }: ImageDisplayItemProps) {
   const getAspectRatioClass = () => {
     switch (aspectRatio) {
@@ -58,7 +60,8 @@ export function ImageDisplayItem({
     );
   }
 
-  if (!src) {
+  // If image has permanently failed or no src, show placeholder immediately
+  if (!src || hasError) {
     return (
       <div
         className={cn(

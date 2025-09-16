@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageDisplayItem } from "./image-display-item";
@@ -39,9 +39,9 @@ export function ImageCarousel({
 }: ImageCarouselProps) {
   const { setMainApi, currentIndex, onThumbnailClick } = useImageCarouselSync();
 
-  const { handleImageLoad, handleImageError } = useImageLoading(images);
+  const { handleImageLoad, handleImageError, hasImageError } = useImageLoading(images);
 
-  const getAspectRatioClass = () => {
+  const getAspectRatioClass = useCallback(() => {
     switch (aspectRatio) {
       case "square":
         return "aspect-square";
@@ -50,7 +50,7 @@ export function ImageCarousel({
       default:
         return "";
     }
-  };
+  }, [aspectRatio]);
 
   useEffect(() => {
     onImageChange?.(currentIndex);
@@ -93,7 +93,8 @@ export function ImageCarousel({
             fill
             priority
             onLoad={() => handleImageLoad(0)}
-            onError={() => handleImageError(0)}
+            onError={hasImageError(0) ? undefined : () => handleImageError(0)}
+            hasError={hasImageError(0)}
           />
         </div>
       </div>
@@ -114,7 +115,7 @@ export function ImageCarousel({
         >
           <CarouselContent>
             {images.map((imageUrl, index) => (
-              <CarouselItem key={index}>
+              <CarouselItem key={imageUrl}>
                 <div
                   className={cn(
                     "relative rounded-lg overflow-hidden w-full",
@@ -127,7 +128,8 @@ export function ImageCarousel({
                     fill
                     priority={index === 0}
                     onLoad={() => handleImageLoad(index)}
-                    onError={() => handleImageError(index)}
+                    onError={hasImageError(index) ? undefined : () => handleImageError(index)}
+                    hasError={hasImageError(index)}
                   />
                 </div>
               </CarouselItem>
@@ -156,15 +158,18 @@ export function ImageCarousel({
           images={images}
           currentIndex={currentIndex}
           onThumbnailClick={onThumbnailClick}
+          handleImageLoad={handleImageLoad}
+          handleImageError={handleImageError}
+          hasImageError={hasImageError}
         />
       )}
 
       {/* Dot Indicators (alternative to thumbnails) */}
       {!showThumbnails && images.length > 1 && (
         <div className="flex justify-center gap-2">
-          {images.map((_, index) => (
+          {images.map((imageUrl, index) => (
             <button
-              key={index}
+              key={imageUrl}
               onClick={() => onThumbnailClick(index)}
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",

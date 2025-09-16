@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { ImageDisplayItem } from "./image-display-item";
 import {
@@ -17,16 +18,23 @@ export interface ThumbnailCarouselProps {
   className?: string;
   thumbnailSize?: number;
   maxVisibleThumbnails?: number;
+  // Image loading state props passed from parent
+  handleImageLoad: (index: number) => void;
+  handleImageError: (index: number) => void;
+  hasImageError: (index: number) => boolean;
 }
 
-export function ThumbnailCarousel({
+const ThumbnailCarouselComponent = ({
   images,
   currentIndex,
   onThumbnailClick,
   className,
   thumbnailSize = 64,
   maxVisibleThumbnails = 6,
-}: ThumbnailCarouselProps) {
+  handleImageLoad,
+  handleImageError,
+  hasImageError,
+}: ThumbnailCarouselProps) => {
   const shouldUseCarousel = images.length > maxVisibleThumbnails;
 
   const ThumbnailButton = ({
@@ -55,6 +63,9 @@ export function ThumbnailCarousel({
         fill
         aspectRatio="square"
         className={cn(shouldUseCarousel ? "w-full h-full" : "", "rounded-lg")}
+        onLoad={() => handleImageLoad(index)}
+        onError={hasImageError(index) ? undefined : () => handleImageError(index)}
+        hasError={hasImageError(index)}
       />
     </button>
   );
@@ -63,7 +74,7 @@ export function ThumbnailCarousel({
     return (
       <div className={cn("flex gap-2 overflow-x-auto pb-2", className)}>
         {images.map((imageUrl, index) => (
-          <ThumbnailButton key={index} imageUrl={imageUrl} index={index} />
+          <ThumbnailButton key={imageUrl} imageUrl={imageUrl} index={index} />
         ))}
       </div>
     );
@@ -81,7 +92,7 @@ export function ThumbnailCarousel({
         <CarouselContent className="-ml-2">
           {images.map((imageUrl, index) => (
             <CarouselItem
-              key={index}
+              key={imageUrl}
               className="pl-2 basis-auto"
               style={{ flexBasis: `${thumbnailSize + 8}px` }}
             >
@@ -97,4 +108,7 @@ export function ThumbnailCarousel({
       </Carousel>
     </div>
   );
-}
+};
+
+// Memoize the component to prevent unnecessary re-renders
+export const ThumbnailCarousel = memo(ThumbnailCarouselComponent);

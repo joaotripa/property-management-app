@@ -65,8 +65,11 @@ export function PropertyImage({
   }, [propertyId]);
 
   const handleImageError = () => {
-    setImageError(true);
-    setIsLoading(false);
+    // Only set error if not already in error state to prevent infinite loops
+    if (!imageError) {
+      setImageError(true);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,7 +82,7 @@ export function PropertyImage({
       priority={true}
       aspectRatio={aspectRatio}
       isLoading={isLoading}
-      onError={handleImageError}
+      onError={imageError ? undefined : handleImageError}
     />
   );
 }

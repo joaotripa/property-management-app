@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CarouselApi } from "@/components/ui/carousel";
 
 export function useImageCarouselSync() {
@@ -70,40 +70,73 @@ export function useImageCarouselSync() {
 }
 
 export function useImageLoading(images: string[]) {
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-  const [errorImages, setErrorImages] = useState<Set<number>>(new Set());
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [errorImages, setErrorImages] = useState<Set<string>>(new Set());
+
+  // Use useMemo to detect when images actually change to prevent effect loops
+  const imageUrlsString = useMemo(() => JSON.stringify(images), [images]);
+  const [lastImageUrlsString, setLastImageUrlsString] = useState<string>("");
 
   const handleImageLoad = useCallback((index: number) => {
-    setLoadedImages(prev => new Set(prev).add(index));
+    const imageUrl = images[index];
+    if (!imageUrl) return;
+
+    setLoadedImages(prev => new Set(prev).add(imageUrl));
     setErrorImages(prev => {
       const newSet = new Set(prev);
-      newSet.delete(index);
+      newSet.delete(imageUrl);
       return newSet;
     });
-  }, []);
+  }, [images]);
 
   const handleImageError = useCallback((index: number) => {
-    setErrorImages(prev => new Set(prev).add(index));
+    const imageUrl = images[index];
+    if (!imageUrl) return;
+
+    // Permanently mark this URL as failed - no retries
+    setErrorImages(prev => new Set(prev).add(imageUrl));
     setLoadedImages(prev => {
       const newSet = new Set(prev);
-      newSet.delete(index);
+      newSet.delete(imageUrl);
       return newSet;
     });
-  }, []);
+  }, [images]);
 
   const isImageLoaded = useCallback((index: number) => {
-    return loadedImages.has(index);
-  }, [loadedImages]);
+    const imageUrl = images[index];
+    return imageUrl ? loadedImages.has(imageUrl) : false;
+  }, [loadedImages, images]);
 
   const hasImageError = useCallback((index: number) => {
-    return errorImages.has(index);
-  }, [errorImages]);
+    const imageUrl = images[index];
+    return imageUrl ? errorImages.has(imageUrl) : false;
+  }, [errorImages, images]);
 
-  // Reset states when images array changes
+  // Only reset states when the actual image URLs change, not on re-renders
   useEffect(() => {
-    setLoadedImages(new Set());
-    setErrorImages(new Set());
-  }, [images]);
+    if (imageUrlsString !== lastImageUrlsString) {
+      setLastImageUrlsString(imageUrlsString);
+      // Only clear states for URLs that are no longer in the new images array
+      setLoadedImages(prev => {
+        const newSet = new Set<string>();
+        for (const url of prev) {
+          if (images.includes(url)) {
+            newSet.add(url);
+          }
+        }
+        return newSet;
+      });
+      setErrorImages(prev => {
+        const newSet = new Set<string>();
+        for (const url of prev) {
+          if (images.includes(url)) {
+            newSet.add(url);
+          }
+        }
+        return newSet;
+      });
+    }
+  }, [imageUrlsString, lastImageUrlsString, images]);
 
   return {
     handleImageLoad,
