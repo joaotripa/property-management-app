@@ -145,7 +145,7 @@ function ResetPasswordContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-secondary focus:outline-none"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
@@ -169,7 +169,7 @@ function ResetPasswordContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-secondary focus:outline-none"
                       onClick={() => setShowConfirmPassword((v) => !v)}
                       aria-label={
                         showConfirmPassword ? "Hide password" : "Show password"

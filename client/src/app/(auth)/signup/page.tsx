@@ -124,7 +124,7 @@ const SignupPage = () => {
                       <button
                         type="button"
                         tabIndex={-1}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-secondary focus:outline-none"
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
@@ -153,7 +153,7 @@ const SignupPage = () => {
                       <button
                         type="button"
                         tabIndex={-1}
-                        className="absolute right-2 top-1/2 -translate-y-1/2  text-muted-foreground hover:text-muted focus:outline-none"
+                        className="absolute right-2 top-1/2 -translate-y-1/2  text-muted-foreground hover:text-secondary focus:outline-none"
                         onClick={() => setShowConfirmPassword((v) => !v)}
                         aria-label={
                           showConfirmPassword
@@ -182,7 +182,10 @@ const SignupPage = () => {
                         />
                       </div>
                       <div className="ml-3 text-sm">
-                        <label htmlFor="terms" className="text-muted">
+                        <label
+                          htmlFor="terms"
+                          className="text-muted-foreground"
+                        >
                           I agree to the{" "}
                           <Link
                             href="/legal/terms"

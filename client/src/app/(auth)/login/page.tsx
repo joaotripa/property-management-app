@@ -135,7 +135,7 @@ function LoginContent() {
                     <button
                       type="button"
                       tabIndex={-1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted focus:outline-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-accent focus:outline-none"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
@@ -201,7 +201,7 @@ function LoginContent() {
             </form>
           </div>
           <div className="grid gap-6 mt-6">
-            <div className="text-muted-foreground *:[a]:text-accent/70 *:[a]:hover:text-accent text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
+            <div className="text-muted-foreground *:[a]:text-accent *:[a]:hover:text-accent/70 text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 transition-colors">
               By signing up, you acknowledge that you have read and understood,
               and agree to our <Link href="#">Terms of Service</Link> and{" "}
               <Link href="#">Privacy Policy</Link>.
