@@ -9,8 +9,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "./carousel";
 
@@ -21,7 +19,6 @@ export interface ThumbnailCarouselProps {
   setThumbnailApi?: (api: CarouselApi) => void;
   className?: string;
   thumbnailSize?: number;
-  maxVisibleThumbnails?: number;
   handleImageLoad: (index: number) => void;
   handleImageError: (index: number) => void;
   hasImageError: (index: number) => boolean;
@@ -34,7 +31,6 @@ const ThumbnailCarouselComponent = ({
   setThumbnailApi,
   className,
   thumbnailSize = 64,
-  maxVisibleThumbnails = 6,
   handleImageLoad,
   handleImageError,
   hasImageError,
@@ -70,14 +66,13 @@ const ThumbnailCarouselComponent = ({
 
   ThumbnailContent.displayName = "ThumbnailContent";
 
-  // Always use carousel layout
   return (
     <div className={cn("relative", className)}>
       <Carousel
         setApi={setThumbnailApi}
         opts={{
           align: "start",
-          containScroll: "trimSnaps",
+          containScroll: false,
           watchDrag: false,
           dragFree: false,
         }}
