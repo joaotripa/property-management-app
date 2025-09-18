@@ -11,7 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ArrowUp, ArrowDown } from "lucide-react";
 import { getPropertyComparison } from "@/lib/services/client/analyticsService";
-import { formatCurrency } from "@/lib/utils/index";
+import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 
@@ -180,7 +180,7 @@ export function TopPropertiesCard() {
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">
-                      {formatCurrency(property.netIncome)}
+                      {formatCompactCurrency(property.netIncome)}
                     </div>
                     <div className="flex items-center justify-end gap-1 text-sm">
                       {trendData.trendValue ? (

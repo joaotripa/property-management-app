@@ -10,7 +10,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatPercentage } from "@/lib/utils/index";
+import { formatPercentage, formatCompactCurrency } from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
       },
       {
         title: "Cash Flow",
-        value: formatPercentage(current?.netIncome || 0),
+        value: formatCompactCurrency(current?.netIncome || 0),
         ...getTrendData(current?.netIncome || 0, previous?.netIncome),
       },
       {

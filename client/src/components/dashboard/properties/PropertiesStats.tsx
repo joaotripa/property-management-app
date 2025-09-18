@@ -3,7 +3,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCurrency } from "@/lib/utils/index";
+import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { usePropertyStats } from "@/hooks/usePropertyStats";
 
 const PropertiesStats = () => {
@@ -35,7 +35,7 @@ const PropertiesStats = () => {
     },
     {
       title: "Average Rent",
-      value: formatCurrency(stats.averageRent),
+      value: formatCompactCurrency(stats.averageRent),
     },
   ];
 

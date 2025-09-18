@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
-import { formatCurrency } from "@/lib/utils/index";
+import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface TopIncomeChartProps {
@@ -73,7 +73,7 @@ export function TopIncomeChart({ data = [] }: TopIncomeChartProps) {
                   />
 
                   <YAxis
-                    tickFormatter={formatCurrency}
+                    tickFormatter={formatCompactCurrency}
                     axisLine={false}
                     tickLine={false}
                     tickMargin={10}

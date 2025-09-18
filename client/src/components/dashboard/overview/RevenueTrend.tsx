@@ -16,7 +16,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
-import { formatCurrency } from "@/lib/utils/index";
+import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 const chartConfig = {
@@ -114,15 +114,18 @@ export function RevenueTrend() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={formatCurrency}
+              tickFormatter={formatCompactCurrency}
             />
 
             <ChartTooltip
               cursor={false}
               content={
-                <ChartTooltipContent 
+                <ChartTooltipContent
                   indicator="line"
-                  formatter={createChartTooltipFormatter(formatCurrency, chartConfig)}
+                  formatter={createChartTooltipFormatter(
+                    formatCurrency,
+                    chartConfig
+                  )}
                 />
               }
             />

@@ -16,7 +16,7 @@ import {
 } from "@/components/dashboard/analytics/PropertySelector";
 import { useState, useEffect, useCallback } from "react";
 import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
-import { formatCurrency } from "@/lib/utils/index";
+import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface CashFlowChartProps {
@@ -149,18 +149,21 @@ export function CashFlowChart({ properties }: CashFlowChartProps) {
 
               <YAxis
                 className="text-xs fill-muted-foreground"
-                tickFormatter={formatCurrency}
+                tickFormatter={formatCompactCurrency}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, dx: -10 }}
               />
 
-              <ChartTooltip 
+              <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={createChartTooltipFormatter(formatCurrency, chartConfig)}
+                    formatter={createChartTooltipFormatter(
+                      formatCurrency,
+                      chartConfig
+                    )}
                   />
-                } 
+                }
               />
 
               <ChartLegend content={<ChartLegendContent />} />

@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function toCamelCase(str: string): string {
   if (!str) return "";
-  
+
   const normalized = str
     .replace(/[^a-zA-Z0-9]+/g, ' ')
     .trim()
@@ -47,16 +47,3 @@ export function isValidUUID(uuid: string): boolean {
   return uuidRegex.test(uuid);
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
-
-export function formatPercentage(
-  percentage: number,
-  decimals: number = 1
-): string {
-  return `${percentage.toFixed(decimals)}%`;
-}

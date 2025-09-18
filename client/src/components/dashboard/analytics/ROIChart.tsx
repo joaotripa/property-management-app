@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
-import { formatPercentage } from "@/lib/utils/index";
+import { formatPercentage } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface ROIChartProps {

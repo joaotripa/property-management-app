@@ -5,7 +5,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCurrency, formatPercentage } from "@/lib/utils/index";
+import { formatPercentage, formatCompactCurrency } from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { getAnalyticsKPIs } from "@/lib/services/client/analyticsService";
 import { getProperties } from "@/lib/services/client/propertiesService";
@@ -117,7 +117,7 @@ export function OverviewKPIs() {
     return [
       {
         title: "Monthly Revenue",
-        value: formatCurrency(currentIncome),
+        value: formatCompactCurrency(currentIncome),
         trend: incomeTrend.trend,
         trendValue: incomeTrend.trendValue
           ? `${incomeTrend.trendValue}`
