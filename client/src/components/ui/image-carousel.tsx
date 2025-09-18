@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { PropertyImage } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { ImageDisplayItem } from "./image-display-item";
 import { ThumbnailCarousel } from "./thumbnail-carousel";
@@ -16,7 +17,6 @@ import {
   useImageCarouselSync,
   useImageLoading,
 } from "@/hooks/useImageCarousel";
-import type { PropertyImage } from "@prisma/client";
 
 export interface ImageCarouselProps {
   images: PropertyImage[];
@@ -28,7 +28,7 @@ export interface ImageCarouselProps {
   isLoading?: boolean;
 }
 
-export function ImageCarousel({
+const ImageCarouselComponent = ({
   images,
   propertyName = "Property",
   className,
@@ -36,10 +36,12 @@ export function ImageCarousel({
   aspectRatio = "video",
   onImageChange,
   isLoading = false,
-}: ImageCarouselProps) {
-  const { setMainApi, currentIndex, onThumbnailClick } = useImageCarouselSync(images);
+}: ImageCarouselProps) => {
+  const { setMainApi, setThumbnailApi, currentIndex, onThumbnailClick } = useImageCarouselSync();
 
-  const { handleImageLoad, handleImageError, hasImageError } = useImageLoading(images);
+  const { handleImageLoad, handleImageError, hasImageError } = useImageLoading(
+    images.length
+  );
 
   const getAspectRatioClass = useCallback(() => {
     switch (aspectRatio) {
@@ -52,11 +54,64 @@ export function ImageCarousel({
     }
   }, [aspectRatio]);
 
+  // Notify parent component when current image changes
   useEffect(() => {
     onImageChange?.(currentIndex);
   }, [currentIndex, onImageChange]);
 
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!images.length) return;
 
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          const prevIndex =
+            currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+          onThumbnailClick(prevIndex);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          const nextIndex =
+            currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+          onThumbnailClick(nextIndex);
+          break;
+      }
+    },
+    [currentIndex, images.length, onThumbnailClick]
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={cn("flex flex-col gap-4", className)}>
+        <div
+          className={cn(
+            "relative rounded-lg overflow-hidden w-full bg-muted/20 animate-pulse",
+            getAspectRatioClass()
+          )}
+        />
+        {showThumbnails && (
+          <div className="flex gap-2">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div
+                key={i}
+                className="w-16 h-16 bg-muted/20 rounded-lg animate-pulse"
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // No images state
   if (images.length === 0) {
     return (
       <div className={cn("relative", getAspectRatioClass(), className)}>
@@ -66,12 +121,13 @@ export function ImageCarousel({
           className="rounded-lg"
           fill
           aspectRatio={aspectRatio}
-          isLoading={isLoading}
+          isLoading={false}
         />
       </div>
     );
   }
 
+  // Single image state
   if (images.length === 1) {
     return (
       <div className={cn("flex flex-col gap-4", className)}>
@@ -83,19 +139,20 @@ export function ImageCarousel({
         >
           <ImageDisplayItem
             src={images[0].url}
-            alt={propertyName}
+            alt={`${propertyName} - Image 1`}
             fill
             priority
-            onLoad={() => handleImageLoad(images[0].id)}
-            onError={hasImageError(images[0].id) ? undefined : () => handleImageError(images[0].id)}
-            hasError={hasImageError(images[0].id)}
-            isLoading={isLoading}
+            onLoad={() => handleImageLoad(0)}
+            onError={() => handleImageError(0)}
+            hasError={hasImageError(0)}
+            aspectRatio={aspectRatio}
           />
         </div>
       </div>
     );
   }
 
+  // Multiple images carousel
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       {/* Main Image Carousel */}
@@ -122,17 +179,17 @@ export function ImageCarousel({
                     alt={`${propertyName} - Image ${index + 1}`}
                     fill
                     priority={index === 0}
-                    onLoad={() => handleImageLoad(image.id)}
-                    onError={hasImageError(image.id) ? undefined : () => handleImageError(image.id)}
-                    hasError={hasImageError(image.id)}
-                    isLoading={isLoading}
+                    onLoad={() => handleImageLoad(index)}
+                    onError={() => handleImageError(index)}
+                    hasError={hasImageError(index)}
+                    aspectRatio={aspectRatio}
                   />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
 
-          {/* Custom Navigation Buttons */}
+          {/* Navigation Buttons */}
           <CarouselPrevious className="left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-primary/90 text-primary hover:text-background border-border size-10">
             <ChevronLeft className="size-5" />
           </CarouselPrevious>
@@ -154,6 +211,7 @@ export function ImageCarousel({
           images={images}
           currentIndex={currentIndex}
           onThumbnailClick={onThumbnailClick}
+          setThumbnailApi={setThumbnailApi}
           handleImageLoad={handleImageLoad}
           handleImageError={handleImageError}
           hasImageError={hasImageError}
@@ -166,15 +224,18 @@ export function ImageCarousel({
           {images.map((image, index) => (
             <button
               key={image.id}
-              onClick={() => onThumbnailClick(image.id)}
+              onClick={() => onThumbnailClick(index)}
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",
                 currentIndex === index ? "bg-primary" : "bg-muted-foreground/30"
               )}
+              aria-label={`Go to image ${index + 1}`}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
+
+export const ImageCarousel = memo(ImageCarouselComponent);

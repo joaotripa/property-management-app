@@ -48,7 +48,7 @@ import {
   ImageServiceError,
 } from "@/lib/services/imageService";
 import { UpdatePropertyInput } from "@/lib/validations/property";
-import { useToast } from "@/hooks/useToast";
+import { toast } from "sonner";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -65,7 +65,6 @@ export function PropertyDetailsDialog({
   onSave,
   onDelete,
 }: PropertyDetailsDialogProps) {
-  const { toast } = useToast();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [refreshedProperty, setRefreshedProperty] = useState<Property | null>(
@@ -188,10 +187,7 @@ export function PropertyDetailsDialog({
           setPropertyImages(images);
         } catch (error) {
           console.error("Failed to update cover image:", error);
-          toast({
-            title: "Warning",
-            description: "Property updated but failed to update cover image",
-          });
+          toast.warning("Property updated but failed to update cover image");
         }
       }
 
@@ -223,10 +219,7 @@ export function PropertyDetailsDialog({
 
       await refreshPropertyData();
 
-      toast({
-        title: "Success",
-        description: "Property updated successfully",
-      });
+      toast.success("Property updated successfully");
 
       setMode("view");
       setEditProperty(null);
@@ -241,10 +234,7 @@ export function PropertyDetailsDialog({
         errorMessage = error.message;
       }
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-      });
+      toast.error(errorMessage);
     }
   };
 

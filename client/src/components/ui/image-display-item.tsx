@@ -66,7 +66,7 @@ export function ImageDisplayItem({
     return (
       <div
         className={cn(
-          "bg-muted/20 flex items-center justify-center border-2 border-border",
+          "bg-muted/20 flex items-center justify-center",
           !fill && getAspectRatioClass(),
           fill && "w-full h-full",
           className

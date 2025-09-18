@@ -219,3 +219,7 @@
 .hover-scale:hover {
   transform: scale(1.05);
 }
+
+.pointer-events-none {
+  pointer-events: none;
+}

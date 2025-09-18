@@ -23,11 +23,9 @@ export async function handlePropertyImageUpload(
     throw new ImageServiceError('No files to upload');
   }
 
-  // Use service role client (bypasses RLS - auth/authz already done in API route)
   const supabase = createServiceSupabaseClient();
   const results: UploadResult[] = [];
 
-  // List existing files to avoid name conflicts
   const { data: existingFiles } = await supabase.storage
     .from(STORAGE_BUCKET)
     .list(`${propertyId}/`);
@@ -46,7 +44,6 @@ export async function handlePropertyImageUpload(
 
     const fileExtension = file.name.split('.').pop();
 
-    // Generate unique filename
     let fileName: string;
     let counter = 1;
     do {
@@ -58,7 +55,6 @@ export async function handlePropertyImageUpload(
     const filePath = getPropertyImagePath(propertyId, fileName);
 
     try {
-      // Upload to Supabase Storage using service role (bypasses RLS)
       const { error: uploadError } = await supabase.storage
         .from(STORAGE_BUCKET)
         .upload(filePath, file, {
@@ -71,7 +67,6 @@ export async function handlePropertyImageUpload(
         throw new Error(uploadError.message);
       }
 
-      // Get public URL (bucket is public)
       const { data: publicUrlData } = supabase.storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(filePath);

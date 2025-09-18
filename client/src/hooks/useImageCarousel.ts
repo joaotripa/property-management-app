@@ -1,38 +1,39 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { CarouselApi } from "@/components/ui/carousel";
-import type { PropertyImage } from "@prisma/client";
 
-export function useImageCarouselSync(images: PropertyImage[]) {
+export function useImageCarouselSync() {
   const [mainApi, setMainApi] = useState<CarouselApi>();
   const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const onMainSelect = useCallback((api: CarouselApi) => {
     if (!api) return;
-    setCurrentIndex(api.selectedScrollSnap());
 
-    if (thumbnailApi) {
-      thumbnailApi.scrollTo(api.selectedScrollSnap());
+    const selectedIndex = api.selectedScrollSnap();
+    setCurrentIndex(selectedIndex);
+
+    // Sync thumbnail carousel to show current image
+    if (thumbnailApi && selectedIndex !== thumbnailApi.selectedScrollSnap()) {
+      thumbnailApi.scrollTo(selectedIndex);
     }
   }, [thumbnailApi]);
 
   const onThumbnailSelect = useCallback((api: CarouselApi) => {
     if (!api) return;
+
     const selectedIndex = api.selectedScrollSnap();
     setCurrentIndex(selectedIndex);
 
-    if (mainApi) {
+    // Sync main carousel
+    if (mainApi && selectedIndex !== mainApi.selectedScrollSnap()) {
       mainApi.scrollTo(selectedIndex);
     }
   }, [mainApi]);
 
-  const onThumbnailClick = useCallback((imageId: string) => {
-    // Find the index of the image with the given ID
-    const index = images.findIndex(img => img.id === imageId);
-    if (index === -1) return;
-
+  const onThumbnailClick = useCallback((index: number) => {
+    // Update both carousels when thumbnail is clicked
     if (mainApi) {
       mainApi.scrollTo(index);
     }
@@ -40,8 +41,9 @@ export function useImageCarouselSync(images: PropertyImage[]) {
       thumbnailApi.scrollTo(index);
     }
     setCurrentIndex(index);
-  }, [mainApi, thumbnailApi, images]);
+  }, [mainApi, thumbnailApi]);
 
+  // Set up main carousel event listeners
   useEffect(() => {
     if (!mainApi) return;
 
@@ -53,6 +55,7 @@ export function useImageCarouselSync(images: PropertyImage[]) {
     };
   }, [mainApi, onMainSelect]);
 
+  // Set up thumbnail carousel event listeners
   useEffect(() => {
     if (!thumbnailApi) return;
 
@@ -74,75 +77,41 @@ export function useImageCarouselSync(images: PropertyImage[]) {
   };
 }
 
-export function useImageLoading(images: PropertyImage[]) {
-  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-  const [errorImages, setErrorImages] = useState<Set<string>>(new Set());
+export function useImageLoading(imageCount: number) {
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const [errorImages, setErrorImages] = useState<Set<number>>(new Set());
 
-  // Use useMemo to detect when images actually change to prevent effect loops
-  const imageUrlsString = useMemo(() => JSON.stringify(images.map(img => img.url)), [images]);
-  const [lastImageUrlsString, setLastImageUrlsString] = useState<string>("");
-
-  const handleImageLoad = useCallback((imageId: string) => {
-    const image = images.find(img => img.id === imageId);
-    if (!image) return;
-
-    setLoadedImages(prev => new Set(prev).add(image.url));
+  const handleImageLoad = useCallback((index: number) => {
+    setLoadedImages(prev => new Set(prev).add(index));
     setErrorImages(prev => {
       const newSet = new Set(prev);
-      newSet.delete(image.url);
+      newSet.delete(index);
       return newSet;
     });
-  }, [images]);
+  }, []);
 
-  const handleImageError = useCallback((imageId: string) => {
-    const image = images.find(img => img.id === imageId);
-    if (!image) return;
-
-    // Permanently mark this URL as failed - no retries
-    setErrorImages(prev => new Set(prev).add(image.url));
+  const handleImageError = useCallback((index: number) => {
+    setErrorImages(prev => new Set(prev).add(index));
     setLoadedImages(prev => {
       const newSet = new Set(prev);
-      newSet.delete(image.url);
+      newSet.delete(index);
       return newSet;
     });
-  }, [images]);
+  }, []);
 
-  const isImageLoaded = useCallback((imageId: string) => {
-    const image = images.find(img => img.id === imageId);
-    return image ? loadedImages.has(image.url) : false;
-  }, [loadedImages, images]);
+  const isImageLoaded = useCallback((index: number) => {
+    return loadedImages.has(index);
+  }, [loadedImages]);
 
-  const hasImageError = useCallback((imageId: string) => {
-    const image = images.find(img => img.id === imageId);
-    return image ? errorImages.has(image.url) : false;
-  }, [errorImages, images]);
+  const hasImageError = useCallback((index: number) => {
+    return errorImages.has(index);
+  }, [errorImages]);
 
-  // Only reset states when the actual image URLs change, not on re-renders
+  // Reset states when image count changes
   useEffect(() => {
-    if (imageUrlsString !== lastImageUrlsString) {
-      setLastImageUrlsString(imageUrlsString);
-      const currentUrls = images.map(img => img.url);
-      // Only clear states for URLs that are no longer in the new images array
-      setLoadedImages(prev => {
-        const newSet = new Set<string>();
-        for (const url of prev) {
-          if (currentUrls.includes(url)) {
-            newSet.add(url);
-          }
-        }
-        return newSet;
-      });
-      setErrorImages(prev => {
-        const newSet = new Set<string>();
-        for (const url of prev) {
-          if (currentUrls.includes(url)) {
-            newSet.add(url);
-          }
-        }
-        return newSet;
-      });
-    }
-  }, [imageUrlsString, lastImageUrlsString, images]);
+    setLoadedImages(new Set());
+    setErrorImages(new Set());
+  }, [imageCount]);
 
   return {
     handleImageLoad,
