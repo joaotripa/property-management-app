@@ -196,10 +196,26 @@ export default function AnalyticsPage() {
     return [
       {
         title: "Total Invested",
-        value: formatPercentage(current?.cashOnCashReturn || 0),
+        value: formatCompactCurrency(current?.totalInvestment || 0),
         ...getTrendData(
-          current?.cashOnCashReturn || 0,
-          previous?.cashOnCashReturn
+          current?.totalInvestment || 0,
+          previous?.totalInvestment
+        ),
+      },
+      {
+        title: "Income",
+        value: formatCompactCurrency(current?.totalIncome || 0),
+        ...getTrendData(
+          current?.totalIncome || 0,
+          previous?.totalIncome
+        ),
+      },
+      {
+        title: "Expenses",
+        value: formatCompactCurrency(current?.totalExpenses || 0),
+        ...getTrendData(
+          current?.totalExpenses || 0,
+          previous?.totalExpenses
         ),
       },
       {

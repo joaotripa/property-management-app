@@ -151,7 +151,7 @@ export async function getPropertyComparison(
   filters: {
     dateFrom?: Date;
     dateTo?: Date;
-    sortBy?: 'netIncome' | 'roi' | 'capRate' | 'totalIncome' | 'totalExpenses';
+    sortBy?: 'netIncome' | 'roi' | 'totalIncome' | 'totalExpenses';
     includeKPIs?: boolean;
   } = {}
 ): Promise<PropertyComparisonResponse> {

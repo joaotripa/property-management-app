@@ -8,7 +8,6 @@ export interface KPIMetrics {
   totalExpenses: number;
   netIncome: number;
   cashOnCashReturn: number;
-  averageCapRate: number;
   expenseToIncomeRatio: number;
   averageROI: number;
   totalPortfolioValue: number;
@@ -22,7 +21,6 @@ export interface PropertyKPIMetrics {
   totalExpenses: number;
   netIncome: number;
   cashOnCashReturn: number;
-  capRate: number;
   roi: number;
   purchasePrice: number;
   marketValue: number;
@@ -125,22 +123,6 @@ export async function getPortfolioKPIs(
     // Calculate Cash-on-Cash Return (annual net income / total investment)
     const cashOnCashReturn = totalInvestment > 0 ? (netIncome / totalInvestment) * 100 : 0;
 
-    // Calculate average Cap Rate across properties
-    let totalCapRate = 0;
-    let propertiesWithCapRate = 0;
-
-    for (const property of properties) {
-      const marketValue = Number(property.marketValue || property.purchasePrice || 0);
-      if (marketValue > 0) {
-        const annualRent = Number(property.rent) * 12;
-        const capRate = (annualRent / marketValue) * 100;
-        totalCapRate += capRate;
-        propertiesWithCapRate++;
-      }
-    }
-
-    const averageCapRate = propertiesWithCapRate > 0 ? totalCapRate / propertiesWithCapRate : 0;
-
     // Calculate Expense-to-Income Ratio
     const expenseToIncomeRatio = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 
@@ -155,7 +137,6 @@ export async function getPortfolioKPIs(
       totalExpenses,
       netIncome,
       cashOnCashReturn: Math.round(cashOnCashReturn * 100) / 100,
-      averageCapRate: Math.round(averageCapRate * 100) / 100,
       expenseToIncomeRatio: Math.round(expenseToIncomeRatio * 100) / 100,
       averageROI: Math.round(averageROI * 100) / 100,
       totalPortfolioValue,
@@ -224,7 +205,6 @@ export async function getPropertyKPIs(
       const monthlyRent = Number(property.rent);
 
       const cashOnCashReturn = purchasePrice > 0 ? (netIncome / purchasePrice) * 100 : 0;
-      const capRate = marketValue > 0 ? ((monthlyRent * 12) / marketValue) * 100 : 0;
       const roi = purchasePrice > 0 ? ((marketValue - purchasePrice) / purchasePrice) * 100 : 0;
 
       return {
@@ -234,7 +214,6 @@ export async function getPropertyKPIs(
         totalExpenses,
         netIncome,
         cashOnCashReturn: Math.round(cashOnCashReturn * 100) / 100,
-        capRate: Math.round(capRate * 100) / 100,
         roi: Math.round(roi * 100) / 100,
         purchasePrice,
         marketValue,
