@@ -40,13 +40,13 @@ import {
   ExistingImageItem,
 } from "@/components/ui/multi-image-upload";
 import { Save, X, Loader2 } from "lucide-react";
-import { toCamelCase } from "@/lib/utils";
+import { toCamelCase } from "@/lib/utils/index";
 import { Loading } from "@/components/ui/loading";
 import {
   getPropertyImages,
   deletePropertyImage,
-  ImageServiceError,
-} from "@/lib/services/imageService";
+} from "@/lib/services/client/imageService";
+import { ImageServiceError } from "@/lib/services/shared/imageUtils";
 
 const getPropertyTypeOptions = () => {
   return Object.values(PropertyType).map((type) => ({

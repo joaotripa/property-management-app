@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/config/database"
 import { Resend } from "resend"
-import { getPasswordResetEmailTemplate } from "@/lib/email-templates/password-reset-email"
+import { getPasswordResetEmailTemplate } from "@/lib/integrations/email/templates/password-reset-email"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { handlePropertyImageUpload } from '@/lib/services/imageService.server';
-import { ImageServiceError, STORAGE_BUCKET } from '@/lib/services/imageService';
+import { handlePropertyImageUpload } from '@/lib/services/server/imageService';
+import { ImageServiceError, STORAGE_BUCKET } from '@/lib/services/shared/imageUtils';
 import { getPropertyImages, hasPropertyImages, bulkCreatePropertyImages, softDeleteAllPropertyImages } from '@/lib/db/propertyImages';
-import { createServiceSupabaseClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import { createServiceSupabaseClient } from '@/lib/integrations/supabase/server';
+import { prisma } from '@/lib/config/database';
 
 export async function GET(
   request: NextRequest,

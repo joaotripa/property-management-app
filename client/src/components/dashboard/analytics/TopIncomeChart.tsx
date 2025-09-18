@@ -15,8 +15,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
-import { formatCurrency } from "@/lib/utils";
-import { createChartTooltipFormatter } from "@/lib/analytics";
+import { formatCurrency } from "@/lib/utils/index";
+import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface TopIncomeChartProps {
   data?: PropertyRankingData[];

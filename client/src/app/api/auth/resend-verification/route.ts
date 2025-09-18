@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/config/database"
 import { Resend } from "resend"
-import { AuthLogger } from "@/lib/auth-logger"
-import { getVerificationEmailTemplate } from "@/lib/email-templates/verification-email"
+import { AuthLogger } from "@/lib/utils/auth"
+import { getVerificationEmailTemplate } from "@/lib/integrations/email/templates/verification-email"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 

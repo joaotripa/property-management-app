@@ -2,7 +2,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/index";
 import { useTransactionStats } from "@/hooks/useTransactionStats";
 import { TransactionFilters } from "@/types/transactions";
 

@@ -3,7 +3,7 @@
 import { useEffect, useCallback, memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PropertyImage } from "@prisma/client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import { ImageDisplayItem } from "./image-display-item";
 import { ThumbnailCarousel } from "./thumbnail-carousel";
 import {

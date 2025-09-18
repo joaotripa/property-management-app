@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { ActivityType, Activity } from "@/lib/services/activityService";
-import { toCamelCase } from "@/lib/utils";
+import { prisma } from "@/lib/config/database";
+import { ActivityType, Activity } from "@/lib/services/client/activityService";
+import { toCamelCase } from "@/lib/utils/index";
 
 /**
  * Get recent activities for a user from transactions and properties

@@ -11,7 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";

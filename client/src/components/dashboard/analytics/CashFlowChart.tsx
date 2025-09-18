@@ -15,9 +15,9 @@ import {
   PropertyOption,
 } from "@/components/dashboard/analytics/PropertySelector";
 import { useState, useEffect, useCallback } from "react";
-import { getCashFlowTrend } from "@/lib/services/analyticsService";
-import { formatCurrency } from "@/lib/utils";
-import { createChartTooltipFormatter } from "@/lib/analytics";
+import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
+import { formatCurrency } from "@/lib/utils/index";
+import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface CashFlowChartProps {
   properties: PropertyOption[];

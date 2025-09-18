@@ -14,7 +14,7 @@ import {
 import { Property } from "@/types/properties";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { deletePropertyWithTransactions } from "@/lib/services/property-deletion";
+import { deletePropertyWithTransactions } from "@/lib/services/client/propertiesService";
 
 interface DeletePropertyConfirmDialogProps {
   property: Property | null;

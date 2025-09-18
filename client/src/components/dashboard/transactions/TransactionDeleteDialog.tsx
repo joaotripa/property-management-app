@@ -14,7 +14,7 @@ import {
 import { Transaction } from "@/types/transactions";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { deleteTransaction } from "@/lib/services/transactionsService";
+import { deleteTransaction } from "@/lib/services/client/transactionsService";
 import { format } from "date-fns";
 
 interface TransactionDeleteDialogProps {

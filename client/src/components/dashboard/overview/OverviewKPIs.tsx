@@ -5,11 +5,11 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
-import { getTrendData } from "@/lib/analytics";
-import { getAnalyticsKPIs } from "@/lib/services/analyticsService";
-import { getProperties } from "@/lib/services/propertiesService";
-import { getTransactionStats } from "@/lib/services/transactionsService";
+import { formatCurrency, formatPercentage } from "@/lib/utils/index";
+import { getTrendData } from "@/lib/utils/analytics";
+import { getAnalyticsKPIs } from "@/lib/services/client/analyticsService";
+import { getProperties } from "@/lib/services/client/propertiesService";
+import { getTransactionStats } from "@/lib/services/client/transactionsService";
 import { KPIMetrics } from "@/lib/db/analytics/queries";
 import { PropertyOption } from "@/types/transactions";
 

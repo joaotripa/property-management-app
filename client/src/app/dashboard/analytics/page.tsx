@@ -10,8 +10,8 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatPercentage } from "@/lib/utils";
-import { getTrendData } from "@/lib/analytics";
+import { formatPercentage } from "@/lib/utils/index";
+import { getTrendData } from "@/lib/utils/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
 import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
@@ -26,8 +26,8 @@ import {
   KPIResponse,
   ChartsResponse,
   PropertyComparisonResponse,
-} from "@/lib/services/analyticsService";
-import { getProperties } from "@/lib/services/propertiesService";
+} from "@/lib/services/client/analyticsService";
+import { getProperties } from "@/lib/services/client/propertiesService";
 
 interface AnalyticsState {
   kpis: KPIResponse | null;

@@ -10,7 +10,7 @@ import {
 import { TransactionForm } from "./TransactionForm";
 import { CategoryOption, PropertyOption } from "@/types/transactions";
 import { toast } from "sonner";
-import { createTransaction } from "@/lib/services/transactionsService";
+import { createTransaction } from "@/lib/services/client/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 
 interface TransactionCreateDialogProps {

@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { Suspense } from "react";

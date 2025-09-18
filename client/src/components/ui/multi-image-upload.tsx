@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Upload, AlertTriangle, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import { ImageGrid } from "@/components/ui/image-grid";
 import { Button } from "@/components/ui/button";
 

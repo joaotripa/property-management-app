@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";

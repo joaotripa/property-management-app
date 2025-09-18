@@ -26,7 +26,7 @@ import type {
   TransactionFilters as TransactionFiltersType,
 } from "@/types/transactions";
 import { TransactionType } from "@/types/transactions";
-import { toCamelCase } from "@/lib/utils";
+import { toCamelCase } from "@/lib/utils/index";
 import { Separator } from "@/components/ui/separator";
 
 export function TransactionFilters({

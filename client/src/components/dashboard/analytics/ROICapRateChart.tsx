@@ -16,8 +16,8 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PropertyKPIMetrics } from "@/lib/db/analytics/queries";
-import { formatPercentage } from "@/lib/utils";
-import { createChartTooltipFormatter } from "@/lib/analytics";
+import { formatPercentage } from "@/lib/utils/index";
+import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface ROICapRateChartProps {
   data?: PropertyKPIMetrics[];

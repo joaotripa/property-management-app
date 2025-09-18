@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { TransactionFilters } from "@/types/transactions";
-import { getTransactionStats, TransactionsServiceError } from "@/lib/services/transactionsService";
+import { getTransactionStats, TransactionsServiceError } from "@/lib/services/client/transactionsService";
 import { TransactionQueryInput } from "@/lib/validations/transaction";
 
 interface TransactionStats {

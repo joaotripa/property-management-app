@@ -40,13 +40,13 @@ import {
   updateProperty,
   getPropertyById,
   PropertiesServiceError,
-} from "@/lib/services/propertiesService";
+} from "@/lib/services/client/propertiesService";
 import {
   uploadPropertyImages,
   getPropertyImages,
   updatePropertyCoverImage,
-  ImageServiceError,
-} from "@/lib/services/imageService";
+} from "@/lib/services/client/imageService";
+import { ImageServiceError } from "@/lib/services/shared/imageUtils";
 import { UpdatePropertyInput } from "@/lib/validations/property";
 import { toast } from "sonner";
 

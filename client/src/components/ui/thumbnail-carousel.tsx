@@ -4,7 +4,7 @@ import { memo, useCallback } from "react";
 import Image from "next/image";
 import { Home } from "lucide-react";
 import type { PropertyImage } from "@prisma/client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import {
   Carousel,
   CarouselContent,

@@ -21,7 +21,7 @@ import {
 import { Transaction } from "@/types/transactions";
 import { TransactionType } from "@/types/transactions";
 import { TransactionTableSkeleton } from "./TransactionTableSkeleton";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 
 interface TransactionTableWithActionsProps {
   transactions: Transaction[];

@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, X, Crown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import { ImageDisplayItem } from "@/components/ui/image-display-item";
 
 export interface FileWithPreview {

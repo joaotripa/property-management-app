@@ -16,9 +16,9 @@ import { PieChart, Pie, Cell, Label } from "recharts";
 import { ExpenseBreakdownData } from "@/lib/db/analytics/queries";
 import { PropertySelector, PropertyOption } from "./PropertySelector";
 import { useState, useEffect, useCallback } from "react";
-import { getExpenseBreakdown } from "@/lib/services/analyticsService";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
-import { createChartTooltipFormatter } from "@/lib/analytics";
+import { getExpenseBreakdown } from "@/lib/services/client/analyticsService";
+import { formatCurrency, formatPercentage } from "@/lib/utils/index";
+import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface ExpenseBreakdownChartProps {
   properties: PropertyOption[];

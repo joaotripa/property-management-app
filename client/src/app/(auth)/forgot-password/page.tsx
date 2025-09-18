@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
 const ForgotPasswordPage = () => {

@@ -129,6 +129,7 @@ All API operations use dedicated service functions:
 - **Modularity**: Build components for reuse across contexts
 - **Accessibility**: Ensure ARIA labels and keyboard navigation
 - **Code Formatting**: Use Prettier for consistent formatting
+- **Comments**: Avoid comments in the middle of code unless the code is too complex and requires explanation. Only add relevant and necessary comments that help understand complex logic or business requirements
 
 #### Form Components
 
@@ -202,6 +203,15 @@ All API operations use dedicated service functions:
 - Files: `kebab-case.tsx`
 - Components: `PascalCase`
 - Variables & functions: `camelCase`
+
+#### Import Conventions
+
+- **Always use `@/` alias for imports** when the file is inside the `src` directory
+- Only use relative imports for files outside `src` (e.g., configuration files)
+- Examples:
+  - ✅ `import { Button } from "@/components/ui/button"`
+  - ✅ `import { ImageServiceError } from "@/lib/services/shared/imageUtils"`
+  - ❌ `import { Button } from "../../../components/ui/button"`
 
 #### Error Handling
 

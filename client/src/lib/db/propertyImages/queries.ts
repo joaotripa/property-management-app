@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/config/database";
 // Note: Avoid importing model types directly to prevent stale client type issues
 
 /**

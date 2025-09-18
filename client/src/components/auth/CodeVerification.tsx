@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CircleCheckBig } from "lucide-react";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { ErrorMessage } from "./ErrorMessage";
 
 interface CodeVerificationProps {

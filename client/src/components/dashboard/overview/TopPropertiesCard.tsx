@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ArrowUp, ArrowDown } from "lucide-react";
-import { getPropertyComparison } from "@/lib/services/analyticsService";
-import { formatCurrency } from "@/lib/utils";
-import { getTrendData } from "@/lib/analytics";
+import { getPropertyComparison } from "@/lib/services/client/analyticsService";
+import { formatCurrency } from "@/lib/utils/index";
+import { getTrendData } from "@/lib/utils/analytics";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 
 interface TopPropertiesData {

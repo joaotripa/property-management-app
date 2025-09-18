@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { AuthLogger } from "@/lib/auth-logger"
+import { prisma } from "@/lib/config/database"
+import { AuthLogger } from "@/lib/utils/auth"
 
 export async function POST(request: NextRequest) {
   try {

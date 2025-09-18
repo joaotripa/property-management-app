@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/config/database";
 import { PropertyFilters, propertyFiltersSchema } from "@/lib/validations/property";
 import { Property } from "@/types/properties";
 import { Prisma } from "@prisma/client";

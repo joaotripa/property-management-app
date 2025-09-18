@@ -4,7 +4,7 @@ import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { toast } from "sonner";
-import { getAuthErrorMessage } from "@/lib/utils";
+import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
 import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
 

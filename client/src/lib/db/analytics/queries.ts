@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/config/database";
 import { Prisma } from "@prisma/client";
 import { TransactionType } from "@prisma/client";
 

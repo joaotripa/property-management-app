@@ -1,11 +1,11 @@
-import { createServiceSupabaseClient } from '@/lib/supabase/server';
+import { createServiceSupabaseClient } from '@/lib/integrations/supabase/server';
 import {
   validateImageFile,
   getPropertyImagePath,
   ImageServiceError,
   STORAGE_BUCKET,
   type UploadResult
-} from './imageService';
+} from '@/lib/services/shared/imageUtils';
 
 /**
  * Server-side function to handle Supabase storage upload operations for API routes

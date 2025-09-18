@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/config/database";
 import { 
   CreatePropertyInput, 
   UpdatePropertyInput,
@@ -7,7 +7,7 @@ import {
 } from "@/lib/validations/property";
 import { OccupancyStatus } from "@prisma/client";
 import { Property } from "@/types/properties";
-import { generateUUID } from "@/lib/utils";
+import { generateUUID } from "@/lib/utils/index";
 /**
  * Create a new property for a user
  */

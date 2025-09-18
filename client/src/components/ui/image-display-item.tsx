@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Home } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import { Loading } from "@/components/ui/loading";
 
 export interface ImageDisplayItemProps {

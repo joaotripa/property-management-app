@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ImageDisplayItem } from "@/components/ui/image-display-item";
-import { getPropertyCoverImage } from "@/lib/services/imageService";
+import { getPropertyCoverImage } from "@/lib/services/client/imageService";
 
 interface PropertyImageProps {
   propertyId: string;

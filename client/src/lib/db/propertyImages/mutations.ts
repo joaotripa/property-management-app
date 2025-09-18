@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/config/database";
 import { PropertyImage } from "@prisma/client";
-import { generateUUID } from "@/lib/utils";
+import { generateUUID } from "@/lib/utils/index";
 import {
   CreatePropertyImageInput,
   BulkCreatePropertyImagesInput,

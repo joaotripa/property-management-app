@@ -14,10 +14,10 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
-import { getCashFlowTrend } from "@/lib/services/analyticsService";
+import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
-import { formatCurrency } from "@/lib/utils";
-import { createChartTooltipFormatter } from "@/lib/analytics";
+import { formatCurrency } from "@/lib/utils/index";
+import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 const chartConfig = {
   income: {

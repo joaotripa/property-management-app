@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Save, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { toCamelCase } from "@/lib/utils";
+import { toCamelCase } from "@/lib/utils/index";
 import { Property } from "@/types/properties";
 import {
   type CreatePropertyResponse,
@@ -34,8 +34,10 @@ import {
 import { z } from "zod";
 import {
   uploadPropertyImages,
+} from "@/lib/services/client/imageService";
+import {
   validatePropertyFiles,
-} from "@/lib/services/imageService";
+} from "@/lib/services/shared/imageUtils";
 import {
   MultiImageUpload,
   type FileWithPreview,

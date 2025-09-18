@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Upload, X, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/index";
 import Image from "next/image";
 
 export interface FileUploadProps {

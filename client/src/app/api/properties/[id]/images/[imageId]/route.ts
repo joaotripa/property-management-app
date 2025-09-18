@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { STORAGE_BUCKET, getPropertyImagePath } from '@/lib/services/imageService';
-import { createServiceSupabaseClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import { STORAGE_BUCKET, getPropertyImagePath } from '@/lib/services/shared/imageUtils';
+import { createServiceSupabaseClient } from '@/lib/integrations/supabase/server';
+import { prisma } from '@/lib/config/database';
 
 export async function GET(
   _request: NextRequest,

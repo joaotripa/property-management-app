@@ -15,7 +15,7 @@ import {
 } from "@/types/transactions";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { updateTransaction } from "@/lib/services/transactionsService";
+import { updateTransaction } from "@/lib/services/client/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 import { TransactionType } from "@/types/transactions";
 

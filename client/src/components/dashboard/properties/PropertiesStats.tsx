@@ -3,7 +3,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/index";
 import { usePropertyStats } from "@/hooks/usePropertyStats";
 
 const PropertiesStats = () => {
