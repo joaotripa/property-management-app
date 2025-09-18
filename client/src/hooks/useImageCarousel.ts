@@ -107,7 +107,6 @@ export function useImageLoading(imageCount: number) {
     return errorImages.has(index);
   }, [errorImages]);
 
-  // Reset states when image count changes
   useEffect(() => {
     setLoadedImages(new Set());
     setErrorImages(new Set());

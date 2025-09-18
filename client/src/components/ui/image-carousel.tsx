@@ -37,11 +37,11 @@ const ImageCarouselComponent = ({
   onImageChange,
   isLoading = false,
 }: ImageCarouselProps) => {
-  const { setMainApi, setThumbnailApi, currentIndex, onThumbnailClick } = useImageCarouselSync();
+  const { setMainApi, setThumbnailApi, currentIndex, onThumbnailClick } =
+    useImageCarouselSync();
 
-  const { handleImageLoad, handleImageError, hasImageError } = useImageLoading(
-    images.length
-  );
+  const { handleImageLoad, handleImageError, hasImageError, isImageLoaded } =
+    useImageLoading(images.length);
 
   const getAspectRatioClass = useCallback(() => {
     switch (aspectRatio) {
@@ -145,6 +145,7 @@ const ImageCarouselComponent = ({
             onLoad={() => handleImageLoad(0)}
             onError={() => handleImageError(0)}
             hasError={hasImageError(0)}
+            isLoading={!isImageLoaded(0) && !hasImageError(0)}
             aspectRatio={aspectRatio}
           />
         </div>
@@ -182,6 +183,7 @@ const ImageCarouselComponent = ({
                     onLoad={() => handleImageLoad(index)}
                     onError={() => handleImageError(index)}
                     hasError={hasImageError(index)}
+                    isLoading={!isImageLoaded(index) && !hasImageError(index)}
                     aspectRatio={aspectRatio}
                   />
                 </div>
