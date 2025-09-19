@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -37,6 +37,7 @@ export function TransactionsClient({
 }: TransactionsClientProps) {
   const [dialogType, setDialogType] = useState<"create" | "edit" | "delete" | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -55,24 +56,28 @@ export function TransactionsClient({
   };
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams);
-    if (page === 1) {
-      params.delete('page');
-    } else {
-      params.set('page', page.toString());
-    }
-    router.push(`?${params.toString()}`);
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams);
+      if (page === 1) {
+        params.delete('page');
+      } else {
+        params.set('page', page.toString());
+      }
+      router.push(`?${params.toString()}`);
+    });
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.delete('page'); // Reset to page 1
-    if (newPageSize === 25) {
-      params.delete('pageSize');
-    } else {
-      params.set('pageSize', newPageSize.toString());
-    }
-    router.push(`?${params.toString()}`);
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams);
+      params.delete('page'); // Reset to page 1
+      if (newPageSize === 25) {
+        params.delete('pageSize');
+      } else {
+        params.set('pageSize', newPageSize.toString());
+      }
+      router.push(`?${params.toString()}`);
+    });
   };
 
   return (
@@ -101,7 +106,7 @@ export function TransactionsClient({
               pageSize={pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
-              loading={false}
+              loading={isPending}
             />
           )}
         </CardContent>

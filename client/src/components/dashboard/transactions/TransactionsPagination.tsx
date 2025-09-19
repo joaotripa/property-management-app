@@ -50,7 +50,10 @@ export function TransactionsPagination({
             onValueChange={(value) => onPageSizeChange(Number(value))}
             disabled={loading}
           >
-            <SelectTrigger size="sm" className="h-8 w-20">
+            <SelectTrigger
+              size="sm"
+              className={`h-8 w-20 ${loading ? "opacity-70" : ""}`}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -63,8 +66,15 @@ export function TransactionsPagination({
           </Select>
         </div>
 
-        <div className="text-sm">
-          Page {currentPage} of {totalPages}
+        <div className={`text-sm ${loading ? "opacity-70" : ""}`}>
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+              Loading...
+            </div>
+          ) : (
+            `Page ${currentPage} of ${totalPages}`
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -73,6 +83,7 @@ export function TransactionsPagination({
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1 || loading}
+            className={loading ? "opacity-70" : ""}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -81,6 +92,7 @@ export function TransactionsPagination({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages || loading}
+            className={loading ? "opacity-70" : ""}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
