@@ -28,10 +28,10 @@ export function usePropertyTransactions(
       
       // Add filters to params
       if (filters.dateFrom) {
-        params.append('dateFrom', filters.dateFrom.toISOString());
+        params.append('dateFrom', filters.dateFrom);
       }
       if (filters.dateTo) {
-        params.append('dateTo', filters.dateTo.toISOString());
+        params.append('dateTo', filters.dateTo);
       }
       if (filters.type && filters.type !== 'all') {
         params.append('type', filters.type);

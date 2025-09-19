@@ -26,6 +26,7 @@ import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface ExpenseBreakdownChartProps {
   properties: PropertyOption[];
+  initialData?: ExpenseBreakdownData[];
 }
 
 const COLORS = [
@@ -45,12 +46,13 @@ const COLORS = [
 
 export function ExpenseBreakdownChart({
   properties,
+  initialData = [],
 }: ExpenseBreakdownChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
   >(undefined);
-  const [data, setData] = useState<ExpenseBreakdownData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<ExpenseBreakdownData[]>(initialData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -69,8 +71,14 @@ export function ExpenseBreakdownChart({
   }, [selectedPropertyId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Only fetch if a property is selected (property-specific data)
+    if (selectedPropertyId) {
+      fetchData();
+    } else if (!selectedPropertyId && initialData.length > 0) {
+      // Use initial data for portfolio view
+      setData(initialData);
+    }
+  }, [fetchData, selectedPropertyId, initialData]);
 
   const handlePropertyChange = (propertyId: string | undefined) => {
     setSelectedPropertyId(propertyId);

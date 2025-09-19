@@ -4,22 +4,21 @@ import {
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
-import { usePropertyStats } from "@/hooks/usePropertyStats";
 
-const PropertiesStats = () => {
-  const { stats, isLoading } = usePropertyStats();
+interface PropertyStats {
+  totalProperties: number;
+  occupiedProperties: number;
+  availableProperties: number;
+  occupancyRate: number;
+  totalRent: number;
+  averageRent: number;
+}
 
-  if (isLoading || !stats) {
-    const loadingKpis: KPICardConfig[] = [
-      { title: "Total Properties", value: "0" },
-      { title: "Vacant Properties", value: "0" },
-      { title: "Occupied Properties", value: "0" },
-      { title: "Average Rent", value: "0" },
-    ];
+interface PropertiesStatsProps {
+  stats: PropertyStats;
+}
 
-    return <KPICards kpiConfigs={loadingKpis} />;
-  }
-
+const PropertiesStats = ({ stats }: PropertiesStatsProps) => {
   const kpiConfigs: KPICardConfig[] = [
     {
       title: "Total Properties",

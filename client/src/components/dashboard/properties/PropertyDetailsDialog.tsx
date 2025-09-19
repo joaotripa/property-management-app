@@ -77,7 +77,7 @@ export function PropertyDetailsDialog({
   const [loadingImages, setLoadingImages] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const { filters, setFilters } = useTransactionFilters({
+  const { filters } = useTransactionFilters({
     propertyId: property?.id,
   });
 
@@ -484,11 +484,9 @@ export function PropertyDetailsDialog({
                 <CardContent className="flex flex-col gap-4">
                   {/* Transaction Filters */}
                   <TransactionFilters
-                    onFiltersChange={setFilters}
-                    showPropertyFilter={false}
-                    initialPropertyId={currentProperty.id}
                     availableCategories={availableCategories}
-                    initialFilters={filters}
+                    availableProperties={[]}
+                    showPropertyFilter={false}
                   />
 
                   {/* Transaction Table */}

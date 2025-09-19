@@ -10,37 +10,38 @@ export async function getRecentActivitiesForUser(
   limit: number = 3
 ): Promise<Activity[]> {
   try {
-
-    const recentTransactions = await prisma.transaction.findMany({
-      where: {
-        userId,
-        deletedAt: null,
-      },
-      include: {
-        property: {
-          select: {
-            name: true,
+    // Fetch recent transactions and properties in parallel for better performance
+    const [recentTransactions, recentProperties] = await Promise.all([
+      prisma.transaction.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+        },
+        include: {
+          property: {
+            select: {
+              name: true,
+            },
           },
         },
-      },
-      orderBy: [
-        { updatedAt: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      take: limit * 2,
-    });
-
-    const recentProperties = await prisma.property.findMany({
-      where: {
-        userId,
-        deletedAt: null,
-      },
-      orderBy: [
-        { updatedAt: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      take: limit * 2, 
-    });
+        orderBy: [
+          { updatedAt: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        take: limit * 2,
+      }),
+      prisma.property.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+        },
+        orderBy: [
+          { updatedAt: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        take: limit * 2,
+      })
+    ]);
 
     const activities: Activity[] = [];
 

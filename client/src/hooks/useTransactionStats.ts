@@ -36,8 +36,8 @@ export function useTransactionStats(
     try {
       // Convert TransactionFilters to TransactionQueryInput format
       const queryInput: Partial<TransactionQueryInput> = {
-        dateFrom: filters.dateFrom?.toISOString(),
-        dateTo: filters.dateTo?.toISOString(),
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
         type: filters.type === 'all' ? undefined : filters.type,
         amountMin: filters.amountMin?.toString(),
         amountMax: filters.amountMax?.toString(),

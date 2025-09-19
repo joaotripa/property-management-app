@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/config/database";
-import { TransactionFilters, Transaction, CategoryOption, PropertyOption } from "@/types/transactions";
+import { Transaction, CategoryOption, PropertyOption, DatabaseTransactionFilters } from "@/types/transactions";
 import { TransactionType, Prisma } from "@prisma/client";
 
 /**
@@ -8,7 +8,7 @@ import { TransactionType, Prisma } from "@prisma/client";
  */
 export async function getTransactions(
   userId: string,
-  filters: TransactionFilters & {
+  filters: DatabaseTransactionFilters & {
     limit?: number;
     offset?: number;
   } = {}
@@ -142,7 +142,7 @@ export async function getTransactions(
 export async function getPropertyTransactions(
   propertyId: string,
   userId: string,
-  filters: Omit<TransactionFilters, 'propertyId'> & {
+  filters: Omit<DatabaseTransactionFilters, 'propertyId'> & {
     limit?: number;
     offset?: number;
   } = {}
@@ -279,7 +279,7 @@ export async function getPropertyTransactionStats(
  */
 export async function getTransactionStats(
   userId: string,
-  filters: Omit<TransactionFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'> = {}
+  filters: Omit<DatabaseTransactionFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'> = {}
 ): Promise<{
   totalIncome: number;
   totalExpenses: number;

@@ -57,6 +57,7 @@ model Property {
   @@index([isActive])
   @@index([deletedAt])
   @@index([occupancy])
+  @@index([userId, occupancy])
   @@map("properties")
 }
 
@@ -115,6 +116,9 @@ model Transaction {
   @@index([deletedAt])
   @@index([transactionDate])
   @@index([propertyId, type])
+  @@index([categoryId])
+  @@index([userId, transactionDate])
+  @@index([propertyId, transactionDate])
   @@map("transactions")
 }
 

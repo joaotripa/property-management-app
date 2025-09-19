@@ -66,8 +66,8 @@ export function useTransactions(
       const queryInput: Partial<TransactionQueryInput> = {
         page: page.toString(),
         limit: size.toString(),
-        dateFrom: filterObj.dateFrom?.toISOString(),
-        dateTo: filterObj.dateTo?.toISOString(),
+        dateFrom: filterObj.dateFrom,
+        dateTo: filterObj.dateTo,
         type: filterObj.type === 'all' ? undefined : filterObj.type,
         amountMin: filterObj.amountMin?.toString(),
         amountMax: filterObj.amountMax?.toString(),

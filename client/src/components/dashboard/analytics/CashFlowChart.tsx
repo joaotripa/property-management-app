@@ -21,6 +21,7 @@ import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface CashFlowChartProps {
   properties: PropertyOption[];
+  initialData?: CashFlowTrendData[];
 }
 
 const chartConfig = {
@@ -47,12 +48,12 @@ function formatMonthYear(monthString: string): string {
   });
 }
 
-export function CashFlowChart({ properties }: CashFlowChartProps) {
+export function CashFlowChart({ properties, initialData = [] }: CashFlowChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
   >(undefined);
-  const [data, setData] = useState<CashFlowTrendData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<CashFlowTrendData[]>(initialData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -72,8 +73,14 @@ export function CashFlowChart({ properties }: CashFlowChartProps) {
   }, [selectedPropertyId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Only fetch if a property is selected (property-specific data)
+    if (selectedPropertyId) {
+      fetchData();
+    } else if (!selectedPropertyId && initialData.length > 0) {
+      // Use initial data for portfolio view
+      setData(initialData);
+    }
+  }, [fetchData, selectedPropertyId, initialData]);
 
   const handlePropertyChange = (propertyId: string | undefined) => {
     setSelectedPropertyId(propertyId);

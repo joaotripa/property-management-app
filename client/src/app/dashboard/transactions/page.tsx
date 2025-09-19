@@ -1,118 +1,35 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
-import { useTransactionFilters } from "@/hooks/useTransactionFilters";
-import { useTransactions } from "@/hooks/useTransactions";
-import {
-  CategoryOption,
-  PropertyOption,
-  Transaction,
-} from "@/types/transactions";
-import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import { auth } from "@/auth";
+import { getTransactionsPageData } from "@/lib/services/server/transactionsService";
+import { TransactionsClient } from "@/components/dashboard/transactions/TransactionsClient";
 import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
-import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
-import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
-import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
-import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
+import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
-export default function TransactionsPage() {
-  const [availableCategories, setAvailableCategories] = useState<
-    CategoryOption[]
-  >([]);
-  const [availableProperties, setAvailableProperties] = useState<
-    PropertyOption[]
-  >([]);
-  const [dialogType, setDialogType] = useState<
-    "create" | "edit" | "delete" | null
-  >(null);
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+interface TransactionsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-  const { filters, setFilters } = useTransactionFilters();
+export default async function TransactionsPage({ searchParams }: TransactionsPageProps) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  // Await search params and fetch data server-side
+  const params = await searchParams;
   const {
     transactions,
-    loading,
-    error,
     totalCount,
     totalPages,
     currentPage,
     pageSize,
-    refetch,
-    setPage,
-    setPageSize,
-  } = useTransactions(filters);
-
-  useEffect(() => {
-    const loadFilterOptions = async () => {
-      try {
-        const [categoriesRes, propertiesRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/properties"),
-        ]);
-
-        if (categoriesRes.ok && propertiesRes.ok) {
-          const [categoriesData, propertiesData] = await Promise.all([
-            categoriesRes.json(),
-            propertiesRes.json(),
-          ]);
-
-          setAvailableCategories(categoriesData.categories || []);
-          setAvailableProperties(propertiesData.properties || []);
-        }
-      } catch (error) {
-        console.error("Error loading filter options:", error);
-      }
-    };
-
-    loadFilterOptions();
-  }, []);
-
-  const openDialog = (
-    type: "create" | "edit" | "delete",
-    transaction?: Transaction
-  ) => {
-    setDialogType(type);
-    setSelectedTransaction(transaction || null);
-  };
-
-  const closeDialog = () => {
-    setDialogType(null);
-  };
-
-  const handleDataChange = async () => {
-    try {
-      refetch();
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    }
-  };
-
-  if (error) {
-    return (
-      <div className="flex gap-8 p-6 max-w-7xl mx-auto">
-        <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="p-6 text-center">
-            <p className="text-destructive font-medium">
-              Failed to load transactions
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">{error}</p>
-            <Button
-              onClick={refetch}
-              variant="outline"
-              size="sm"
-              className="mt-4"
-            >
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    stats,
+    categories,
+    properties
+  } = await getTransactionsPageData(session.user.id, params);
 
   return (
     <div className="flex flex-col max-w-7xl px-6 pb-6 gap-8 mx-auto">
@@ -131,81 +48,24 @@ export default function TransactionsPage() {
       </div>
 
       {/* Summary Cards */}
-      <TransactionStats filters={filters} />
+      <TransactionStats stats={stats} />
 
-      {/* Filters */}
+      {/* Beautiful shadcn/ui Filters with Instant Filtering */}
       <TransactionFilters
-        onFiltersChange={setFilters}
+        availableCategories={categories}
+        availableProperties={properties}
         showPropertyFilter={true}
-        availableCategories={availableCategories}
-        availableProperties={availableProperties}
-        initialFilters={filters}
       />
 
-      {/* Transactions Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Transactions</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <TransactionTableWithActions
-            transactions={transactions}
-            loading={loading}
-            showPropertyColumn={true}
-            onEdit={(transaction) => openDialog("edit", transaction)}
-            onDelete={(transaction) => openDialog("delete", transaction)}
-            emptyMessage={
-              loading ? "Loading transactions..." : "No transactions found"
-            }
-          />
-
-          {/* Pagination */}
-          {totalCount > 0 && (
-            <TransactionsPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalCount={totalCount}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-              loading={loading}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Floating Add Button */}
-      <Button
-        size="lg"
-        onClick={() => openDialog("create")}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
-
-      {/* Dialogs */}
-      <TransactionCreateDialog
-        isOpen={dialogType === "create"}
-        onClose={closeDialog}
-        onTransactionCreated={handleDataChange}
-        properties={availableProperties}
-        categories={availableCategories}
-      />
-
-      <TransactionEditDialog
-        transaction={selectedTransaction}
-        isOpen={dialogType === "edit"}
-        onClose={closeDialog}
-        onTransactionUpdated={handleDataChange}
-        properties={availableProperties}
-        categories={availableCategories}
-      />
-
-      <TransactionDeleteDialog
-        transaction={selectedTransaction}
-        isOpen={dialogType === "delete"}
-        onClose={closeDialog}
-        onTransactionDeleted={handleDataChange}
+      {/* Client Component for Interactions */}
+      <TransactionsClient
+        transactions={transactions}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        categories={categories}
+        properties={properties}
       />
     </div>
   );

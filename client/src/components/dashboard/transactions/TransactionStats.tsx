@@ -3,37 +3,31 @@ import {
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
-import { useTransactionStats } from "@/hooks/useTransactionStats";
-import { TransactionFilters } from "@/types/transactions";
 
-interface TransactionStatsProps {
-  filters: TransactionFilters;
+interface TransactionStats {
+  totalIncome: number;
+  totalExpenses: number;
+  netIncome: number;
+  transactionCount: number;
+  recurringCount: number;
 }
 
-const TransactionStats = ({ filters }: TransactionStatsProps) => {
-  const { stats, loading: statsLoading } = useTransactionStats(filters);
+interface TransactionStatsProps {
+  stats: TransactionStats;
+}
 
-  if (statsLoading || !stats) {
-    const loadingKpis: KPICardConfig[] = [
-      { title: "Total Income", value: formatCompactCurrency(0) },
-      { title: "Total Expenses", value: formatCompactCurrency(0) },
-      { title: "Net Income", value: formatCompactCurrency(0) },
-    ];
-
-    return <KPICards kpiConfigs={loadingKpis} />;
-  }
-
+const TransactionStats = ({ stats }: TransactionStatsProps) => {
   const kpiConfigs: KPICardConfig[] = [
     {
-      title: "Total Income",
+      title: "Current Month Income",
       value: formatCompactCurrency(stats.totalIncome),
     },
     {
-      title: "Total Expenses",
+      title: "Current Month Expenses",
       value: formatCompactCurrency(stats.totalExpenses),
     },
     {
-      title: "Net Income",
+      title: "Current Month Cash Flow",
       value: formatCompactCurrency(stats.netIncome),
     },
   ];

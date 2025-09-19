@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useTransition, useDeferredValue, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Filter, Search, X, ChevronDown, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,79 +21,119 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type {
-  TransactionFiltersProps,
-  TransactionFilters as TransactionFiltersType,
-} from "@/types/transactions";
+import { CategoryOption, PropertyOption } from "@/types/transactions";
 import { TransactionType } from "@/types/transactions";
 import { toCamelCase } from "@/lib/utils/index";
 import { Separator } from "@/components/ui/separator";
 
+interface TransactionFiltersProps {
+  availableCategories: CategoryOption[];
+  availableProperties: PropertyOption[];
+  showPropertyFilter?: boolean;
+}
+
 export function TransactionFilters({
-  onFiltersChange,
-  showPropertyFilter = false,
-  initialPropertyId,
-  availableProperties = [],
   availableCategories = [],
-  initialFilters = {},
+  availableProperties = [],
+  showPropertyFilter = false,
 }: TransactionFiltersProps) {
-  const [filters, setFilters] = useState<TransactionFiltersType>({
-    type: "all",
-    sortBy: "transactionDate",
-    sortOrder: "desc",
-    ...initialFilters,
-    ...(initialPropertyId && { propertyId: initialPropertyId }),
-  });
-
+  const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialFilters.categoryIds || []
-  );
+  const [searchValue, setSearchValue] = useState("");
+  const deferredSearchValue = useDeferredValue(searchValue);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    onFiltersChange(filters);
-  }, [filters, onFiltersChange]);
-
-  const updateFilter = <K extends keyof TransactionFiltersType>(
-    key: K,
-    value: TransactionFiltersType[K]
-  ) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  // Get current filter values from URL
+  const getCurrentFilters = () => {
+    return {
+      type: searchParams.get('type') || 'all',
+      dateFrom: searchParams.get('dateFrom') || '',
+      dateTo: searchParams.get('dateTo') || '',
+      amountMin: searchParams.get('amountMin') || '',
+      amountMax: searchParams.get('amountMax') || '',
+      categoryIds: searchParams.get('categoryIds')?.split(',').filter(Boolean) || [],
+      isRecurring: searchParams.get('isRecurring') || 'all',
+      propertyId: searchParams.get('propertyId') || 'all',
+      search: searchParams.get('search') || '',
+      sortBy: searchParams.get('sortBy') || 'transactionDate',
+      sortOrder: searchParams.get('sortOrder') || 'desc',
+    };
   };
 
-  const clearFilters = () => {
-    const clearedFilters: TransactionFiltersType = {
-      type: "all",
-      sortBy: "transactionDate",
-      sortOrder: "desc",
-      ...(initialPropertyId && { propertyId: initialPropertyId }),
-    };
-    setFilters(clearedFilters);
-    setSelectedCategories([]);
+  const currentFilters = getCurrentFilters();
+
+  // Initialize search value from URL
+  useEffect(() => {
+    setSearchValue(currentFilters.search);
+  }, [currentFilters.search]);
+
+  const updateURL = useCallback((updates: Record<string, string | undefined>) => {
+    const params = new URLSearchParams(searchParams);
+
+    // Apply updates
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== 'all') {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+
+    // Reset to page 1 when filters change
+    params.delete('page');
+
+    router.push(`/dashboard/transactions?${params.toString()}`);
+  }, [router, searchParams]);
+
+  // Debounced search with useTransition
+  useEffect(() => {
+    if (deferredSearchValue !== currentFilters.search) {
+      const timeoutId = setTimeout(() => {
+        startTransition(() => {
+          updateURL({ search: deferredSearchValue || undefined });
+        });
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [deferredSearchValue, currentFilters.search, updateURL]);
+
+  const handleInstantFilter = (key: string, value: string | undefined) => {
+    startTransition(() => {
+      updateURL({ [key]: value });
+    });
   };
 
   const toggleCategory = (categoryId: string) => {
-    const newSelectedCategories = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter((id) => id !== categoryId)
-      : [...selectedCategories, categoryId];
+    const currentCategories = currentFilters.categoryIds;
+    const newCategories = currentCategories.includes(categoryId)
+      ? currentCategories.filter((id) => id !== categoryId)
+      : [...currentCategories, categoryId];
 
-    setSelectedCategories(newSelectedCategories);
-    updateFilter(
-      "categoryIds",
-      newSelectedCategories.length > 0 ? newSelectedCategories : undefined
-    );
+    startTransition(() => {
+      updateURL({
+        categoryIds: newCategories.length > 0 ? newCategories.join(',') : undefined
+      });
+    });
+  };
+
+  const clearFilters = () => {
+    startTransition(() => {
+      router.push('/dashboard/transactions?sortBy=transactionDate&sortOrder=desc');
+    });
+    setSearchValue('');
   };
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.dateFrom || filters.dateTo) count++;
-    if (filters.type && filters.type !== "all") count++;
-    if (filters.amountMin !== undefined || filters.amountMax !== undefined)
-      count++;
-    if (filters.categoryIds && filters.categoryIds.length > 0) count++;
-    if (filters.isRecurring !== undefined) count++;
-    if (filters.search) count++;
-    if (showPropertyFilter && filters.propertyId && !initialPropertyId) count++;
+    if (currentFilters.dateFrom || currentFilters.dateTo) count++;
+    if (currentFilters.type && currentFilters.type !== 'all') count++;
+    if (currentFilters.amountMin || currentFilters.amountMax) count++;
+    if (currentFilters.categoryIds.length > 0) count++;
+    if (currentFilters.isRecurring !== 'all') count++;
+    if (currentFilters.search) count++;
+    if (showPropertyFilter && currentFilters.propertyId !== 'all') count++;
     return count;
   };
 
@@ -120,6 +160,7 @@ export function TransactionFilters({
                 size="sm"
                 onClick={clearFilters}
                 className="h-8 px-2"
+                disabled={isPending}
               >
                 <X className="h-4 w-4 mr-1" />
                 Clear Filters
@@ -145,22 +186,24 @@ export function TransactionFilters({
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search transactions..."
-                value={filters.search || ""}
-                onChange={(e) =>
-                  updateFilter("search", e.target.value || undefined)
-                }
-                className="pl-10"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className={`pl-10 ${isPending ? 'opacity-70' : ''}`}
               />
+              {isPending && (
+                <div className="absolute right-3 top-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Transaction Type */}
           <div className="flex gap-2">
             <Select
-              value={filters.type || "all"}
-              onValueChange={(value) =>
-                updateFilter("type", value as TransactionType | "all")
-              }
+              value={currentFilters.type}
+              onValueChange={(value) => handleInstantFilter('type', value)}
+              disabled={isPending}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -185,15 +228,16 @@ export function TransactionFilters({
                   <Button
                     variant="outline"
                     className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground font-normal"
+                    disabled={isPending}
                   >
                     <span>
-                      {selectedCategories.length === 0
+                      {currentFilters.categoryIds.length === 0
                         ? "All Categories"
-                        : selectedCategories.length === 1
+                        : currentFilters.categoryIds.length === 1
                           ? availableCategories.find(
-                              (c) => c.id === selectedCategories[0]
+                              (c) => c.id === currentFilters.categoryIds[0]
                             )?.name
-                          : `${selectedCategories.length} categories selected`}
+                          : `${currentFilters.categoryIds.length} categories selected`}
                     </span>
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
@@ -203,7 +247,7 @@ export function TransactionFilters({
                     <DropdownMenuCheckboxItem
                       key={category.id}
                       className="capitalize"
-                      checked={selectedCategories.includes(category.id)}
+                      checked={currentFilters.categoryIds.includes(category.id)}
                       onCheckedChange={() => toggleCategory(category.id)}
                     >
                       {category.name}
@@ -218,13 +262,9 @@ export function TransactionFilters({
           {showPropertyFilter && (
             <div className="flex flex-col">
               <Select
-                value={filters.propertyId || "all"}
-                onValueChange={(value) =>
-                  updateFilter(
-                    "propertyId",
-                    value === "all" ? undefined : value
-                  )
-                }
+                value={currentFilters.propertyId}
+                onValueChange={(value) => handleInstantFilter('propertyId', value)}
+                disabled={isPending}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Properties" />
@@ -252,17 +292,9 @@ export function TransactionFilters({
                 <Label>From Date</Label>
                 <Input
                   type="date"
-                  value={
-                    filters.dateFrom
-                      ? format(filters.dateFrom, "yyyy-MM-dd")
-                      : ""
-                  }
-                  onChange={(e) =>
-                    updateFilter(
-                      "dateFrom",
-                      e.target.value ? new Date(e.target.value) : undefined
-                    )
-                  }
+                  value={currentFilters.dateFrom}
+                  onChange={(e) => handleInstantFilter('dateFrom', e.target.value)}
+                  disabled={isPending}
                 />
               </div>
 
@@ -271,30 +303,21 @@ export function TransactionFilters({
                 <Label>To Date</Label>
                 <Input
                   type="date"
-                  value={
-                    filters.dateTo ? format(filters.dateTo, "yyyy-MM-dd") : ""
-                  }
-                  onChange={(e) =>
-                    updateFilter(
-                      "dateTo",
-                      e.target.value ? new Date(e.target.value) : undefined
-                    )
-                  }
+                  value={currentFilters.dateTo}
+                  onChange={(e) => handleInstantFilter('dateTo', e.target.value)}
+                  disabled={isPending}
                 />
               </div>
+
               {/* Amount Range */}
               <div className="flex flex-col gap-2">
                 <Label>Min Amount (€)</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={filters.amountMin ?? ""}
-                  onChange={(e) =>
-                    updateFilter(
-                      "amountMin",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
+                  value={currentFilters.amountMin}
+                  onChange={(e) => handleInstantFilter('amountMin', e.target.value)}
+                  disabled={isPending}
                 />
               </div>
 
@@ -303,13 +326,9 @@ export function TransactionFilters({
                 <Input
                   type="number"
                   placeholder="1000.00"
-                  value={filters.amountMax ?? ""}
-                  onChange={(e) =>
-                    updateFilter(
-                      "amountMax",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
+                  value={currentFilters.amountMax}
+                  onChange={(e) => handleInstantFilter('amountMax', e.target.value)}
+                  disabled={isPending}
                 />
               </div>
 
@@ -317,17 +336,9 @@ export function TransactionFilters({
               <div className="flex flex-col gap-2">
                 <Label>Recurring</Label>
                 <Select
-                  value={
-                    filters.isRecurring === undefined
-                      ? "all"
-                      : filters.isRecurring.toString()
-                  }
-                  onValueChange={(value) =>
-                    updateFilter(
-                      "isRecurring",
-                      value === "all" ? undefined : value === "true"
-                    )
-                  }
+                  value={currentFilters.isRecurring}
+                  onValueChange={(value) => handleInstantFilter('isRecurring', value)}
+                  disabled={isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -344,13 +355,9 @@ export function TransactionFilters({
               <div className="flex flex-col gap-2">
                 <Label>Sort By</Label>
                 <Select
-                  value={filters.sortBy || "transactionDate"}
-                  onValueChange={(value) =>
-                    updateFilter(
-                      "sortBy",
-                      value as "transactionDate" | "amount" | "type"
-                    )
-                  }
+                  value={currentFilters.sortBy}
+                  onValueChange={(value) => handleInstantFilter('sortBy', value)}
+                  disabled={isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -366,10 +373,9 @@ export function TransactionFilters({
               <div className="flex flex-col gap-2">
                 <Label>Sort Order</Label>
                 <Select
-                  value={filters.sortOrder || "desc"}
-                  onValueChange={(value) =>
-                    updateFilter("sortOrder", value as "asc" | "desc")
-                  }
+                  value={currentFilters.sortOrder}
+                  onValueChange={(value) => handleInstantFilter('sortOrder', value)}
+                  disabled={isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />

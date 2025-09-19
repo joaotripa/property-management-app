@@ -35,11 +35,11 @@ export interface Transaction {
   };
 }
 
-// Filter interface for transaction queries
+// Filter interface for transaction queries (client-side, uses strings for stability)
 export interface TransactionFilters {
-  // Date range
-  dateFrom?: Date;
-  dateTo?: Date;
+  // Date range (strings for server/client component stability)
+  dateFrom?: string;
+  dateTo?: string;
   
   // Transaction type
   type?: TransactionType | 'all';
@@ -61,6 +61,21 @@ export interface TransactionFilters {
   search?: string;
   
   // Sorting
+  sortBy?: 'transactionDate' | 'amount' | 'type' | 'category';
+  sortOrder?: 'asc' | 'desc';
+}
+
+// Database-specific filter interface (server-side, uses Date objects for database queries)
+export interface DatabaseTransactionFilters {
+  dateFrom?: Date;
+  dateTo?: Date;
+  type?: TransactionType | 'all';
+  amountMin?: number;
+  amountMax?: number;
+  categoryIds?: string[];
+  isRecurring?: boolean;
+  propertyId?: string;
+  search?: string;
   sortBy?: 'transactionDate' | 'amount' | 'type' | 'category';
   sortOrder?: 'asc' | 'desc';
 }
@@ -102,12 +117,11 @@ export interface TransactionTableProps {
 
 // Filter component props interface
 export interface TransactionFiltersProps {
+  filters: TransactionFilters;
   onFiltersChange: (filters: TransactionFilters) => void;
   showPropertyFilter?: boolean;
-  initialPropertyId?: string;
   availableProperties?: PropertyOption[];
   availableCategories?: CategoryOption[];
-  initialFilters?: Partial<TransactionFilters>;
 }
 
 // Hook return types

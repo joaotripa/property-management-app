@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getPropertyTransactions, validatePropertyAccess } from "@/lib/db/db-queries";
+import { getPropertyTransactions, validatePropertyAccess } from "@/lib/db/transactions";
 import { TransactionFilters } from "@/types/transactions";
 import { TransactionType } from "@prisma/client";
 
@@ -36,10 +36,10 @@ export async function GET(
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
     if (dateFrom) {
-      filters.dateFrom = new Date(dateFrom);
+      filters.dateFrom = dateFrom;
     }
     if (dateTo) {
-      filters.dateTo = new Date(dateTo);
+      filters.dateTo = dateTo;
     }
 
     // Type filter
@@ -96,15 +96,26 @@ export async function GET(
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '50');
 
-    // Fetch transactions
+    // Fetch transactions - convert string dates to Date objects for database query
+    const dbFilters = {
+      type: filters.type,
+      amountMin: filters.amountMin,
+      amountMax: filters.amountMax,
+      categoryIds: filters.categoryIds,
+      isRecurring: filters.isRecurring,
+      search: filters.search,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+      dateFrom: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
+      dateTo: filters.dateTo ? new Date(filters.dateTo) : undefined,
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+    };
+
     const result = await getPropertyTransactions(
       propertyId,
       userId,
-      {
-        ...filters,
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-      }
+      dbFilters
     );
 
     return NextResponse.json({
