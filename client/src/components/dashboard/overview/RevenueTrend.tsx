@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,7 +13,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
-import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
@@ -60,28 +58,15 @@ function generateEmptyChartData(): Array<{
   return data;
 }
 
-export function RevenueTrend() {
-  const [data, setData] = useState<CashFlowTrendData[]>([]);
+interface RevenueTrendProps {
+  initialData: CashFlowTrendData[];
+}
 
-  useEffect(() => {
-    const fetchCashFlowData = async () => {
-      try {
-        const result = await getCashFlowTrend({
-          monthsBack: 6,
-        });
-
-        setData(result);
-      } catch (err) {
-        console.error("Error fetching cash flow data:", err);
-      }
-    };
-
-    fetchCashFlowData();
-  }, []);
+export function RevenueTrend({ initialData }: RevenueTrendProps) {
 
   const chartData =
-    data.length > 0
-      ? data.map((item) => ({
+    initialData.length > 0
+      ? initialData.map((item) => ({
           ...item,
           monthLabel: formatMonthYear(item.month),
         }))

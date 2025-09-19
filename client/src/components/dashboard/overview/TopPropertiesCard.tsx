@@ -1,6 +1,3 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,102 +5,20 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Building2, ArrowUp, ArrowDown } from "lucide-react";
-import { getPropertyComparison } from "@/lib/services/client/analyticsService";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 
-interface TopPropertiesData {
-  properties: PropertyRankingData[];
-  previousProperties: PropertyRankingData[];
+interface TopPropertiesCardProps {
+  topProperties: PropertyRankingData[];
+  previousTopProperties: PropertyRankingData[];
 }
 
-export function TopPropertiesCard() {
-  const [data, setData] = useState<TopPropertiesData>({
-    properties: [],
-    previousProperties: [],
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-
-  useEffect(() => {
-    const fetchTopProperties = async () => {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        // Get current month date range
-        const now = new Date();
-        const currentDateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-        const currentDateTo = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate()
-        );
-
-        // Get previous month date range
-        const previousDateFrom = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          1
-        );
-        const previousDateTo = new Date(now.getFullYear(), now.getMonth(), 0);
-
-        const [currentResult, previousResult] = await Promise.allSettled([
-          getPropertyComparison({
-            dateFrom: currentDateFrom,
-            dateTo: currentDateTo,
-            sortBy: "netIncome",
-          }),
-          getPropertyComparison({
-            dateFrom: previousDateFrom,
-            dateTo: previousDateTo,
-            sortBy: "netIncome",
-          }),
-        ]);
-
-        setData({
-          properties:
-            currentResult.status === "fulfilled"
-              ? currentResult.value.propertyRanking.slice(0, 4)
-              : [],
-          previousProperties:
-            previousResult.status === "fulfilled"
-              ? previousResult.value.propertyRanking
-              : [],
-        });
-
-        if (currentResult.status === "rejected") {
-          setError("Failed to load top properties data");
-        }
-      } catch (err) {
-        console.error("Error fetching top properties:", err);
-        setError("Failed to load top properties data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTopProperties();
-  }, []);
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Top Properties This Month
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-destructive py-8">{error}</div>
-        </CardContent>
-      </Card>
-    );
-  }
+export function TopPropertiesCard({
+  topProperties,
+  previousTopProperties,
+}: TopPropertiesCardProps) {
 
   return (
     <Card>
@@ -119,31 +34,13 @@ export function TopPropertiesCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 rounded-lg border"
-              >
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-lg bg-muted" />
-                  <div>
-                    <Skeleton className="h-4 w-32 mb-2 bg-muted" />
-                    <Skeleton className="h-3 w-20 bg-muted" />
-                  </div>
-                </div>
-                <Skeleton className="h-6 w-16 bg-muted" />
-              </div>
-            ))}
-          </div>
-        ) : data.properties.length === 0 ? (
+        {topProperties.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             No property data available for this month.
           </div>
         ) : (
           <div className="flex flex-col gap-6 mb-4">
-            {data.properties.map((property, index) => {
+            {topProperties.map((property, index) => {
               const colors = [
                 { bg: "bg-primary", bgLight: "bg-primary/10" },
                 { bg: "bg-cyan-500", bgLight: "bg-cyan-500/10" },
@@ -151,7 +48,7 @@ export function TopPropertiesCard() {
                 { bg: "bg-orange-500", bgLight: "bg-orange-500/10" },
               ];
 
-              const previousProperty = data.previousProperties.find(
+              const previousProperty = previousTopProperties.find(
                 (p) => p.propertyId === property.propertyId
               );
 
