@@ -17,22 +17,27 @@ interface KPICardsProps {
 
 function KPICard({ title, value, trend, trendValue }: KPICardConfig) {
   return (
-    <Card className="border-secondary py-4 justify-between !gap-2">
-      <CardHeader className="px-6">
+    <Card className="border-secondary py-4 justify-between !gap-0">
+      <CardHeader className="px-4">
         <CardTitle className="font-medium text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-row items-end px-6 gap-2">
-        <div className="text-3xl font-medium">{value}</div>
+      <CardContent className="flex flex-row items-end px-4 gap-1">
+        <div className="text-3xl font-semibold">{value}</div>
         {trendValue && (
           <div className="flex items-center mb-1">
-            {trend === "up" && <ArrowUp className="h-3 w-3 text-success" />}
+            {trend === "up" && (
+              <ArrowUp
+                strokeWidth={3}
+                className="h-3 w-3 text-success font-medium"
+              />
+            )}
             {trend === "down" && (
-              <ArrowDown className="h-4 w-4 text-destructive" />
+              <ArrowDown strokeWidth={3} className="h-4 w-4 text-destructive" />
             )}
             <span
-              className={`text-sm ${
+              className={`text-sm font-medium ${
                 trend === "up"
                   ? "text-success"
                   : trend === "down"

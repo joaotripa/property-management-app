@@ -17,9 +17,13 @@ import {
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
+import { getPropertyComparison } from "@/lib/services/client/analyticsService";
+import { calculateDateRange } from "@/lib/utils/dateRange";
+import { useState, useEffect, useCallback } from "react";
 
 interface TopIncomeChartProps {
   data?: PropertyRankingData[];
+  timeRange?: string;
 }
 
 const chartConfig = {
@@ -33,16 +37,49 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function TopIncomeChart({ data = [] }: TopIncomeChartProps) {
-  const sortedData = [...data]
-    .sort((a, b) => b.totalIncome - a.totalIncome)
-    .slice(0, 8);
+export function TopIncomeChart({ data = [], timeRange = "6m" }: TopIncomeChartProps) {
+  const [chartData, setChartData] = useState<(PropertyRankingData & { shortName: string; fill: string })[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const chartData = sortedData.map((item) => ({
-    ...item,
-    shortName: truncatePropertyName(item.propertyName),
-    fill: chartConfig.totalIncome.color,
-  }));
+  const fetchData = useCallback(async () => {
+    try {
+      setError(null);
+      const { dateFrom, dateTo } = calculateDateRange(timeRange);
+      const result = await getPropertyComparison({
+        dateFrom,
+        dateTo,
+        sortBy: 'totalIncome',
+      });
+
+      const sortedData = [...result.propertyRanking]
+        .sort((a, b) => b.totalIncome - a.totalIncome)
+        .slice(0, 8);
+
+      const transformedData = sortedData.map((item) => ({
+        ...item,
+        shortName: truncatePropertyName(item.propertyName),
+        fill: chartConfig.totalIncome.color,
+      }));
+
+      setChartData(transformedData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
+    }
+  }, [timeRange]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Use local data or initial data
+  const displayData = chartData.length > 0 ? chartData : [...data]
+    .sort((a, b) => b.totalIncome - a.totalIncome)
+    .slice(0, 8)
+    .map((item) => ({
+      ...item,
+      shortName: truncatePropertyName(item.propertyName),
+      fill: chartConfig.totalIncome.color,
+    }));
 
   return (
     <Card>
@@ -54,7 +91,11 @@ export function TopIncomeChart({ data = [] }: TopIncomeChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {chartData.length === 0 ? (
+        {error ? (
+          <div className="text-center text-red-600 py-8">
+            Error loading income data: {error}
+          </div>
+        ) : displayData.length === 0 ? (
           <div className="text-center text-muted-foreground p-8">
             No income data available.
           </div>
@@ -62,7 +103,7 @@ export function TopIncomeChart({ data = [] }: TopIncomeChartProps) {
           <>
             <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
+                <BarChart data={displayData}>
                   <CartesianGrid vertical={false} />
 
                   <XAxis

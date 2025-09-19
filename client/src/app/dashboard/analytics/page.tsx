@@ -1,14 +1,15 @@
 import { auth } from "@/auth";
 import { getAnalyticsPageData } from "@/lib/services/server/analyticsService";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { RefreshCw } from "lucide-react";
+import { TimeRangeSelector } from "@/components/dashboard/analytics/TimeRangeSelector";
 import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatPercentage, formatCompactCurrency } from "@/lib/utils/formatting";
+import {
+  formatPercentage,
+  formatCompactCurrency,
+} from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
@@ -16,22 +17,33 @@ import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart"
 import { NetIncomeChart } from "@/components/dashboard/analytics/NetIncomeChart";
 import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
 
-export default async function AnalyticsPage() {
+interface AnalyticsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function AnalyticsPage({
+  searchParams,
+}: AnalyticsPageProps) {
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/login");
   }
 
-  // Fetch all data server-side
+  // Await search params and get time range
+  const params = await searchParams;
+  const timeRange =
+    typeof params.timeRange === "string" ? params.timeRange : "6m";
+
+  // Fetch all data server-side with time range
   const {
     kpis,
     previousKpis,
     cashFlowTrend,
     expenseBreakdown,
     propertyRanking,
-    properties
-  } = await getAnalyticsPageData(session.user.id);
+    properties,
+  } = await getAnalyticsPageData(session.user.id, timeRange);
 
   const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
     return [
@@ -46,18 +58,12 @@ export default async function AnalyticsPage() {
       {
         title: "Income",
         value: formatCompactCurrency(kpis.totalIncome || 0),
-        ...getTrendData(
-          kpis.totalIncome || 0,
-          previousKpis.totalIncome
-        ),
+        ...getTrendData(kpis.totalIncome || 0, previousKpis.totalIncome),
       },
       {
         title: "Expenses",
         value: formatCompactCurrency(kpis.totalExpenses || 0),
-        ...getTrendData(
-          kpis.totalExpenses || 0,
-          previousKpis.totalExpenses
-        ),
+        ...getTrendData(kpis.totalExpenses || 0, previousKpis.totalExpenses),
       },
       {
         title: "Cash Flow",
@@ -94,17 +100,6 @@ export default async function AnalyticsPage() {
             Comprehensive insights into your property portfolio performance
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
       </div>
 
       {/* KPI Cards */}
@@ -120,14 +115,20 @@ export default async function AnalyticsPage() {
               Performance Charts
             </h2>
           </div>
-          <Badge variant="default" className="text-xs shadow-sm">
-            6 Months Data
-          </Badge>
+          <TimeRangeSelector />
         </div>
 
         <div className="flex flex-col gap-8">
-          <CashFlowChart properties={properties} initialData={cashFlowTrend} />
-          <ExpenseBreakdownChart properties={properties} initialData={expenseBreakdown} />
+          <CashFlowChart
+            properties={properties}
+            initialData={cashFlowTrend}
+            timeRange={timeRange}
+          />
+          <ExpenseBreakdownChart
+            properties={properties}
+            initialData={expenseBreakdown}
+            timeRange={timeRange}
+          />
         </div>
       </section>
 
@@ -140,9 +141,9 @@ export default async function AnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <TopIncomeChart data={propertyRanking} />
-          <NetIncomeChart data={propertyRanking} />
-          <ROIChart data={propertyRanking} />
+          <TopIncomeChart data={propertyRanking} timeRange={timeRange} />
+          <NetIncomeChart data={propertyRanking} timeRange={timeRange} />
+          <ROIChart data={propertyRanking} timeRange={timeRange} />
         </div>
       </section>
     </div>

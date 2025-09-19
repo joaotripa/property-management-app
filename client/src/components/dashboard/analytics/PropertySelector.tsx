@@ -51,7 +51,7 @@ export function PropertySelector({
       <div className={`min-w-[200px] ${className}`}>
         <Select disabled>
           <SelectTrigger>
-            <SelectValue placeholder="Loading properties..." />
+            <SelectValue placeholder="Loading..." />
           </SelectTrigger>
         </Select>
       </div>

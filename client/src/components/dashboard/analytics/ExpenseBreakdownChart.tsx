@@ -23,10 +23,12 @@ import {
   formatPercentage,
 } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
+import { calculateDateRange } from "@/lib/utils/dateRange";
 
 interface ExpenseBreakdownChartProps {
   properties: PropertyOption[];
   initialData?: ExpenseBreakdownData[];
+  timeRange?: string;
 }
 
 const COLORS = [
@@ -47,6 +49,7 @@ const COLORS = [
 export function ExpenseBreakdownChart({
   properties,
   initialData = [],
+  timeRange = "6m"
 }: ExpenseBreakdownChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
@@ -59,8 +62,11 @@ export function ExpenseBreakdownChart({
     try {
       setIsLoading(true);
       setError(null);
+      const { dateFrom, dateTo } = calculateDateRange(timeRange);
       const result = await getExpenseBreakdown({
         propertyId: selectedPropertyId,
+        dateFrom,
+        dateTo,
       });
       setData(result);
     } catch (err) {
@@ -68,17 +74,17 @@ export function ExpenseBreakdownChart({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedPropertyId]);
+  }, [selectedPropertyId, timeRange]);
 
   useEffect(() => {
-    // Only fetch if a property is selected (property-specific data)
+    // Fetch when property is selected or time range changes
     if (selectedPropertyId) {
       fetchData();
-    } else if (!selectedPropertyId && initialData.length > 0) {
-      // Use initial data for portfolio view
-      setData(initialData);
+    } else {
+      // For portfolio view, refetch when time range changes
+      fetchData();
     }
-  }, [fetchData, selectedPropertyId, initialData]);
+  }, [fetchData, selectedPropertyId]);
 
   const handlePropertyChange = (propertyId: string | undefined) => {
     setSelectedPropertyId(propertyId);

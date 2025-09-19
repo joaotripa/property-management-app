@@ -18,10 +18,12 @@ import { useState, useEffect, useCallback } from "react";
 import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
+import { calculateDateRange } from "@/lib/utils/dateRange";
 
 interface CashFlowChartProps {
   properties: PropertyOption[];
   initialData?: CashFlowTrendData[];
+  timeRange?: string;
 }
 
 const chartConfig = {
@@ -48,7 +50,11 @@ function formatMonthYear(monthString: string): string {
   });
 }
 
-export function CashFlowChart({ properties, initialData = [] }: CashFlowChartProps) {
+export function CashFlowChart({
+  properties,
+  initialData = [],
+  timeRange = "6m"
+}: CashFlowChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
   >(undefined);
@@ -60,8 +66,9 @@ export function CashFlowChart({ properties, initialData = [] }: CashFlowChartPro
     try {
       setIsLoading(true);
       setError(null);
+      const { monthsBack } = calculateDateRange(timeRange);
       const result = await getCashFlowTrend({
-        monthsBack: 6,
+        monthsBack,
         propertyId: selectedPropertyId,
       });
       setData(result);
@@ -70,17 +77,17 @@ export function CashFlowChart({ properties, initialData = [] }: CashFlowChartPro
     } finally {
       setIsLoading(false);
     }
-  }, [selectedPropertyId]);
+  }, [selectedPropertyId, timeRange]);
 
   useEffect(() => {
-    // Only fetch if a property is selected (property-specific data)
+    // Fetch when property is selected or time range changes
     if (selectedPropertyId) {
       fetchData();
-    } else if (!selectedPropertyId && initialData.length > 0) {
-      // Use initial data for portfolio view
-      setData(initialData);
+    } else {
+      // For portfolio view, refetch when time range changes
+      fetchData();
     }
-  }, [fetchData, selectedPropertyId, initialData]);
+  }, [fetchData, selectedPropertyId]);
 
   const handlePropertyChange = (propertyId: string | undefined) => {
     setSelectedPropertyId(propertyId);

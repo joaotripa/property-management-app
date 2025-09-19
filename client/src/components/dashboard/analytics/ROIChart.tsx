@@ -17,9 +17,13 @@ import {
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import { formatPercentage } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
+import { getPropertyComparison } from "@/lib/services/client/analyticsService";
+import { calculateDateRange } from "@/lib/utils/dateRange";
+import { useState, useEffect, useCallback } from "react";
 
 interface ROIChartProps {
   data?: PropertyRankingData[];
+  timeRange?: string;
 }
 
 const chartConfig = {
@@ -37,14 +41,49 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function ROIChart({ data = [] }: ROIChartProps) {
-  const sortedData = [...data].sort((a, b) => b.roi - a.roi).slice(0, 8);
+export function ROIChart({ data = [], timeRange = "6m" }: ROIChartProps) {
+  const [chartData, setChartData] = useState<(PropertyRankingData & { shortName: string; fill: string })[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const chartData = sortedData.map((item) => ({
-    ...item,
-    shortName: truncatePropertyName(item.propertyName),
-    fill: item.roi >= 0 ? chartConfig.roi.color : chartConfig.negativeRoi.color,
-  }));
+  const fetchData = useCallback(async () => {
+    try {
+      setError(null);
+      const { dateFrom, dateTo } = calculateDateRange(timeRange);
+      const result = await getPropertyComparison({
+        dateFrom,
+        dateTo,
+        sortBy: 'roi',
+      });
+
+      const sortedData = [...result.propertyRanking]
+        .sort((a, b) => b.roi - a.roi)
+        .slice(0, 8);
+
+      const transformedData = sortedData.map((item) => ({
+        ...item,
+        shortName: truncatePropertyName(item.propertyName),
+        fill: item.roi >= 0 ? chartConfig.roi.color : chartConfig.negativeRoi.color,
+      }));
+
+      setChartData(transformedData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
+    }
+  }, [timeRange]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Use local data or initial data
+  const displayData = chartData.length > 0 ? chartData : [...data]
+    .sort((a, b) => b.roi - a.roi)
+    .slice(0, 8)
+    .map((item) => ({
+      ...item,
+      shortName: truncatePropertyName(item.propertyName),
+      fill: item.roi >= 0 ? chartConfig.roi.color : chartConfig.negativeRoi.color,
+    }));
 
   return (
     <Card>
@@ -54,7 +93,11 @@ export function ROIChart({ data = [] }: ROIChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {chartData.length === 0 ? (
+        {error ? (
+          <div className="text-center text-red-600 py-8">
+            Error loading ROI data: {error}
+          </div>
+        ) : displayData.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             No ROI data available.
           </div>
@@ -62,7 +105,7 @@ export function ROIChart({ data = [] }: ROIChartProps) {
           <>
             <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
+                <BarChart data={displayData}>
                   <CartesianGrid vertical={false} />
 
                   <XAxis
