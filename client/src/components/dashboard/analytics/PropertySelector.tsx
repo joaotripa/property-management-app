@@ -48,9 +48,9 @@ export function PropertySelector({
 
   if (isLoading) {
     return (
-      <div className={`min-w-[200px] ${className}`}>
+      <div className={`w-full sm:w-auto sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] xl:min-w-[200px] ${className}`}>
         <Select disabled>
-          <SelectTrigger>
+          <SelectTrigger className="h-8 sm:h-9 md:h-10">
             <SelectValue placeholder="Loading..." />
           </SelectTrigger>
         </Select>
@@ -59,10 +59,10 @@ export function PropertySelector({
   }
 
   return (
-    <div className={`min-w-[200px] ${className}`}>
+    <div className={`w-full sm:w-auto sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] xl:min-w-[200px] ${className}`}>
       <Select value={getCurrentValue()} onValueChange={handleValueChange}>
-        <SelectTrigger>
-          <div className="flex items-center">
+        <SelectTrigger className="h-8 sm:h-9 md:h-10">
+          <div className="flex items-center min-w-0">
             <SelectValue placeholder={placeholder} />
           </div>
         </SelectTrigger>
@@ -74,8 +74,9 @@ export function PropertySelector({
           )}
           {properties.map((property) => (
             <SelectItem key={property.id} value={property.id}>
-              <div className="flex flex-col">
-                <span>{property.name}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="truncate text-sm">{property.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{property.address}</span>
               </div>
             </SelectItem>
           ))}

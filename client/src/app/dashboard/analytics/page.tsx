@@ -30,12 +30,10 @@ export default async function AnalyticsPage({
     redirect("/login");
   }
 
-  // Await search params and get time range
   const params = await searchParams;
   const timeRange =
-    typeof params.timeRange === "string" ? params.timeRange : "6m";
+    typeof params.timeRange === "string" ? params.timeRange : "semester";
 
-  // Fetch all data server-side with time range
   const {
     kpis,
     previousKpis,
@@ -89,61 +87,73 @@ export default async function AnalyticsPage({
   const kpiConfigs = getAnalyticsKPIConfigs();
 
   return (
-    <div className="flex flex-col px-6 pb-6 gap-8">
+    <div className="flex flex-col px-3 sm:px-4 lg:px-6 pb-4 sm:pb-6 gap-4 sm:gap-6 lg:gap-8 min-h-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl md:text-4xl font-bold">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
             Analytics Dashboard
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Comprehensive insights into your property portfolio performance
           </p>
+        </div>
+        <div className="flex justify-end">
+          <TimeRangeSelector />
         </div>
       </div>
 
       {/* KPI Cards */}
-      <section>
+      <section className="flex-shrink-0">
         <KPICards kpiConfigs={kpiConfigs} />
       </section>
 
       {/* Charts Section */}
-      <section className="flex flex-col gap-8">
+      <section className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
               Performance Charts
             </h2>
           </div>
-          <TimeRangeSelector />
         </div>
 
-        <div className="flex flex-col gap-8">
-          <CashFlowChart
-            properties={properties}
-            initialData={cashFlowTrend}
-            timeRange={timeRange}
-          />
-          <ExpenseBreakdownChart
-            properties={properties}
-            initialData={expenseBreakdown}
-            timeRange={timeRange}
-          />
+        <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
+          <div className="min-h-0">
+            <CashFlowChart
+              properties={properties}
+              initialData={cashFlowTrend}
+              timeRange={timeRange}
+            />
+          </div>
+          <div className="min-h-0">
+            <ExpenseBreakdownChart
+              properties={properties}
+              initialData={expenseBreakdown}
+              timeRange={timeRange}
+            />
+          </div>
         </div>
       </section>
 
       {/* Property Comparison Section */}
-      <section className="flex flex-col gap-8">
+      <section className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
         <div className="flex items-center">
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
             Property Analysis
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <TopIncomeChart data={propertyRanking} timeRange={timeRange} />
-          <NetIncomeChart data={propertyRanking} timeRange={timeRange} />
-          <ROIChart data={propertyRanking} timeRange={timeRange} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
+          <div className="min-h-0">
+            <TopIncomeChart data={propertyRanking} timeRange={timeRange} />
+          </div>
+          <div className="min-h-0">
+            <NetIncomeChart data={propertyRanking} timeRange={timeRange} />
+          </div>
+          <div className="lg:col-span-2 min-h-0">
+            <ROIChart data={propertyRanking} timeRange={timeRange} />
+          </div>
         </div>
       </section>
     </div>

@@ -1,10 +1,16 @@
 import {
   KPIMetrics,
   PropertyKPIMetrics,
-  CashFlowTrendData,
   ExpenseBreakdownData,
   PropertyRankingData,
+  ChartsResponse,
 } from "@/lib/db/analytics/queries";
+import { DataGranularity, AnyTimeSeriesData } from "@/lib/types/granularity";
+import { ApiChartsResponse } from "@/lib/types/api-dtos";
+import {
+  transformApiChartsResponse,
+  DataTransformationError
+} from "@/lib/utils/dataTransform";
 
 class AnalyticsServiceError extends Error {
   constructor(public message: string, public status?: number, public details?: unknown) {
@@ -14,18 +20,38 @@ class AnalyticsServiceError extends Error {
 }
 
 const API_BASE = '/api/analytics';
+const DEFAULT_TIMEOUT = 10000; // 10 seconds
+const MAX_RETRIES = 2;
 
 async function handleApiResponse<T>(response: Response): Promise<T> {
-  const data = await response.json();
-  
-  if (!response.ok) {
+  let data;
+
+  try {
+    data = await response.json();
+  } catch (parseError) {
     throw new AnalyticsServiceError(
-      data.error || `API request failed with status ${response.status}`,
+      `Failed to parse response as JSON: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`,
       response.status,
-      data.details
+      { parseError, responseText: await response.text().catch(() => 'Unable to read response text') }
     );
   }
-  
+
+  if (!response.ok) {
+    const errorMessage = data.error || `API request failed with status ${response.status}`;
+    const statusText = response.statusText || 'Unknown error';
+
+    throw new AnalyticsServiceError(
+      `${errorMessage} (${statusText})`,
+      response.status,
+      {
+        originalError: data.error,
+        statusText,
+        details: data.details,
+        url: response.url
+      }
+    );
+  }
+
   return data;
 }
 
@@ -45,11 +71,75 @@ function buildQueryString(params: Record<string, unknown>): string {
   return searchParams.toString();
 }
 
+async function makeResilientApiCall(
+  url: string,
+  options: RequestInit = {},
+  timeout: number = DEFAULT_TIMEOUT,
+  retries: number = MAX_RETRIES
+): Promise<Response> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      const isLastAttempt = attempt === retries;
+      const isAbortError = error instanceof Error && error.name === 'AbortError';
+      const isNetworkError = error instanceof Error && (
+        error.message.includes('fetch') ||
+        error.message.includes('network') ||
+        error.message.includes('Failed to fetch')
+      );
+
+      if (isAbortError) {
+        const timeoutError = new AnalyticsServiceError(
+          `Request timeout after ${timeout}ms`,
+          408,
+          { attempt: attempt + 1, maxRetries: retries + 1 }
+        );
+
+        if (isLastAttempt) {
+          throw timeoutError;
+        }
+
+        console.warn(`Request timeout on attempt ${attempt + 1}, retrying...`);
+        continue;
+      }
+
+      if (isNetworkError && !isLastAttempt) {
+        console.warn(`Network error on attempt ${attempt + 1}, retrying...`, error);
+        // Exponential backoff: wait 1s, then 2s, then 4s
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        continue;
+      }
+
+      // If not a retryable error or last attempt, throw
+      throw new AnalyticsServiceError(
+        error instanceof Error ? error.message : 'Unknown network error',
+        undefined,
+        { attempt: attempt + 1, maxRetries: retries + 1, originalError: error }
+      );
+    }
+  }
+
+  // This should never be reached
+  throw new AnalyticsServiceError('Unexpected error in makeResilientApiCall');
+}
+
 export interface AnalyticsFilters {
   propertyId?: string;
   dateFrom?: Date;
   dateTo?: Date;
-  monthsBack?: number;
+  monthsBack?: number | null; // null for full history
+  granularity?: DataGranularity;
+  timeRange?: string; // Finance time range identifier
 }
 
 export interface KPIResponse {
@@ -57,10 +147,7 @@ export interface KPIResponse {
   properties: PropertyKPIMetrics[];
 }
 
-export interface ChartsResponse {
-  cashFlowTrend?: CashFlowTrendData[];
-  expenseBreakdown?: ExpenseBreakdownData[];
-}
+// Note: ChartsResponse is now imported from queries.ts
 
 export interface PropertyComparisonResponse {
   propertyRanking: PropertyRankingData[];
@@ -86,7 +173,7 @@ export async function getAnalyticsKPIs(
     const queryString = buildQueryString(queryParams);
     const url = `${API_BASE}/kpis${queryString ? `?${queryString}` : ''}`;
     
-    const response = await fetch(url, {
+    const response = await makeResilientApiCall(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -117,24 +204,39 @@ export async function getAnalyticsCharts(
       propertyId: filters.propertyId,
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
-      monthsBack: filters.monthsBack || 12,
+      monthsBack: filters.monthsBack,
+      timeRange: filters.timeRange,
       chartType: filters.chartType,
+      granularity: filters.granularity,
     };
 
     const queryString = buildQueryString(queryParams);
     const url = `${API_BASE}/charts${queryString ? `?${queryString}` : ''}`;
-    
-    const response = await fetch(url, {
+
+    const response = await makeResilientApiCall(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
-    return await handleApiResponse<ChartsResponse>(response);
+
+    // Get raw API response
+    const apiResponse = await handleApiResponse<ApiChartsResponse>(response);
+
+    // Transform API response to internal format
+    const transformedResponse = transformApiChartsResponse(apiResponse);
+
+    return transformedResponse;
   } catch (error) {
     if (error instanceof AnalyticsServiceError) {
       throw error;
+    }
+    if (error instanceof DataTransformationError) {
+      throw new AnalyticsServiceError(
+        `Data transformation failed: ${error.message}`,
+        undefined,
+        { transformationError: error, originalData: error.originalData }
+      );
     }
     throw new AnalyticsServiceError(
       'Failed to fetch analytics charts',
@@ -166,7 +268,7 @@ export async function getPropertyComparison(
     const queryString = buildQueryString(queryParams);
     const url = `${API_BASE}/property-comparison${queryString ? `?${queryString}` : ''}`;
     
-    const response = await fetch(url, {
+    const response = await makeResilientApiCall(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -188,20 +290,33 @@ export async function getPropertyComparison(
 
 /**
  * Get cash flow trend data specifically
+ * Returns properly transformed data with Date objects
  */
 export async function getCashFlowTrend(
   filters: AnalyticsFilters = {}
-): Promise<CashFlowTrendData[]> {
+): Promise<AnyTimeSeriesData[]> {
   try {
     const chartData = await getAnalyticsCharts({
       ...filters,
       chartType: 'cashflow',
     });
-    
+
+    // Return weekly data if available and requested, otherwise monthly
+    if (filters.granularity === 'weekly' && chartData.weeklyCashFlowTrend) {
+      return chartData.weeklyCashFlowTrend;
+    }
+
     return chartData.cashFlowTrend || [];
   } catch (error) {
     if (error instanceof AnalyticsServiceError) {
       throw error;
+    }
+    if (error instanceof DataTransformationError) {
+      throw new AnalyticsServiceError(
+        `Failed to transform cash flow data: ${error.message}`,
+        undefined,
+        { transformationError: error, originalData: error.originalData }
+      );
     }
     throw new AnalyticsServiceError(
       'Failed to fetch cash flow trend',

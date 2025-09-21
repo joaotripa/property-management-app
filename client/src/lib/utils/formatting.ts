@@ -6,14 +6,14 @@ export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
+    maximumFractionDigits: amount === 0 ? 0 : 2,
   }).format(amount);
 }
 
 export function formatPercentage(
   percentage: number,
-  decimals: number = 1
 ): string {
-  return `${percentage.toFixed(decimals)}%`;
+  return `${Math.round(percentage)}%`;
 }
 
 export function formatNumber(
@@ -31,21 +31,17 @@ export function formatCompactNumber(number: number): string {
 }
 
 export function formatCompactCurrency(amount: number): string {
-  // For small amounts (less than 1000), show full currency
-  if (Math.abs(amount) < 1000) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  }
+  const absAmount = Math.abs(amount);
+  const maximumFractionDigits = absAmount === 0 ? 0 : (absAmount >= 1000 && absAmount < 1000000) ? 1 : 2;
 
-  // For amounts >= 1000, use compact notation
-  const formatted = new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-US", {
     notation: "compact",
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 2,
+    maximumFractionDigits,
   }).format(amount);
+}
 
-  return formatted;
+export function roundToTwoDecimals(value: number): number {
+  return Math.round(value * 100) / 100;
 }

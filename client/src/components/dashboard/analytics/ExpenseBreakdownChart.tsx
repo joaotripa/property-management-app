@@ -49,7 +49,7 @@ const COLORS = [
 export function ExpenseBreakdownChart({
   properties,
   initialData = [],
-  timeRange = "6m"
+  timeRange = "semester",
 }: ExpenseBreakdownChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
@@ -137,10 +137,12 @@ export function ExpenseBreakdownChart({
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Expense Breakdown</CardTitle>
+    <Card className="min-h-0">
+      <CardHeader className="pb-3 sm:pb-4 md:pb-5">
+        <div className="flex flex-col md:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
+          <CardTitle className="text-lg sm:text-xl md:text-2xl">
+            Expense Breakdown
+          </CardTitle>
           <PropertySelector
             properties={properties}
             selectedPropertyId={selectedPropertyId}
@@ -153,23 +155,24 @@ export function ExpenseBreakdownChart({
           category.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-0">
         {chartData.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             No expense data available for the selected period.
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 min-h-0">
             {/* Chart Section */}
-            <div className="flex-1 lg:flex-none lg:w-1/2">
-              <div className="relative h-[400px] w-full">
+            <div className="flex-1 xl:flex-none xl:w-1/2 min-h-0">
+              <div className="relative h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full">
                 <ChartContainer config={chartConfig} className="h-full w-full">
                   <PieChart>
                     <Pie
                       data={chartData}
                       dataKey="amount"
                       nameKey="categoryName"
-                      innerRadius={80}
+                      innerRadius="40%"
+                      outerRadius="75%"
                       paddingAngle={2}
                       strokeWidth={1}
                     >
@@ -195,14 +198,14 @@ export function ExpenseBreakdownChart({
                                 <tspan
                                   x={viewBox.cx}
                                   y={viewBox.cy}
-                                  className="text-muted-foreground text-3xl font-bold"
+                                  className="text-muted-foreground text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold"
                                 >
                                   {formatCompactCurrency(totalExpenses)}
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}
-                                  y={(viewBox.cy || 0) + 24}
-                                  className="text-muted-foreground"
+                                  y={(viewBox.cy || 0) + 20}
+                                  className="text-muted-foreground text-sm hidden sm:flex"
                                 >
                                   Total Expenses
                                 </tspan>
@@ -229,19 +232,19 @@ export function ExpenseBreakdownChart({
             </div>
 
             {/* Legend Section */}
-            <div className="flex-1 lg:w-1/2 space-y-4">
+            <div className="flex-1 xl:w-1/2 space-y-3 lg:space-y-4 min-h-0">
               <div className="flex items-center justify-between text-sm font-medium text-foreground border-b pb-2">
                 <span>Expense Categories</span>
                 <span className="text-muted-foreground">Amount</span>
               </div>
-              <div className="space-y-2 max-h-[350px] overflow-y-auto scrollbar-thin">
+              <div className="space-y-2 max-h-[200px] sm:max-h-[250px] lg:max-h-[300px] xl:max-h-[350px] overflow-y-auto scrollbar-thin">
                 {chartData.map((item) => (
                   <div
                     key={item.categoryName}
-                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/30 transition-colors border border-transparent hover:border-muted/50"
+                    className="flex items-center gap-3 lg:gap-4 p-2 lg:p-3 rounded-lg hover:bg-muted/30 transition-colors border border-transparent hover:border-muted/50"
                   >
                     <div
-                      className="w-4 h-4 rounded-full shadow-sm ring-2 ring-background"
+                      className="w-3 h-3 lg:w-4 lg:h-4 rounded-full shadow-sm ring-2 ring-background flex-shrink-0"
                       style={{ backgroundColor: item.fill }}
                     />
                     <div className="flex-1 min-w-0">
@@ -255,7 +258,7 @@ export function ExpenseBreakdownChart({
                           : "transactions"}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <div className="font-semibold text-sm">
                         {formatCurrency(item.amount)}
                       </div>

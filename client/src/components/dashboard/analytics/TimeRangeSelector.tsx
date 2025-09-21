@@ -16,7 +16,9 @@ interface TimeRangeSelectorProps {
   defaultValue?: string;
 }
 
-export function TimeRangeSelector({ defaultValue = "6m" }: TimeRangeSelectorProps) {
+export function TimeRangeSelector({
+  defaultValue = "semester",
+}: TimeRangeSelectorProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,16 +39,19 @@ export function TimeRangeSelector({ defaultValue = "6m" }: TimeRangeSelectorProp
     });
   };
 
-
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-muted-foreground">Time Range:</span>
+      <span className="text-sm font-medium text-muted-foreground">
+        Time Range:
+      </span>
       <Select
         value={currentTimeRange}
         onValueChange={handleTimeRangeChange}
         disabled={isPending}
       >
-        <SelectTrigger className={`w-32 h-8 ${isPending ? "opacity-70" : ""}`}>
+        <SelectTrigger
+          className={`w-36 sm:w-40 h-8 ${isPending ? "opacity-70" : ""}`}
+        >
           <SelectValue placeholder="Select range" />
         </SelectTrigger>
         <SelectContent>
@@ -63,6 +68,3 @@ export function TimeRangeSelector({ defaultValue = "6m" }: TimeRangeSelectorProp
     </div>
   );
 }
-
-// Re-export the shared utilities for backwards compatibility
-export { calculateDateRange, calculatePreviousPeriod } from "@/lib/utils/dateRange";

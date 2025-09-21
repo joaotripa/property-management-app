@@ -34,13 +34,12 @@ export interface AnalyticsPageData {
  */
 export async function getAnalyticsPageData(
   userId: string,
-  timeRange: string = "6m"
+  timeRange: string = "semester"
 ): Promise<AnalyticsPageData> {
   try {
     const { dateFrom, dateTo, monthsBack } = calculateDateRange(timeRange);
     const { dateFrom: prevDateFrom, dateTo: prevDateTo } = calculatePreviousPeriod(timeRange);
 
-    // Fetch all data in parallel for optimal performance
     const [
       kpis,
       previousKpis,

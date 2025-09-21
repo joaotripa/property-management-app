@@ -1,5 +1,6 @@
 
 import React from "react";
+import { formatPercentage } from "@/lib/utils/formatting";
 
 export function calculateTrend(
   current: number,
@@ -37,7 +38,7 @@ export function getTrendData(
     trend: trendData.trend,
     trendValue:
       trendData.percentage > 0
-        ? `${trendData.percentage.toFixed(1)}%`
+        ? formatPercentage(trendData.percentage)
         : undefined,
   };
 }
