@@ -68,8 +68,6 @@ export const transactionFormSchema = z.object({
       return date <= new Date();
     }, "Transaction date cannot be in the future"),
 
-  isRecurring: z.boolean().default(false),
-
   propertyId: z
     .string()
     .min(1, "Property is required")

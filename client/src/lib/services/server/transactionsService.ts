@@ -60,7 +60,6 @@ export async function getTransactionsPageData(
       amountMin: parseNumber(searchParams.amountMin),
       amountMax: parseNumber(searchParams.amountMax),
       categoryIds: typeof searchParams.categoryIds === 'string' ? searchParams.categoryIds.split(',') : undefined,
-      isRecurring: typeof searchParams.isRecurring === 'string' ? searchParams.isRecurring === 'true' : undefined,
       propertyId: typeof searchParams.propertyId === 'string' ? searchParams.propertyId : undefined,
       search: typeof searchParams.search === 'string' ? searchParams.search : undefined,
       sortBy: typeof searchParams.sortBy === 'string' ? (searchParams.sortBy as 'transactionDate' | 'amount' | 'type') : 'transactionDate',

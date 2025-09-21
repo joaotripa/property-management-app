@@ -122,6 +122,59 @@ export async function softDeleteTransaction(
 }
 
 /**
+ * Bulk soft delete multiple transactions
+ */
+export async function bulkSoftDeleteTransactions(
+  transactionIds: string[],
+  userId: string
+): Promise<{
+  deletedCount: number;
+  failedCount: number;
+  failedIds: string[];
+}> {
+  try {
+    // Validate that all transactions exist and belong to the user
+    const existingTransactions = await prisma.transaction.findMany({
+      where: {
+        id: { in: transactionIds },
+        userId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    const foundIds = existingTransactions.map(t => t.id);
+    const failedIds = transactionIds.filter(id => !foundIds.includes(id));
+
+    if (foundIds.length === 0) {
+      throw new Error('No valid transactions found or access denied');
+    }
+
+    // Perform bulk soft delete for valid transactions
+    const result = await prisma.transaction.updateMany({
+      where: {
+        id: { in: foundIds },
+        userId,
+        deletedAt: null,
+      },
+      data: {
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      deletedCount: result.count,
+      failedCount: failedIds.length,
+      failedIds,
+    };
+  } catch (error) {
+    console.error('Error bulk soft deleting transactions:', error);
+    throw new Error('Failed to bulk delete transactions');
+  }
+}
+
+/**
  * Restore a soft-deleted transaction
  */
 export async function restoreTransaction(

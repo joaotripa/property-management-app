@@ -72,7 +72,6 @@ export function useTransactions(
         amountMin: filterObj.amountMin?.toString(),
         amountMax: filterObj.amountMax?.toString(),
         categoryIds: filterObj.categoryIds?.join(','),
-        isRecurring: filterObj.isRecurring?.toString(),
         propertyId: filterObj.propertyId,
         search: filterObj.search,
         sortBy: filterObj.sortBy || 'transactionDate',

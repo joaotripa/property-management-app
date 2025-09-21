@@ -57,7 +57,6 @@ export function TransactionForm({
       description: defaultValues?.description || "",
       transactionDate:
         defaultValues?.transactionDate || format(new Date(), "yyyy-MM-dd"),
-      isRecurring: defaultValues?.isRecurring || false,
       propertyId: defaultValues?.propertyId || "",
       categoryId: defaultValues?.categoryId || "",
     },
@@ -72,7 +71,7 @@ export function TransactionForm({
         type: validatedData.type,
         description: validatedData.description?.trim() || undefined,
         transactionDate: new Date(validatedData.transactionDate),
-        isRecurring: validatedData.isRecurring,
+        isRecurring: false, // Default to false since we removed the UI
         propertyId: validatedData.propertyId,
         categoryId: validatedData.categoryId,
       };
@@ -162,37 +161,6 @@ export function TransactionForm({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="isRecurring"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Recurring Transaction</FormLabel>
-                      <Select
-                        onValueChange={(value) =>
-                          field.onChange(value === "true")
-                        }
-                        defaultValue={field.value?.toString()}
-                        disabled={isSubmitting}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="false">
-                            One-time transaction
-                          </SelectItem>
-                          <SelectItem value="true">
-                            Recurring transaction
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <div className="md:col-span-2">
                   <FormField

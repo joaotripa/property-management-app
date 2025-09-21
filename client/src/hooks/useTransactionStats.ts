@@ -42,7 +42,6 @@ export function useTransactionStats(
         amountMin: filters.amountMin?.toString(),
         amountMax: filters.amountMax?.toString(),
         categoryIds: filters.categoryIds?.join(','),
-        isRecurring: filters.isRecurring?.toString(),
         propertyId: filters.propertyId,
         search: filters.search,
       };

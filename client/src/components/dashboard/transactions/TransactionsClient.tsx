@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import {
   CategoryOption,
   PropertyOption,
@@ -15,6 +16,7 @@ import { TransactionsPagination } from "@/components/dashboard/transactions/Tran
 import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
 import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
 import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
+import { bulkDeleteTransactions } from "@/lib/services/client/transactionsService";
 
 interface TransactionsClientProps {
   transactions: Transaction[];
@@ -80,6 +82,34 @@ export function TransactionsClient({
     });
   };
 
+  const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
+    try {
+      const transactionIds = selectedTransactions.map(t => t.id);
+      const result = await bulkDeleteTransactions(transactionIds);
+
+      // Show success message
+      if (result.deletedCount > 0) {
+        toast.success(
+          `${result.deletedCount} transaction${result.deletedCount !== 1 ? 's' : ''} deleted successfully`
+        );
+      }
+
+      // Show warning for failed deletions
+      if (result.failedCount > 0) {
+        toast.warning(
+          `${result.failedCount} transaction${result.failedCount !== 1 ? 's' : ''} could not be deleted`
+        );
+      }
+
+      // Refresh the data
+      handleDataChange();
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+      toast.error("Failed to delete transactions. Please try again.");
+      throw error; // Re-throw to let dialog handle loading state
+    }
+  };
+
   return (
     <>
       {/* Transactions Table */}
@@ -90,10 +120,11 @@ export function TransactionsClient({
         <CardContent className="p-4">
           <TransactionTableWithActions
             transactions={transactions}
-            loading={false}
+            loading={isPending}
             showPropertyColumn={true}
             onEdit={(transaction) => openDialog("edit", transaction)}
             onDelete={(transaction) => openDialog("delete", transaction)}
+            onBulkDelete={handleBulkDelete}
             emptyMessage="No transactions found"
           />
 

@@ -45,9 +45,6 @@ export function usePropertyTransactions(
       if (filters.categoryIds && filters.categoryIds.length > 0) {
         params.append('categoryIds', filters.categoryIds.join(','));
       }
-      if (filters.isRecurring !== undefined) {
-        params.append('isRecurring', filters.isRecurring.toString());
-      }
       if (filters.search) {
         params.append('search', filters.search);
       }

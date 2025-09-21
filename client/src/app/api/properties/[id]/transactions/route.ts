@@ -70,11 +70,6 @@ export async function GET(
       filters.categoryIds = categoryIds.split(',').filter(Boolean);
     }
 
-    // Recurring filter
-    const isRecurring = searchParams.get('isRecurring');
-    if (isRecurring === 'true' || isRecurring === 'false') {
-      filters.isRecurring = isRecurring === 'true';
-    }
 
     // Search filter
     const search = searchParams.get('search');
@@ -102,7 +97,6 @@ export async function GET(
       amountMin: filters.amountMin,
       amountMax: filters.amountMax,
       categoryIds: filters.categoryIds,
-      isRecurring: filters.isRecurring,
       search: filters.search,
       sortBy: filters.sortBy,
       sortOrder: filters.sortOrder,

@@ -166,6 +166,51 @@ export async function deleteTransaction(id: string): Promise<{ message: string }
   }
 }
 
+export async function bulkDeleteTransactions(
+  transactionIds: string[]
+): Promise<{
+  message: string;
+  deletedCount: number;
+  failedCount: number;
+  failedIds: string[];
+}> {
+  try {
+    if (!Array.isArray(transactionIds) || transactionIds.length === 0) {
+      throw new TransactionsServiceError('Transaction IDs array is required and cannot be empty');
+    }
+
+    if (transactionIds.length > 100) {
+      throw new TransactionsServiceError('Cannot delete more than 100 transactions at once');
+    }
+
+    const response = await fetch('/api/transactions/bulk-delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transactionIds,
+      }),
+    });
+
+    return await handleApiResponse<{
+      message: string;
+      deletedCount: number;
+      failedCount: number;
+      failedIds: string[];
+    }>(response);
+  } catch (error) {
+    if (error instanceof TransactionsServiceError) {
+      throw error;
+    }
+    throw new TransactionsServiceError(
+      'Failed to bulk delete transactions',
+      undefined,
+      error
+    );
+  }
+}
+
 export async function getTransactionStats(
   filters: Partial<TransactionQueryInput> = {}
 ): Promise<TransactionStatsResponse> {

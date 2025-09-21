@@ -63,10 +63,6 @@ export async function getTransactions(
     };
   }
 
-  // Recurring filter
-  if (filters.isRecurring !== undefined) {
-    where.isRecurring = filters.isRecurring;
-  }
 
   // Search in description
   if (filters.search) {
@@ -254,7 +250,7 @@ export async function getPropertyTransactionStats(
         _count: true,
       }),
       prisma.transaction.count({ where }),
-      prisma.transaction.count({ where: { ...where, isRecurring: true } }),
+      Promise.resolve(0), // Removed recurring count
     ]);
 
     const totalIncome = Number(incomeAgg._sum.amount || 0);
@@ -328,9 +324,6 @@ export async function getTransactionStats(
     };
   }
 
-  if (filters.isRecurring !== undefined) {
-    where.isRecurring = filters.isRecurring;
-  }
 
   if (filters.search) {
     where.description = {
@@ -353,7 +346,7 @@ export async function getTransactionStats(
         _count: true,
       }),
       prisma.transaction.count({ where }),
-      prisma.transaction.count({ where: { ...where, isRecurring: true } }),
+      Promise.resolve(0), // Removed recurring count
     ]);
 
     const totalIncome = Number(incomeAgg._sum.amount || 0);

@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
       amountMin: searchParams.get("amountMin") ? parseFloat(searchParams.get("amountMin")!) : undefined,
       amountMax: searchParams.get("amountMax") ? parseFloat(searchParams.get("amountMax")!) : undefined,
       categoryIds: searchParams.get("categoryIds")?.split(",").filter(Boolean),
-      isRecurring: searchParams.get("isRecurring") === "true" ? true : searchParams.get("isRecurring") === "false" ? false : undefined,
       propertyId: searchParams.get("propertyId") || undefined,
       search: searchParams.get("search") || undefined,
       sortBy: (searchParams.get("sortBy") || "transactionDate") as "transactionDate" | "amount" | "type" | "category",

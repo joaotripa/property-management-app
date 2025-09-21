@@ -51,8 +51,6 @@ export interface TransactionFilters {
   // Category filter
   categoryIds?: string[];
   
-  // Recurring filter
-  isRecurring?: boolean;
   
   // Property filter (for global view)
   propertyId?: string;
@@ -73,7 +71,6 @@ export interface DatabaseTransactionFilters {
   amountMin?: number;
   amountMax?: number;
   categoryIds?: string[];
-  isRecurring?: boolean;
   propertyId?: string;
   search?: string;
   sortBy?: 'transactionDate' | 'amount' | 'type' | 'category';
