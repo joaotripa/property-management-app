@@ -63,9 +63,17 @@ export function calculateDateRange(timeRange: string): {
 
   if (range?.value === 'full') {
     return {
-      dateFrom: new Date(1900, 0, 1), 
+      dateFrom: new Date(1900, 0, 1),
       dateTo: today,
       monthsBack: null,
+    };
+  }
+
+  if (range?.value === 'current') {
+    return {
+      dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
+      dateTo: today,
+      monthsBack: 1,
     };
   }
 

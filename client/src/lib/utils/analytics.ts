@@ -15,7 +15,7 @@ export function calculateTrend(
 
   const percentageChange = ((current - previous) / Math.abs(previous)) * 100;
 
-  if (Math.abs(percentageChange) < 0.1) {
+  if (Math.abs(percentageChange) < 1) {
     return { trend: "neutral", percentage: 0 };
   }
 

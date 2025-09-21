@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { TransactionType } from "@prisma/client";
 import { WeeklyData, MonthlyData } from "@/lib/types/granularity";
 import { roundToTwoDecimals } from "@/lib/utils/formatting";
+import { getAggregatedMonthlyMetrics, getTotalMetrics, getPropertyMetrics } from "@/lib/db/monthlyMetrics/queries";
 
 export interface KPIMetrics {
   totalProperties: number;
@@ -11,7 +12,7 @@ export interface KPIMetrics {
   netIncome: number;
   cashOnCashReturn: number;
   expenseToIncomeRatio: number;
-  averageROI: number;
+  protfolioROI: number;
   totalPortfolioValue: number;
   totalInvestment: number;
 }
@@ -66,7 +67,7 @@ export interface ChartsResponse {
 }
 
 /**
- * Get comprehensive KPI metrics for a user's portfolio
+ * Get comprehensive KPI metrics for a user's portfolio using monthly metrics for better performance
  */
 export async function getPortfolioKPIs(
   userId: string,
@@ -81,22 +82,9 @@ export async function getPortfolioKPIs(
       ...(propertyId && { id: propertyId }),
     };
 
-    const transactionWhere: Prisma.TransactionWhereInput = {
-      userId,
-      deletedAt: null,
-      ...(propertyId && { propertyId }),
-      ...(dateFrom || dateTo) && {
-        transactionDate: {
-          ...(dateFrom && { gte: dateFrom }),
-          ...(dateTo && { lte: dateTo }),
-        },
-      },
-    };
-
     const [
       properties,
-      incomeAgg,
-      expenseAgg,
+      metricsData,
       propertyStats,
     ] = await Promise.all([
       prisma.property.findMany({
@@ -109,14 +97,7 @@ export async function getPortfolioKPIs(
           rent: true,
         },
       }),
-      prisma.transaction.aggregate({
-        where: { ...transactionWhere, type: TransactionType.INCOME },
-        _sum: { amount: true },
-      }),
-      prisma.transaction.aggregate({
-        where: { ...transactionWhere, type: TransactionType.EXPENSE },
-        _sum: { amount: true },
-      }),
+      getTotalMetrics(userId, propertyId, dateFrom, dateTo),
       prisma.property.aggregate({
         where: propertyWhere,
         _sum: {
@@ -126,21 +107,16 @@ export async function getPortfolioKPIs(
       }),
     ]);
 
-    const totalIncome = Number(incomeAgg._sum.amount || 0);
-    const totalExpenses = Number(expenseAgg._sum.amount || 0);
-    const netIncome = totalIncome - totalExpenses;
+    const { totalIncome, totalExpenses, netIncome } = metricsData;
     const totalInvestment = Number(propertyStats._sum.purchasePrice || 0);
     const totalPortfolioValue = Number(propertyStats._sum.marketValue || totalInvestment);
 
-    // Calculate Cash-on-Cash Return (annual net income / total investment)
     const cashOnCashReturn = totalInvestment > 0 ? roundToTwoDecimals((netIncome / totalInvestment) * 100) : 0;
 
-    // Calculate Expense-to-Income Ratio
     const expenseToIncomeRatio = totalIncome > 0 ? roundToTwoDecimals((totalExpenses / totalIncome) * 100) : 0;
 
-    // Calculate average ROI
-    const averageROI = totalInvestment > 0
-      ? roundToTwoDecimals(((totalPortfolioValue - totalInvestment) / totalInvestment) * 100)
+    const protfolioROI = totalInvestment > 0
+      ? roundToTwoDecimals((netIncome / totalInvestment) * 100)
       : 0;
 
     return {
@@ -150,7 +126,7 @@ export async function getPortfolioKPIs(
       netIncome,
       cashOnCashReturn,
       expenseToIncomeRatio,
-      averageROI,
+      protfolioROI,
       totalPortfolioValue,
       totalInvestment,
     };
@@ -161,7 +137,7 @@ export async function getPortfolioKPIs(
 }
 
 /**
- * Get KPI metrics for individual properties
+ * Get KPI metrics for individual properties using monthly metrics for better performance
  */
 export async function getPropertyKPIs(
   userId: string,
@@ -176,55 +152,45 @@ export async function getPropertyKPIs(
       ...(propertyId && { id: propertyId }),
     };
 
-    const properties = await prisma.property.findMany({
-      where: propertyWhere,
-      select: {
-        id: true,
-        name: true,
-        purchasePrice: true,
-        marketValue: true,
-        rent: true,
-        transactions: {
-          where: {
-            deletedAt: null,
-            ...(dateFrom || dateTo) && {
-              transactionDate: {
-                ...(dateFrom && { gte: dateFrom }),
-                ...(dateTo && { lte: dateTo }),
-              },
-            },
-          },
-          select: {
-            amount: true,
-            type: true,
-          },
+    const [properties, propertyMetrics] = await Promise.all([
+      prisma.property.findMany({
+        where: propertyWhere,
+        select: {
+          id: true,
+          name: true,
+          purchasePrice: true,
+          marketValue: true,
+          rent: true,
         },
-      },
-    });
+      }),
+      getPropertyMetrics(userId, propertyId, dateFrom, dateTo),
+    ]);
+
+    const metricsMap = new Map(
+      propertyMetrics.map(metric => [metric.propertyId, metric])
+    );
 
     return properties.map((property) => {
-      const totalIncome = property.transactions
-        .filter(t => t.type === TransactionType.INCOME)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const metrics = metricsMap.get(property.id) || {
+        totalIncome: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+      };
 
-      const totalExpenses = property.transactions
-        .filter(t => t.type === TransactionType.EXPENSE)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      const netIncome = totalIncome - totalExpenses;
       const purchasePrice = Number(property.purchasePrice || 0);
       const marketValue = Number(property.marketValue || purchasePrice);
       const monthlyRent = Number(property.rent);
 
-      const cashOnCashReturn = purchasePrice > 0 ? roundToTwoDecimals((netIncome / purchasePrice) * 100) : 0;
-      const roi = purchasePrice > 0 ? roundToTwoDecimals(((marketValue - purchasePrice) / purchasePrice) * 100) : 0;
+      const cashOnCashReturn = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
+      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
 
       return {
         propertyId: property.id,
         propertyName: property.name,
-        totalIncome,
-        totalExpenses,
-        netIncome,
+        totalIncome: metrics.totalIncome,
+        totalExpenses: metrics.totalExpenses,
+        netIncome: metrics.netIncome,
         cashOnCashReturn,
         roi,
         purchasePrice,
@@ -245,12 +211,10 @@ function calculateISOWeek(date: Date): { weekNum: number; year: number; weekStar
   const tempDate = new Date(date.getTime());
   tempDate.setHours(0, 0, 0, 0);
 
-  // ISO week calculation
   tempDate.setDate(tempDate.getDate() + 3 - (tempDate.getDay() + 6) % 7);
   const week1 = new Date(tempDate.getFullYear(), 0, 4);
   const weekNum = 1 + Math.round(((tempDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
 
-  // Get Monday of the week (week start)
   const weekStart = new Date(date);
   const dayOfWeek = (weekStart.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
   weekStart.setDate(weekStart.getDate() - dayOfWeek);
@@ -365,7 +329,6 @@ export async function getCashFlowTrendWeekly(
       }))
       .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
 
-    // Calculate cumulative net income
     let cumulativeTotal = 0;
     const result: WeeklyCashFlowTrendData[] = sortedData.map(item => {
       cumulativeTotal += item.netIncome;
@@ -394,80 +357,37 @@ export async function getCashFlowTrend(
   monthsBack: number | null = 12
 ): Promise<CashFlowTrendData[]> {
   try {
-    let transactionWhere: Prisma.TransactionWhereInput = {
-      userId,
-      deletedAt: null,
-      ...(propertyId && { propertyId }),
-    };
+    let dateFrom: Date | undefined;
+    let dateTo: Date | undefined;
 
-    // Add date filter only if monthsBack is specified (not null for full history)
     if (monthsBack !== null) {
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - monthsBack);
-      startDate.setDate(1);
-
-      transactionWhere = {
-        ...transactionWhere,
-        transactionDate: { gte: startDate },
-      };
+      const now = new Date();
+      dateFrom = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+      dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
 
-    const transactions = await prisma.transaction.findMany({
-      where: transactionWhere,
-      select: {
-        amount: true,
-        type: true,
-        transactionDate: true,
-      },
-      orderBy: { transactionDate: 'asc' },
+    const monthlyMetrics = await getAggregatedMonthlyMetrics(
+      userId,
+      propertyId,
+      dateFrom,
+      dateTo
+    );
+
+    const sortedData = monthlyMetrics.map(metric => {
+      const periodStart = new Date(metric.year, metric.month - 1, 1);
+      return {
+        granularity: 'monthly' as const,
+        periodStart,
+        period: metric.period,
+        income: metric.totalIncome,
+        expenses: metric.totalExpenses,
+        netIncome: metric.netIncome,
+        cumulativeNetIncome: 0, 
+        month: metric.period,
+        year: metric.year,
+        monthNum: metric.month,
+      };
     });
-
-    // Group by year-month
-    const monthlyData = new Map<string, { income: number; expenses: number; year: number; month: number }>();
-
-    transactions.forEach((transaction) => {
-      const date = new Date(transaction.transactionDate);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const key = `${year}-${month.toString().padStart(2, '0')}`;
-
-      if (!monthlyData.has(key)) {
-        monthlyData.set(key, { income: 0, expenses: 0, year, month });
-      }
-
-      const data = monthlyData.get(key)!;
-      const amount = Number(transaction.amount);
-      
-      if (transaction.type === TransactionType.INCOME) {
-        data.income += amount;
-      } else {
-        data.expenses += amount;
-      }
-    });
-
-    // Convert to array and sort
-    const sortedData = Array.from(monthlyData.entries())
-      .map(([key, data]) => {
-        const periodStart = new Date(data.year, data.month - 1, 1);
-        return {
-          // MonthlyData interface properties
-          granularity: 'monthly' as const,
-          periodStart,
-          period: key,
-          income: data.income,
-          expenses: data.expenses,
-          netIncome: data.income - data.expenses,
-          cumulativeNetIncome: 0, // Will be calculated below
-          // CashFlowTrendData specific properties
-          month: key,
-          year: data.year,
-          monthNum: data.month,
-        };
-      })
-      .sort((a, b) => {
-        if (a.year !== b.year) return a.year - b.year;
-        return a.monthNum - b.monthNum;
-      });
 
     // Calculate cumulative net income
     let cumulativeTotal = 0;
@@ -520,7 +440,6 @@ export async function getExpenseBreakdown(
       },
     });
 
-    // Group by category
     const categoryData = new Map<string, { amount: number; count: number }>();
     let totalExpenses = 0;
 
@@ -538,7 +457,6 @@ export async function getExpenseBreakdown(
       data.count += 1;
     });
 
-    // Convert to array with percentages
     const result: ExpenseBreakdownData[] = Array.from(categoryData.entries())
       .map(([categoryName, data]) => ({
         categoryName,
@@ -557,7 +475,7 @@ export async function getExpenseBreakdown(
 
 
 /**
- * Get property profitability ranking
+ * Get property profitability ranking using monthly metrics for better performance
  */
 export async function getPropertyRanking(
   userId: string,
@@ -565,54 +483,44 @@ export async function getPropertyRanking(
   dateTo?: Date
 ): Promise<PropertyRankingData[]> {
   try {
-    const properties = await prisma.property.findMany({
-      where: {
-        userId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        purchasePrice: true,
-        marketValue: true,
-        transactions: {
-          where: {
-            deletedAt: null,
-            ...(dateFrom || dateTo) && {
-              transactionDate: {
-                ...(dateFrom && { gte: dateFrom }),
-                ...(dateTo && { lte: dateTo }),
-              },
-            },
-          },
-          select: {
-            amount: true,
-            type: true,
-          },
+    const [properties, propertyMetrics] = await Promise.all([
+      prisma.property.findMany({
+        where: {
+          userId,
+          deletedAt: null,
         },
-      },
-    });
+        select: {
+          id: true,
+          name: true,
+          purchasePrice: true,
+          marketValue: true,
+        },
+      }),
+      getPropertyMetrics(userId, undefined, dateFrom, dateTo),
+    ]);
+
+    // Create a map for quick lookup of metrics by propertyId
+    const metricsMap = new Map(
+      propertyMetrics.map(metric => [metric.propertyId, metric])
+    );
 
     const result: PropertyRankingData[] = properties.map((property) => {
-      const totalIncome = property.transactions
-        .filter(t => t.type === TransactionType.INCOME)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const metrics = metricsMap.get(property.id) || {
+        totalIncome: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        transactionCount: 0,
+      };
 
-      const totalExpenses = property.transactions
-        .filter(t => t.type === TransactionType.EXPENSE)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      const netIncome = totalIncome - totalExpenses;
       const purchasePrice = Number(property.purchasePrice || 0);
-      const marketValue = Number(property.marketValue || purchasePrice);
-      const roi = purchasePrice > 0 ? roundToTwoDecimals(((marketValue - purchasePrice) / purchasePrice) * 100) : 0;
+      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
 
       return {
         propertyId: property.id,
         propertyName: property.name,
-        netIncome,
-        totalIncome,
-        totalExpenses,
+        netIncome: metrics.netIncome,
+        totalIncome: metrics.totalIncome,
+        totalExpenses: metrics.totalExpenses,
         roi,
       };
     }).sort((a, b) => b.netIncome - a.netIncome);

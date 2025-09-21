@@ -77,9 +77,9 @@ export default async function AnalyticsPage({
         ),
       },
       {
-        title: "Average ROI",
-        value: formatPercentage(kpis.averageROI || 0),
-        ...getTrendData(kpis.averageROI || 0, previousKpis.averageROI),
+        title: "Portfolio ROI",
+        value: formatPercentage(kpis.protfolioROI || 0),
+        ...getTrendData(kpis.protfolioROI || 0, previousKpis.protfolioROI),
       },
     ];
   };
