@@ -253,7 +253,7 @@ export async function getPropertyComparison(
   filters: {
     dateFrom?: Date;
     dateTo?: Date;
-    sortBy?: 'netIncome' | 'roi' | 'totalIncome' | 'totalExpenses';
+    sortBy?: 'cashFlow' | 'roi' | 'totalIncome' | 'totalExpenses';
     includeKPIs?: boolean;
   } = {}
 ): Promise<PropertyComparisonResponse> {
@@ -261,7 +261,7 @@ export async function getPropertyComparison(
     const queryParams = {
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
-      sortBy: filters.sortBy || 'netIncome',
+      sortBy: filters.sortBy || 'cashFlow',
       includeKPIs: filters.includeKPIs || false,
     };
 

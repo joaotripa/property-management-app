@@ -131,7 +131,7 @@ model MonthlyMetrics {
   month            Int      // 1-12
   totalIncome      Decimal  @default(0) @map("total_income") @db.Decimal(12, 2)
   totalExpenses    Decimal  @default(0) @map("total_expenses") @db.Decimal(12, 2)
-  netIncome        Decimal  @default(0) @map("net_income") @db.Decimal(12, 2)
+  cashFlow        Decimal  @default(0) @map("cash_flow") @db.Decimal(12, 2)
   transactionCount Int      @default(0) @map("transaction_count")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)

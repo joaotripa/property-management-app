@@ -4,7 +4,7 @@ import { Transaction, CategoryOption, PropertyOption } from "@/types/transaction
 interface TransactionStats {
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
   recurringCount: number;
 }

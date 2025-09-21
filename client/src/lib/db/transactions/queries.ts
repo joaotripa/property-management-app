@@ -223,7 +223,7 @@ export async function getPropertyTransactionStats(
 ): Promise<{
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
   recurringCount: number;
 }> {
@@ -263,7 +263,7 @@ export async function getPropertyTransactionStats(
     return {
       totalIncome,
       totalExpenses,
-      netIncome: totalIncome - totalExpenses,
+      cashFlow: totalIncome - totalExpenses,
       transactionCount: totalCount,
       recurringCount,
     };
@@ -283,7 +283,7 @@ export async function getTransactionStats(
 ): Promise<{
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
   recurringCount: number;
 }> {
@@ -362,7 +362,7 @@ export async function getTransactionStats(
     return {
       totalIncome,
       totalExpenses,
-      netIncome: totalIncome - totalExpenses,
+      cashFlow: totalIncome - totalExpenses,
       transactionCount: totalCount,
       recurringCount,
     };

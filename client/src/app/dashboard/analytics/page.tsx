@@ -14,7 +14,7 @@ import { getTrendData } from "@/lib/utils/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
 import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
-import { NetIncomeChart } from "@/components/dashboard/analytics/NetIncomeChart";
+import { CashFlowComparisonChart } from "@/components/dashboard/analytics/CashFlowComparisonChart";
 import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
 
 interface AnalyticsPageProps {
@@ -65,8 +65,8 @@ export default async function AnalyticsPage({
       },
       {
         title: "Cash Flow",
-        value: formatCompactCurrency(kpis.netIncome || 0),
-        ...getTrendData(kpis.netIncome || 0, previousKpis.netIncome),
+        value: formatCompactCurrency(kpis.cashFlow || 0),
+        ...getTrendData(kpis.cashFlow || 0, previousKpis.cashFlow),
       },
       {
         title: "Expense/Income Ratio",
@@ -149,7 +149,10 @@ export default async function AnalyticsPage({
             <TopIncomeChart data={propertyRanking} timeRange={timeRange} />
           </div>
           <div className="min-h-0">
-            <NetIncomeChart data={propertyRanking} timeRange={timeRange} />
+            <CashFlowComparisonChart
+              data={propertyRanking}
+              timeRange={timeRange}
+            />
           </div>
           <div className="lg:col-span-2 min-h-0">
             <ROIChart data={propertyRanking} timeRange={timeRange} />

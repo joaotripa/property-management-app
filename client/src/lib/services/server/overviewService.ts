@@ -12,7 +12,7 @@ import { PropertyOption } from "@/types/transactions";
 interface OverviewStats {
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
 }
 

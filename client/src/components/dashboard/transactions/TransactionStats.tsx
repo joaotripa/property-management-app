@@ -7,7 +7,7 @@ import { formatCompactCurrency } from "@/lib/utils/formatting";
 interface TransactionStats {
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
   recurringCount: number;
 }
@@ -28,7 +28,7 @@ const TransactionStats = ({ stats }: TransactionStatsProps) => {
     },
     {
       title: "Current Month Cash Flow",
-      value: formatCompactCurrency(stats.netIncome),
+      value: formatCompactCurrency(stats.cashFlow),
     },
   ];
 

@@ -8,8 +8,8 @@ export type DataGranularity = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface BaseTimeSeriesData {
   income: number;
   expenses: number;
-  netIncome: number;
-  cumulativeNetIncome: number; 
+  cashFlow: number;
+  cumulativeCashFlow: number; 
 }
 
 export interface TimeSeriesData<T extends DataGranularity> extends BaseTimeSeriesData {

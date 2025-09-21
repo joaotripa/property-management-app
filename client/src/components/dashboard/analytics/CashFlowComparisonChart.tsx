@@ -21,17 +21,17 @@ import { getPropertyComparison } from "@/lib/services/client/analyticsService";
 import { calculateDateRange } from "@/lib/utils/dateRange";
 import { useState, useEffect, useCallback } from "react";
 
-interface NetIncomeChartProps {
+interface CashFlowComparisonChartProps {
   data?: PropertyRankingData[];
   timeRange?: string;
 }
 
 const chartConfig = {
-  netIncome: {
+  cashFlow: {
     label: "Net Income",
     color: "var(--color-primary)",
   },
-  negativeNetIncome: {
+  negativeCashFlow: {
     label: "Net Loss",
     color: "var(--color-destructive)",
   },
@@ -41,8 +41,13 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
   return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
 }
 
-export function NetIncomeChart({ data = [], timeRange = "semester" }: NetIncomeChartProps) {
-  const [chartData, setChartData] = useState<(PropertyRankingData & { shortName: string; fill: string })[]>([]);
+export function CashFlowComparisonChart({
+  data = [],
+  timeRange = "semester",
+}: CashFlowComparisonChartProps) {
+  const [chartData, setChartData] = useState<
+    (PropertyRankingData & { shortName: string; fill: string })[]
+  >([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -52,20 +57,20 @@ export function NetIncomeChart({ data = [], timeRange = "semester" }: NetIncomeC
       const result = await getPropertyComparison({
         dateFrom,
         dateTo,
-        sortBy: 'netIncome',
+        sortBy: "cashFlow",
       });
 
       const sortedData = [...result.propertyRanking]
-        .sort((a, b) => b.netIncome - a.netIncome)
+        .sort((a, b) => b.cashFlow - a.cashFlow)
         .slice(0, 8);
 
       const transformedData = sortedData.map((item) => ({
         ...item,
         shortName: truncatePropertyName(item.propertyName),
         fill:
-          item.netIncome >= 0
-            ? chartConfig.netIncome.color
-            : chartConfig.negativeNetIncome.color,
+          item.cashFlow >= 0
+            ? chartConfig.cashFlow.color
+            : chartConfig.negativeCashFlow.color,
       }));
 
       setChartData(transformedData);
@@ -79,17 +84,20 @@ export function NetIncomeChart({ data = [], timeRange = "semester" }: NetIncomeC
   }, [fetchData]);
 
   // Use local data or initial data
-  const displayData = chartData.length > 0 ? chartData : [...data]
-    .sort((a, b) => b.netIncome - a.netIncome)
-    .slice(0, 8)
-    .map((item) => ({
-      ...item,
-      shortName: truncatePropertyName(item.propertyName),
-      fill:
-        item.netIncome >= 0
-          ? chartConfig.netIncome.color
-          : chartConfig.negativeNetIncome.color,
-    }));
+  const displayData =
+    chartData.length > 0
+      ? chartData
+      : [...data]
+          .sort((a, b) => b.cashFlow - a.cashFlow)
+          .slice(0, 8)
+          .map((item) => ({
+            ...item,
+            shortName: truncatePropertyName(item.propertyName),
+            fill:
+              item.cashFlow >= 0
+                ? chartConfig.cashFlow.color
+                : chartConfig.negativeCashFlow.color,
+          }));
 
   return (
     <Card className="min-h-0">
@@ -110,7 +118,10 @@ export function NetIncomeChart({ data = [], timeRange = "semester" }: NetIncomeC
             No net income data available.
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full">
+          <ChartContainer
+            config={chartConfig}
+            className="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={displayData}
@@ -152,7 +163,7 @@ export function NetIncomeChart({ data = [], timeRange = "semester" }: NetIncomeC
                   }
                 />
 
-                <Bar dataKey="netIncome" radius={8} barSize={40} />
+                <Bar dataKey="cashFlow" radius={8} barSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>

@@ -19,7 +19,6 @@ export function TopPropertiesCard({
   topProperties,
   previousTopProperties,
 }: TopPropertiesCardProps) {
-
   return (
     <Card>
       <CardHeader>
@@ -53,8 +52,8 @@ export function TopPropertiesCard({
               );
 
               const trendData = getTrendData(
-                property.netIncome,
-                previousProperty?.netIncome
+                property.cashFlow,
+                previousProperty?.cashFlow
               );
 
               return (
@@ -77,7 +76,7 @@ export function TopPropertiesCard({
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">
-                      {formatCompactCurrency(property.netIncome)}
+                      {formatCompactCurrency(property.cashFlow)}
                     </div>
                     <div className="flex items-center justify-end gap-1 text-sm">
                       {trendData.trendValue ? (

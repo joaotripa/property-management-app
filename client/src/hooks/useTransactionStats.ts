@@ -8,7 +8,7 @@ import { TransactionQueryInput } from "@/lib/validations/transaction";
 interface TransactionStats {
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
 }
 

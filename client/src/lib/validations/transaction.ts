@@ -215,7 +215,7 @@ export const transactionListResponseSchema = z.object({
 export const transactionStatsResponseSchema = z.object({
   totalIncome: z.number(),
   totalExpenses: z.number(),
-  netIncome: z.number(),
+  cashFlow: z.number(),
   transactionCount: z.number(),
 });
 

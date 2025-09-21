@@ -9,7 +9,7 @@ export interface KPIMetrics {
   totalProperties: number;
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   cashOnCashReturn: number;
   expenseToIncomeRatio: number;
   protfolioROI: number;
@@ -22,7 +22,7 @@ export interface PropertyKPIMetrics {
   propertyName: string;
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   cashOnCashReturn: number;
   roi: number;
   purchasePrice: number;
@@ -54,7 +54,7 @@ export interface ExpenseBreakdownData {
 export interface PropertyRankingData {
   propertyId: string;
   propertyName: string;
-  netIncome: number;
+  cashFlow: number;
   totalIncome: number;
   totalExpenses: number;
   roi: number;
@@ -107,23 +107,23 @@ export async function getPortfolioKPIs(
       }),
     ]);
 
-    const { totalIncome, totalExpenses, netIncome } = metricsData;
+    const { totalIncome, totalExpenses, cashFlow } = metricsData;
     const totalInvestment = Number(propertyStats._sum.purchasePrice || 0);
     const totalPortfolioValue = Number(propertyStats._sum.marketValue || totalInvestment);
 
-    const cashOnCashReturn = totalInvestment > 0 ? roundToTwoDecimals((netIncome / totalInvestment) * 100) : 0;
+    const cashOnCashReturn = totalInvestment > 0 ? roundToTwoDecimals((cashFlow / totalInvestment) * 100) : 0;
 
     const expenseToIncomeRatio = totalIncome > 0 ? roundToTwoDecimals((totalExpenses / totalIncome) * 100) : 0;
 
     const protfolioROI = totalInvestment > 0
-      ? roundToTwoDecimals((netIncome / totalInvestment) * 100)
+      ? roundToTwoDecimals((cashFlow / totalInvestment) * 100)
       : 0;
 
     return {
       totalProperties: properties.length,
       totalIncome,
       totalExpenses,
-      netIncome,
+      cashFlow,
       cashOnCashReturn,
       expenseToIncomeRatio,
       protfolioROI,
@@ -174,7 +174,7 @@ export async function getPropertyKPIs(
       const metrics = metricsMap.get(property.id) || {
         totalIncome: 0,
         totalExpenses: 0,
-        netIncome: 0,
+        cashFlow: 0,
         transactionCount: 0,
       };
 
@@ -182,15 +182,15 @@ export async function getPropertyKPIs(
       const marketValue = Number(property.marketValue || purchasePrice);
       const monthlyRent = Number(property.rent);
 
-      const cashOnCashReturn = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
-      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
+      const cashOnCashReturn = purchasePrice > 0 ? roundToTwoDecimals((metrics.cashFlow / purchasePrice) * 100) : 0;
+      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.cashFlow / purchasePrice) * 100) : 0;
 
       return {
         propertyId: property.id,
         propertyName: property.name,
         totalIncome: metrics.totalIncome,
         totalExpenses: metrics.totalExpenses,
-        netIncome: metrics.netIncome,
+        cashFlow: metrics.cashFlow,
         cashOnCashReturn,
         roi,
         purchasePrice,
@@ -320,8 +320,8 @@ export async function getCashFlowTrendWeekly(
         period: key,
         income: data.income,
         expenses: data.expenses,
-        netIncome: data.income - data.expenses,
-        cumulativeNetIncome: 0, 
+        cashFlow: data.income - data.expenses,
+        cumulativeCashFlow: 0, 
         week: key,
         weekStart: data.weekStart,
         year: data.year,
@@ -331,10 +331,10 @@ export async function getCashFlowTrendWeekly(
 
     let cumulativeTotal = 0;
     const result: WeeklyCashFlowTrendData[] = sortedData.map(item => {
-      cumulativeTotal += item.netIncome;
+      cumulativeTotal += item.cashFlow;
       return {
         ...item,
-        cumulativeNetIncome: roundToTwoDecimals(cumulativeTotal),
+        cumulativeCashFlow: roundToTwoDecimals(cumulativeTotal),
       };
     });
 
@@ -381,8 +381,8 @@ export async function getCashFlowTrend(
         period: metric.period,
         income: metric.totalIncome,
         expenses: metric.totalExpenses,
-        netIncome: metric.netIncome,
-        cumulativeNetIncome: 0, 
+        cashFlow: metric.cashFlow,
+        cumulativeCashFlow: 0, 
         month: metric.period,
         year: metric.year,
         monthNum: metric.month,
@@ -392,10 +392,10 @@ export async function getCashFlowTrend(
     // Calculate cumulative net income
     let cumulativeTotal = 0;
     const result: CashFlowTrendData[] = sortedData.map(item => {
-      cumulativeTotal += item.netIncome;
+      cumulativeTotal += item.cashFlow;
       return {
         ...item,
-        cumulativeNetIncome: roundToTwoDecimals(cumulativeTotal),
+        cumulativeCashFlow: roundToTwoDecimals(cumulativeTotal),
       };
     });
 
@@ -508,22 +508,22 @@ export async function getPropertyRanking(
       const metrics = metricsMap.get(property.id) || {
         totalIncome: 0,
         totalExpenses: 0,
-        netIncome: 0,
+        cashFlow: 0,
         transactionCount: 0,
       };
 
       const purchasePrice = Number(property.purchasePrice || 0);
-      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.netIncome / purchasePrice) * 100) : 0;
+      const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.cashFlow / purchasePrice) * 100) : 0;
 
       return {
         propertyId: property.id,
         propertyName: property.name,
-        netIncome: metrics.netIncome,
+        cashFlow: metrics.cashFlow,
         totalIncome: metrics.totalIncome,
         totalExpenses: metrics.totalExpenses,
         roi,
       };
-    }).sort((a, b) => b.netIncome - a.netIncome);
+    }).sort((a, b) => b.cashFlow - a.cashFlow);
 
     return result;
   } catch (error) {

@@ -43,11 +43,11 @@ const chartConfig = {
     label: "Expenses",
     color: "var(--color-coral-500)",
   },
-  netIncome: {
+  cashFlow: {
     label: "Net Income",
     color: "var(--color-indigo-500)",
   },
-  cumulativeNetIncome: {
+  cumulativeCashFlow: {
     label: "Cumulative Total",
     color: "var(--color-blue-500)",
   },
@@ -134,7 +134,6 @@ export function CashFlowChart({
     setSelectedPropertyId(propertyId);
   };
 
-  // Data comes pre-validated and transformed from the service layer
   const chartData: ChartDataItem[] = data.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -248,7 +247,7 @@ export function CashFlowChart({
 
               <Line
                 type="linear"
-                dataKey="netIncome"
+                dataKey="cashFlow"
                 stroke="var(--color-purple-500)"
                 strokeWidth={2}
                 dot={false}
@@ -256,7 +255,7 @@ export function CashFlowChart({
 
               <Line
                 type="linear"
-                dataKey="cumulativeNetIncome"
+                dataKey="cumulativeCashFlow"
                 stroke="var(--color-primary)"
                 strokeWidth={2}
                 dot={false}

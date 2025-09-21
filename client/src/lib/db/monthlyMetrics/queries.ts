@@ -7,7 +7,7 @@ export interface MonthlyMetricsData {
   month: number;
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
 }
 
@@ -16,7 +16,7 @@ export interface AggregatedMonthlyMetrics {
   month: number;
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
   period: string; // "YYYY-MM" format
 }
@@ -73,7 +73,7 @@ export async function getMonthlyMetrics(
         month: true,
         totalIncome: true,
         totalExpenses: true,
-        netIncome: true,
+        cashFlow: true,
         transactionCount: true,
       },
       orderBy: [
@@ -89,7 +89,7 @@ export async function getMonthlyMetrics(
       month: metric.month,
       totalIncome: Number(metric.totalIncome),
       totalExpenses: Number(metric.totalExpenses),
-      netIncome: Number(metric.netIncome),
+      cashFlow: Number(metric.cashFlow),
       transactionCount: metric.transactionCount,
     }));
   } catch (error) {
@@ -148,7 +148,7 @@ export async function getAggregatedMonthlyMetrics(
       _sum: {
         totalIncome: true,
         totalExpenses: true,
-        netIncome: true,
+        cashFlow: true,
         transactionCount: true,
       },
       orderBy: [
@@ -162,7 +162,7 @@ export async function getAggregatedMonthlyMetrics(
       month: item.month,
       totalIncome: Number(item._sum.totalIncome || 0),
       totalExpenses: Number(item._sum.totalExpenses || 0),
-      netIncome: Number(item._sum.netIncome || 0),
+      cashFlow: Number(item._sum.cashFlow || 0),
       transactionCount: item._sum.transactionCount || 0,
       period: `${item.year}-${item.month.toString().padStart(2, '0')}`,
     }));
@@ -183,7 +183,7 @@ export async function getTotalMetrics(
 ): Promise<{
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
 }> {
   try {
@@ -226,7 +226,7 @@ export async function getTotalMetrics(
       _sum: {
         totalIncome: true,
         totalExpenses: true,
-        netIncome: true,
+        cashFlow: true,
         transactionCount: true,
       },
     });
@@ -234,7 +234,7 @@ export async function getTotalMetrics(
     return {
       totalIncome: Number(totals._sum.totalIncome || 0),
       totalExpenses: Number(totals._sum.totalExpenses || 0),
-      netIncome: Number(totals._sum.netIncome || 0),
+      cashFlow: Number(totals._sum.cashFlow || 0),
       transactionCount: totals._sum.transactionCount || 0,
     };
   } catch (error) {
@@ -255,7 +255,7 @@ export async function getPropertyMetrics(
   propertyId: string;
   totalIncome: number;
   totalExpenses: number;
-  netIncome: number;
+  cashFlow: number;
   transactionCount: number;
 }[]> {
   try {
@@ -299,7 +299,7 @@ export async function getPropertyMetrics(
       _sum: {
         totalIncome: true,
         totalExpenses: true,
-        netIncome: true,
+        cashFlow: true,
         transactionCount: true,
       },
     });
@@ -308,7 +308,7 @@ export async function getPropertyMetrics(
       propertyId: item.propertyId,
       totalIncome: Number(item._sum.totalIncome || 0),
       totalExpenses: Number(item._sum.totalExpenses || 0),
-      netIncome: Number(item._sum.netIncome || 0),
+      cashFlow: Number(item._sum.cashFlow || 0),
       transactionCount: item._sum.transactionCount || 0,
     }));
   } catch (error) {

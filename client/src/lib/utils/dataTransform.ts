@@ -55,8 +55,8 @@ function parseISODate(dateString: string): Date {
 function transformBaseTimeSeriesData(apiData: ApiAnyTimeSeriesData): {
   income: number;
   expenses: number;
-  netIncome: number;
-  cumulativeNetIncome: number;
+  cashFlow: number;
+  cumulativeCashFlow: number;
   granularity: typeof apiData.granularity;
   periodStart: Date;
   period: string;
@@ -67,18 +67,18 @@ function transformBaseTimeSeriesData(apiData: ApiAnyTimeSeriesData): {
   if (typeof apiData.expenses !== 'number' || isNaN(apiData.expenses)) {
     throw new DataTransformationError(`Invalid expenses value: ${apiData.expenses}`, apiData);
   }
-  if (typeof apiData.netIncome !== 'number' || isNaN(apiData.netIncome)) {
-    throw new DataTransformationError(`Invalid netIncome value: ${apiData.netIncome}`, apiData);
+  if (typeof apiData.cashFlow !== 'number' || isNaN(apiData.cashFlow)) {
+    throw new DataTransformationError(`Invalid cashFlow value: ${apiData.cashFlow}`, apiData);
   }
-  if (typeof apiData.cumulativeNetIncome !== 'number' || isNaN(apiData.cumulativeNetIncome)) {
-    throw new DataTransformationError(`Invalid cumulativeNetIncome value: ${apiData.cumulativeNetIncome}`, apiData);
+  if (typeof apiData.cumulativeCashFlow !== 'number' || isNaN(apiData.cumulativeCashFlow)) {
+    throw new DataTransformationError(`Invalid cumulativeCashFlow value: ${apiData.cumulativeCashFlow}`, apiData);
   }
 
   return {
     income: apiData.income,
     expenses: apiData.expenses,
-    netIncome: apiData.netIncome,
-    cumulativeNetIncome: apiData.cumulativeNetIncome,
+    cashFlow: apiData.cashFlow,
+    cumulativeCashFlow: apiData.cumulativeCashFlow,
     granularity: apiData.granularity,
     periodStart: parseISODate(apiData.periodStart),
     period: apiData.period

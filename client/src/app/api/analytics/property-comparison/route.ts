@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     
     const dateFrom = searchParams.get("dateFrom") ? new Date(searchParams.get("dateFrom")!) : undefined;
     const dateTo = searchParams.get("dateTo") ? new Date(searchParams.get("dateTo")!) : undefined;
-    const sortBy = searchParams.get("sortBy") || "netIncome"; // netIncome, roi
+    const sortBy = searchParams.get("sortBy") || "cashFlow"; // cashFlow, roi
     const includeKPIs = searchParams.get("includeKPIs") === "true";
 
     // Validate dates
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate sortBy parameter
-    const validSortFields = ["netIncome", "roi", "totalIncome", "totalExpenses"];
+    const validSortFields = ["cashFlow", "roi", "totalIncome", "totalExpenses"];
     if (!validSortFields.includes(sortBy)) {
       return NextResponse.json({ error: "Invalid sortBy parameter" }, { status: 400 });
     }
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
           return b.totalIncome - a.totalIncome;
         case "totalExpenses":
           return b.totalExpenses - a.totalExpenses;
-        case "netIncome":
+        case "cashFlow":
         default:
-          return b.netIncome - a.netIncome;
+          return b.cashFlow - a.cashFlow;
       }
     });
 
@@ -56,9 +56,9 @@ export async function GET(request: NextRequest) {
       switch (sortBy) {
         case "roi":
           return b.roi - a.roi;
-        case "netIncome":
+        case "cashFlow":
         default:
-          return b.netIncome - a.netIncome;
+          return b.cashFlow - a.cashFlow;
       }
     }) : [];
 

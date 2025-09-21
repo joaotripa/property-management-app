@@ -2,7 +2,10 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatPercentage, formatCompactCurrency } from "@/lib/utils/formatting";
+import {
+  formatPercentage,
+  formatCompactCurrency,
+} from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { KPIMetrics } from "@/lib/db/analytics/queries";
 import { PropertyOption } from "@/types/transactions";
@@ -13,7 +16,7 @@ interface OverviewKPIsProps {
   monthlyStats: {
     totalIncome: number;
     totalExpenses: number;
-    netIncome: number;
+    cashFlow: number;
     transactionCount: number;
   } | null;
 }
@@ -23,7 +26,6 @@ export function OverviewKPIs({
   properties,
   monthlyStats,
 }: OverviewKPIsProps) {
-
   const getOverviewKPIConfigs = (): KPICardConfig[] => {
     const occupiedCount = properties.filter(
       (p) => p.occupancy === "OCCUPIED"

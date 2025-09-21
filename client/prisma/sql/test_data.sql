@@ -437,7 +437,7 @@ FROM improvements i;
 -- Monthly Metrics --
 INSERT INTO monthly_metrics (
     id, property_id, user_id, year, month, 
-    total_income, total_expenses, net_income, transaction_count,
+    total_income, total_expenses, cash_flow, transaction_count,
     created_at, updated_at
 )
 SELECT 
@@ -448,7 +448,7 @@ SELECT
     EXTRACT(MONTH FROM month_date)::int,
     COALESCE(income.total, 0) as total_income,
     COALESCE(expenses.total, 0) as total_expenses,
-    COALESCE(income.total, 0) - COALESCE(expenses.total, 0) as net_income,
+    COALESCE(income.total, 0) - COALESCE(expenses.total, 0) as cash_flow,
     COALESCE(income.count, 0) + COALESCE(expenses.count, 0) as transaction_count,
     now(),
     now()

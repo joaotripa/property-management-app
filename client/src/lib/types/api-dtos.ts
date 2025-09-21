@@ -9,8 +9,8 @@ import { DataGranularity } from './granularity';
 export interface ApiBaseTimeSeriesData {
   income: number;
   expenses: number;
-  netIncome: number;
-  cumulativeNetIncome: number;
+  cashFlow: number;
+  cumulativeCashFlow: number;
   granularity: DataGranularity;
   periodStart: string; 
   period: string;
