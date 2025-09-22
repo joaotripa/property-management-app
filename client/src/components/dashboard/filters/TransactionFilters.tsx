@@ -3,7 +3,6 @@
 import {
   useState,
   useTransition,
-  useDeferredValue,
   useEffect,
   useCallback,
 } from "react";
@@ -46,13 +45,11 @@ export function TransactionFilters({
 }: TransactionFiltersProps) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const deferredSearchValue = useDeferredValue(searchValue);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current filter values from URL
+  // Get current filter values from URL (excluding search - handled by table)
   const getCurrentFilters = () => {
     return {
       type: searchParams.get("type") || "all",
@@ -63,7 +60,6 @@ export function TransactionFilters({
       categoryIds:
         searchParams.get("categoryIds")?.split(",").filter(Boolean) || [],
       propertyId: searchParams.get("propertyId") || "all",
-      search: searchParams.get("search") || "",
       sortBy: searchParams.get("sortBy") || "transactionDate",
       sortOrder: searchParams.get("sortOrder") || "desc",
     };
@@ -71,11 +67,8 @@ export function TransactionFilters({
 
   const currentFilters = getCurrentFilters();
 
-  // Initialize search value and date range from URL
+  // Initialize date range from URL
   useEffect(() => {
-    setSearchValue(currentFilters.search);
-
-    // Initialize date range from URL
     const newDateRange: DateRange = {};
     if (currentFilters.dateFrom) {
       newDateRange.from = new Date(currentFilters.dateFrom);
@@ -89,7 +82,7 @@ export function TransactionFilters({
     } else {
       setDateRange(undefined);
     }
-  }, [currentFilters.search, currentFilters.dateFrom, currentFilters.dateTo]);
+  }, [currentFilters.dateFrom, currentFilters.dateTo]);
 
   const updateURL = useCallback(
     (updates: Record<string, string | undefined>) => {
@@ -112,18 +105,6 @@ export function TransactionFilters({
     [router, searchParams]
   );
 
-  // Debounced search with useTransition
-  useEffect(() => {
-    if (deferredSearchValue !== currentFilters.search) {
-      const timeoutId = setTimeout(() => {
-        startTransition(() => {
-          updateURL({ search: deferredSearchValue || undefined });
-        });
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [deferredSearchValue, currentFilters.search, updateURL]);
 
   const handleInstantFilter = (key: string, value: string | undefined) => {
     startTransition(() => {
@@ -149,12 +130,16 @@ export function TransactionFilters({
     setDateRange(range);
 
     startTransition(() => {
-      updateURL({
-        dateFrom: range?.from
-          ? range.from.toISOString().split("T")[0]
-          : undefined,
-        dateTo: range?.to ? range.to.toISOString().split("T")[0] : undefined,
-      });
+      // Only update URL/apply filters when we have a complete range (both from and to)
+      // or when clearing the range (range is undefined)
+      if (!range || (range.from && range.to)) {
+        updateURL({
+          dateFrom: range?.from
+            ? range.from.toISOString().split("T")[0]
+            : undefined,
+          dateTo: range?.to ? range.to.toISOString().split("T")[0] : undefined,
+        });
+      }
     });
   };
 
@@ -164,7 +149,6 @@ export function TransactionFilters({
         "/dashboard/transactions?sortBy=transactionDate&sortOrder=desc"
       );
     });
-    setSearchValue("");
     setDateRange(undefined);
   };
 
@@ -174,7 +158,6 @@ export function TransactionFilters({
     if (currentFilters.type && currentFilters.type !== "all") count++;
     if (currentFilters.amountMin || currentFilters.amountMax) count++;
     if (currentFilters.categoryIds.length > 0) count++;
-    if (currentFilters.search) count++;
     if (showPropertyFilter && currentFilters.propertyId !== "all") count++;
     return count;
   };
