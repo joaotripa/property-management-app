@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  useState,
-  useTransition,
-  useEffect,
-  useCallback,
-} from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Filter, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,8 +44,12 @@ export function TransactionFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current filter values from URL (excluding search - handled by table)
-  const getCurrentFilters = () => {
+  const [pendingFilters, setPendingFilters] = useState(() =>
+    getCurrentFilters()
+  );
+  const [hasChanges, setHasChanges] = useState(false);
+
+  function getCurrentFilters() {
     return {
       type: searchParams.get("type") || "all",
       dateFrom: searchParams.get("dateFrom") || "",
@@ -63,11 +62,16 @@ export function TransactionFilters({
       sortBy: searchParams.get("sortBy") || "transactionDate",
       sortOrder: searchParams.get("sortOrder") || "desc",
     };
-  };
+  }
 
   const currentFilters = getCurrentFilters();
 
-  // Initialize date range from URL
+  useEffect(() => {
+    const urlFilters = getCurrentFilters();
+    setPendingFilters(urlFilters);
+    setHasChanges(false);
+  }, [searchParams]);
+
   useEffect(() => {
     const newDateRange: DateRange = {};
     if (currentFilters.dateFrom) {
@@ -88,7 +92,6 @@ export function TransactionFilters({
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams);
 
-      // Apply updates
       Object.entries(updates).forEach(([key, value]) => {
         if (value && value !== "all") {
           params.set(key, value);
@@ -97,7 +100,6 @@ export function TransactionFilters({
         }
       });
 
-      // Reset to page 1 when filters change
       params.delete("page");
 
       router.push(`/dashboard/transactions?${params.toString()}`);
@@ -105,51 +107,80 @@ export function TransactionFilters({
     [router, searchParams]
   );
 
-
-  const handleInstantFilter = (key: string, value: string | undefined) => {
-    startTransition(() => {
-      updateURL({ [key]: value });
-    });
+  const handleFilterChange = (key: string, value: string | undefined) => {
+    const newPendingFilters = { ...pendingFilters, [key]: value };
+    setPendingFilters(newPendingFilters);
+    setHasChanges(true);
   };
 
   const toggleCategory = (categoryId: string) => {
-    const currentCategories = currentFilters.categoryIds;
+    const currentCategories = pendingFilters.categoryIds;
     const newCategories = currentCategories.includes(categoryId)
       ? currentCategories.filter((id) => id !== categoryId)
       : [...currentCategories, categoryId];
 
-    startTransition(() => {
-      updateURL({
-        categoryIds:
-          newCategories.length > 0 ? newCategories.join(",") : undefined,
-      });
+    setPendingFilters({
+      ...pendingFilters,
+      categoryIds: newCategories,
     });
+    setHasChanges(true);
   };
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
 
+    if (!range || (range.from && range.to)) {
+      setPendingFilters({
+        ...pendingFilters,
+        dateFrom: range?.from ? range.from.toISOString().split("T")[0] : "",
+        dateTo: range?.to ? range.to.toISOString().split("T")[0] : "",
+      });
+      setHasChanges(true);
+    }
+  };
+
+  const applyFilters = () => {
     startTransition(() => {
-      // Only update URL/apply filters when we have a complete range (both from and to)
-      // or when clearing the range (range is undefined)
-      if (!range || (range.from && range.to)) {
-        updateURL({
-          dateFrom: range?.from
-            ? range.from.toISOString().split("T")[0]
-            : undefined,
-          dateTo: range?.to ? range.to.toISOString().split("T")[0] : undefined,
-        });
-      }
+      const updates: Record<string, string | undefined> = {};
+
+      Object.entries(pendingFilters).forEach(([key, value]) => {
+        if (key === "categoryIds") {
+          updates[key] =
+            (value as string[]).length > 0
+              ? (value as string[]).join(",")
+              : undefined;
+        } else {
+          updates[key] = (value as string) || undefined;
+        }
+      });
+
+      updateURL(updates);
+      setHasChanges(false);
     });
   };
 
-  const clearFilters = () => {
+  const clearAllFilters = () => {
+    const defaultFilters = {
+      type: "all",
+      dateFrom: "",
+      dateTo: "",
+      amountMin: "",
+      amountMax: "",
+      categoryIds: [] as string[],
+      propertyId: "all",
+      sortBy: "transactionDate",
+      sortOrder: "desc",
+    };
+
+    setPendingFilters(defaultFilters);
+    setDateRange(undefined);
+
     startTransition(() => {
       router.push(
         "/dashboard/transactions?sortBy=transactionDate&sortOrder=desc"
       );
+      setHasChanges(false);
     });
-    setDateRange(undefined);
   };
 
   const getActiveFiltersCount = () => {
@@ -159,6 +190,22 @@ export function TransactionFilters({
     if (currentFilters.amountMin || currentFilters.amountMax) count++;
     if (currentFilters.categoryIds.length > 0) count++;
     if (showPropertyFilter && currentFilters.propertyId !== "all") count++;
+
+    if (hasChanges) {
+      let pendingCount = 0;
+      if (pendingFilters.dateFrom || pendingFilters.dateTo) pendingCount++;
+      if (pendingFilters.type && pendingFilters.type !== "all") pendingCount++;
+      if (
+        (pendingFilters.amountMin && pendingFilters.amountMin.trim()) ||
+        (pendingFilters.amountMax && pendingFilters.amountMax.trim())
+      )
+        pendingCount++;
+      if (pendingFilters.categoryIds.length > 0) pendingCount++;
+      if (showPropertyFilter && pendingFilters.propertyId !== "all")
+        pendingCount++;
+      count = Math.max(count, pendingCount);
+    }
+
     return count;
   };
 
@@ -177,20 +224,29 @@ export function TransactionFilters({
                 {getActiveFiltersCount()}
               </Badge>
             )}
-          </CardTitle>
-          <div className="flex items-center gap-2">
             {getActiveFiltersCount() > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={clearFilters}
-                className="h-8 px-2"
+                onClick={clearAllFilters}
+                className="h-8 px-2 ml-2"
                 disabled={isPending}
               >
-                <X className="h-4 w-4 mr-1" />
+                <X className="h-4 w-4" />
                 Clear Filters
               </Button>
             )}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={applyFilters}
+              className="h-8 px-2"
+              disabled={isPending}
+            >
+              <Search className="h-4 w-4" />
+              Apply
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -209,8 +265,8 @@ export function TransactionFilters({
           {/* Transaction Type */}
           <div className="flex flex-col gap-2">
             <Select
-              value={currentFilters.type}
-              onValueChange={(value) => handleInstantFilter("type", value)}
+              value={pendingFilters.type}
+              onValueChange={(value) => handleFilterChange("type", value)}
               disabled={isPending}
             >
               <SelectTrigger className="w-full">
@@ -239,13 +295,13 @@ export function TransactionFilters({
                     disabled={isPending}
                   >
                     <span>
-                      {currentFilters.categoryIds.length === 0
+                      {pendingFilters.categoryIds.length === 0
                         ? "All Categories"
-                        : currentFilters.categoryIds.length === 1
+                        : pendingFilters.categoryIds.length === 1
                           ? availableCategories.find(
-                              (c) => c.id === currentFilters.categoryIds[0]
+                              (c) => c.id === pendingFilters.categoryIds[0]
                             )?.name
-                          : `${currentFilters.categoryIds.length} categories selected`}
+                          : `${pendingFilters.categoryIds.length} categories selected`}
                     </span>
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
@@ -255,7 +311,7 @@ export function TransactionFilters({
                     <DropdownMenuCheckboxItem
                       key={category.id}
                       className="capitalize"
-                      checked={currentFilters.categoryIds.includes(category.id)}
+                      checked={pendingFilters.categoryIds.includes(category.id)}
                       onCheckedChange={() => toggleCategory(category.id)}
                     >
                       {category.name}
@@ -270,9 +326,9 @@ export function TransactionFilters({
           {showPropertyFilter && (
             <div className="flex flex-col gap-2">
               <Select
-                value={currentFilters.propertyId}
+                value={pendingFilters.propertyId}
                 onValueChange={(value) =>
-                  handleInstantFilter("propertyId", value)
+                  handleFilterChange("propertyId", value)
                 }
                 disabled={isPending}
               >
@@ -314,9 +370,9 @@ export function TransactionFilters({
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={currentFilters.amountMin}
+                  value={pendingFilters.amountMin}
                   onChange={(e) =>
-                    handleInstantFilter("amountMin", e.target.value)
+                    handleFilterChange("amountMin", e.target.value)
                   }
                   disabled={isPending}
                 />
@@ -327,9 +383,9 @@ export function TransactionFilters({
                 <Input
                   type="number"
                   placeholder="1000.00"
-                  value={currentFilters.amountMax}
+                  value={pendingFilters.amountMax}
                   onChange={(e) =>
-                    handleInstantFilter("amountMax", e.target.value)
+                    handleFilterChange("amountMax", e.target.value)
                   }
                   disabled={isPending}
                 />
@@ -339,10 +395,8 @@ export function TransactionFilters({
               <div className="flex flex-col gap-2">
                 <Label>Sort By</Label>
                 <Select
-                  value={currentFilters.sortBy}
-                  onValueChange={(value) =>
-                    handleInstantFilter("sortBy", value)
-                  }
+                  value={pendingFilters.sortBy}
+                  onValueChange={(value) => handleFilterChange("sortBy", value)}
                   disabled={isPending}
                 >
                   <SelectTrigger className="w-full">
@@ -359,9 +413,9 @@ export function TransactionFilters({
               <div className="flex flex-col gap-2">
                 <Label>Sort Order</Label>
                 <Select
-                  value={currentFilters.sortOrder}
+                  value={pendingFilters.sortOrder}
                   onValueChange={(value) =>
-                    handleInstantFilter("sortOrder", value)
+                    handleFilterChange("sortOrder", value)
                   }
                   disabled={isPending}
                 >
