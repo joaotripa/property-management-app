@@ -205,9 +205,9 @@ export function TransactionFilters({
 
       <CardContent className="gap-4">
         {/* Basic Filters - Always visible */}
-        <div className="flex gap-4 flex-col md:flex-row">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Transaction Type */}
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <Select
               value={currentFilters.type}
               onValueChange={(value) => handleInstantFilter("type", value)}
@@ -230,7 +230,7 @@ export function TransactionFilters({
 
           {/* Categories */}
           {availableCategories.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -268,7 +268,7 @@ export function TransactionFilters({
 
           {/* Property Filter (if enabled) */}
           {showPropertyFilter && (
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-2">
               <Select
                 value={currentFilters.propertyId}
                 onValueChange={(value) =>
@@ -292,7 +292,7 @@ export function TransactionFilters({
           )}
 
           {/* Date Range Picker */}
-          <div className="min-w-[280px]">
+          <div className="flex flex-col gap-2">
             <DateRangePicker
               dateRange={dateRange}
               onDateRangeChange={handleDateRangeChange}
