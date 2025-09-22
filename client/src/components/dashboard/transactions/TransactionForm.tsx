@@ -29,6 +29,7 @@ import {
   transactionFormSchema,
 } from "@/lib/validations/transaction";
 import { format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface TransactionFormProps {
   defaultValues?: Partial<TransactionFormInput>;
@@ -71,7 +72,7 @@ export function TransactionForm({
         type: validatedData.type,
         description: validatedData.description?.trim() || undefined,
         transactionDate: new Date(validatedData.transactionDate),
-        isRecurring: false, // Default to false since we removed the UI
+        isRecurring: false,
         propertyId: validatedData.propertyId,
         categoryId: validatedData.categoryId,
       };
@@ -154,13 +155,22 @@ export function TransactionForm({
                     <FormItem>
                       <FormLabel>Transaction Date</FormLabel>
                       <FormControl>
-                        <Input type="date" disabled={isSubmitting} {...field} />
+                        <DatePicker
+                          date={field.value ? new Date(field.value) : undefined}
+                          onDateChange={(date) => {
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : ""
+                            );
+                          }}
+                          placeholder="Select transaction date"
+                          disabled={isSubmitting}
+                          className="w-full"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
 
                 <div className="md:col-span-2">
                   <FormField
@@ -211,9 +221,9 @@ export function TransactionForm({
                         <SelectContent>
                           {properties.map((property) => (
                             <SelectItem key={property.id} value={property.id}>
-                              <div className="flex flex-col">
+                              <div className="flex flex-col items-start">
                                 <span>{property.name}</span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs">
                                   {property.address}
                                 </span>
                               </div>
@@ -245,9 +255,9 @@ export function TransactionForm({
                         <SelectContent>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
-                              <div className="flex items-center gap-2">
+                              <div className="flex justify-start items-center gap-2">
                                 <span>{category.name}</span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs">
                                   ({category.type.toLowerCase()})
                                 </span>
                               </div>
