@@ -44,12 +44,7 @@ export function TransactionFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [pendingFilters, setPendingFilters] = useState(() =>
-    getCurrentFilters()
-  );
-  const [hasChanges, setHasChanges] = useState(false);
-
-  function getCurrentFilters() {
+  const getCurrentFilters = useCallback(() => {
     return {
       type: searchParams.get("type") || "all",
       dateFrom: searchParams.get("dateFrom") || "",
@@ -62,7 +57,12 @@ export function TransactionFilters({
       sortBy: searchParams.get("sortBy") || "transactionDate",
       sortOrder: searchParams.get("sortOrder") || "desc",
     };
-  }
+  }, [searchParams]);
+
+  const [pendingFilters, setPendingFilters] = useState(() =>
+    getCurrentFilters()
+  );
+  const [hasChanges, setHasChanges] = useState(false);
 
   const currentFilters = getCurrentFilters();
 
@@ -70,7 +70,7 @@ export function TransactionFilters({
     const urlFilters = getCurrentFilters();
     setPendingFilters(urlFilters);
     setHasChanges(false);
-  }, [searchParams]);
+  }, [searchParams, getCurrentFilters]);
 
   useEffect(() => {
     const newDateRange: DateRange = {};

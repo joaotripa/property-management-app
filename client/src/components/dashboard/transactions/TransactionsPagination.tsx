@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,7 +23,6 @@ interface TransactionsPaginationProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   loading?: boolean;
-  // Enhanced features
   canPreviousPage?: boolean;
   canNextPage?: boolean;
   pageCount?: number;
@@ -43,25 +47,25 @@ export function TransactionsPagination({
   const endItem = Math.min(currentPage * pageSize, totalCount);
 
   // Generate page numbers to show
-  const getPageNumbers = () => {
-    const delta = 2; // Number of pages to show on each side of current page
+  const getPageNumbers = (isMobile = false) => {
+    const delta = isMobile ? 0 : 2;
     const pages: (number | "...")[] = [];
 
+    if (isMobile) {
+      return [];
+    }
+
     if (totalPages <= 7) {
-      // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
 
-      // Add ellipsis if needed
       if (currentPage > delta + 2) {
         pages.push("...");
       }
 
-      // Add pages around current page
       const start = Math.max(2, currentPage - delta);
       const end = Math.min(totalPages - 1, currentPage + delta);
 
@@ -69,12 +73,10 @@ export function TransactionsPagination({
         pages.push(i);
       }
 
-      // Add ellipsis if needed
       if (currentPage < totalPages - delta - 1) {
         pages.push("...");
       }
 
-      // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
@@ -83,17 +85,20 @@ export function TransactionsPagination({
     return pages;
   };
 
-  const pageNumbers = getPageNumbers();
+  const pageNumbersDesktop = getPageNumbers(false);
 
   return (
-    <div className="flex items-center justify-between px-2 py-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2 py-4">
       <div className="text-sm text-muted-foreground">
         {startItem}-{endItem} of {totalCount} transactions
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Rows per page</span>
+          <span className="text-sm font-medium hidden sm:inline">
+            Rows per page
+          </span>
+          <span className="text-sm font-medium sm:hidden">Rows</span>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
@@ -150,26 +155,28 @@ export function TransactionsPagination({
             <span className="sr-only">Go to previous page</span>
           </Button>
 
-          {/* Page numbers */}
-          {pageNumbers.map((page, index) => (
-            <div key={index}>
-              {page === "..." ? (
-                <span className="flex h-8 w-8 items-center justify-center text-sm">
-                  ...
-                </span>
-              ) : (
-                <Button
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onPageChange(page as number)}
-                  disabled={loading}
-                  className={`h-8 w-8 p-0 ${loading ? "opacity-70" : ""}`}
-                >
-                  {page}
-                </Button>
-              )}
-            </div>
-          ))}
+          {/* Page numbers - Hidden on mobile and tablet */}
+          <div className="hidden lg:flex items-center gap-1">
+            {pageNumbersDesktop.map((page, index) => (
+              <div key={index}>
+                {page === "..." ? (
+                  <span className="flex h-8 w-8 items-center justify-center text-sm">
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onPageChange(page as number)}
+                    disabled={loading}
+                    className={`h-8 w-8 p-0 ${loading ? "opacity-70" : ""}`}
+                  >
+                    {page}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
 
           {/* Next page button */}
           <Button
