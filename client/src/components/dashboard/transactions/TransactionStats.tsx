@@ -19,16 +19,21 @@ interface TransactionStatsProps {
 const TransactionStats = ({ stats }: TransactionStatsProps) => {
   const kpiConfigs: KPICardConfig[] = [
     {
-      title: "Current Month Income",
+      title: "Revenue",
       value: formatCompactCurrency(stats.totalIncome),
     },
     {
-      title: "Current Month Expenses",
+      title: "Expenses",
       value: formatCompactCurrency(stats.totalExpenses),
     },
     {
-      title: "Current Month Cash Flow",
-      value: formatCompactCurrency(stats.cashFlow),
+      title: "Cash Flow",
+      value: (
+        <span className={stats.cashFlow >= 0 ? "text-success" : "text-destructive"}>
+          {stats.cashFlow >= 0 ? "+" : ""}
+          {formatCompactCurrency(stats.cashFlow)}
+        </span>
+      ),
     },
   ];
 

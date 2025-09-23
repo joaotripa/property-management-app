@@ -25,12 +25,15 @@ const PropertiesStats = ({ stats }: PropertiesStatsProps) => {
       value: stats.totalProperties.toString(),
     },
     {
-      title: "Vacant Properties",
-      value: stats.availableProperties.toString(),
-    },
-    {
       title: "Occupied Properties",
-      value: stats.occupiedProperties.toString(),
+      value: (
+        <>
+          <span className="text-3xl font-semibold">{stats.occupiedProperties}</span>
+          <span className="ml-1 text-xl font-medium text-muted-foreground">
+            /{stats.totalProperties}
+          </span>
+        </>
+      ),
     },
     {
       title: "Average Rent",

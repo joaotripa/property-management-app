@@ -194,6 +194,7 @@ export async function getUserProperties(userId: string): Promise<PropertyOption[
         id: true,
         name: true,
         address: true,
+        occupancy: true,
       },
       orderBy: {
         name: 'asc',
