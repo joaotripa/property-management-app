@@ -3,9 +3,8 @@ import { getTransactionsPageData } from "@/lib/services/server/transactionsServi
 import { TransactionsClient } from "@/components/dashboard/transactions/TransactionsClient";
 import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
 import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import { ExportButton } from "@/components/dashboard/transactions/ExportButton";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 
 interface TransactionsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -41,10 +40,7 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
             See what&apos;s coming in and what&apos;s heading out.
           </p>
         </div>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+        <ExportButton searchParams={params} />
       </div>
 
       {/* Summary Cards */}

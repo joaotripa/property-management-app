@@ -366,6 +366,127 @@ export async function getTransactionStats(
 }
 
 /**
+ * Get all transactions for export (no pagination)
+ * Returns full property and category details for CSV export
+ */
+export async function getTransactionsForExport(
+  userId: string,
+  filters: Omit<DatabaseTransactionFilters, 'limit' | 'offset' | 'sortBy' | 'sortOrder'> = {}
+): Promise<Array<{
+  transactionDate: Date;
+  amount: number;
+  type: string;
+  description?: string;
+  category: {
+    name: string;
+    type: string;
+  };
+  property: {
+    name: string;
+    address: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+}>> {
+  const where: Prisma.TransactionWhereInput = {
+    userId,
+    deletedAt: null,
+  };
+
+  if (filters.propertyId) {
+    where.propertyId = filters.propertyId;
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    where.transactionDate = {};
+    if (filters.dateFrom) {
+      where.transactionDate.gte = filters.dateFrom;
+    }
+    if (filters.dateTo) {
+      where.transactionDate.lte = filters.dateTo;
+    }
+  }
+
+  if (filters.type && filters.type !== 'all') {
+    where.type = filters.type;
+  }
+
+  if (filters.amountMin !== undefined || filters.amountMax !== undefined) {
+    where.amount = {};
+    if (filters.amountMin !== undefined) {
+      where.amount.gte = filters.amountMin;
+    }
+    if (filters.amountMax !== undefined) {
+      where.amount.lte = filters.amountMax;
+    }
+  }
+
+  if (filters.categoryIds && filters.categoryIds.length > 0) {
+    where.categoryId = {
+      in: filters.categoryIds,
+    };
+  }
+
+  if (filters.search) {
+    where.description = {
+      contains: filters.search,
+      mode: 'insensitive',
+    };
+  }
+
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where,
+      include: {
+        category: {
+          select: {
+            name: true,
+            type: true,
+          },
+        },
+        property: {
+          select: {
+            name: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            country: true,
+          },
+        },
+      },
+      orderBy: {
+        transactionDate: 'desc',
+      },
+    });
+
+    return transactions.map((transaction) => ({
+      transactionDate: transaction.transactionDate,
+      amount: Number(transaction.amount),
+      type: transaction.type,
+      description: transaction.description ?? undefined,
+      category: {
+        name: transaction.category.name,
+        type: transaction.category.type,
+      },
+      property: {
+        name: transaction.property.name,
+        address: transaction.property.address,
+        city: transaction.property.city ?? undefined,
+        state: transaction.property.state ?? undefined,
+        zipCode: transaction.property.zipCode ?? undefined,
+        country: transaction.property.country ?? undefined,
+      },
+    }));
+  } catch (error) {
+    console.error('Error fetching transactions for export:', error);
+    throw new Error('Failed to fetch transactions for export');
+  }
+}
+
+/**
  * Validate property access for transactions
  */
 export async function validatePropertyAccess(
