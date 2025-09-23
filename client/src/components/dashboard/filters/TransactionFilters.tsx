@@ -263,100 +263,90 @@ export function TransactionFilters({
         {/* Basic Filters - Always visible */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Transaction Type */}
-          <div className="flex flex-col gap-2">
-            <Select
-              value={pendingFilters.type}
-              onValueChange={(value) => handleFilterChange("type", value)}
-              disabled={isPending}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value={TransactionType.INCOME}>
-                  {toCamelCase(TransactionType.INCOME)}
-                </SelectItem>
-                <SelectItem value={TransactionType.EXPENSE}>
-                  {toCamelCase(TransactionType.EXPENSE)}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={pendingFilters.type}
+            onValueChange={(value) => handleFilterChange("type", value)}
+            disabled={isPending}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value={TransactionType.INCOME}>
+                {toCamelCase(TransactionType.INCOME)}
+              </SelectItem>
+              <SelectItem value={TransactionType.EXPENSE}>
+                {toCamelCase(TransactionType.EXPENSE)}
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Categories */}
           {availableCategories.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground font-normal"
-                    disabled={isPending}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between bg-transparent hover:bg-transparent hover:text-foreground font-normal"
+                  disabled={isPending}
+                >
+                  <span>
+                    {pendingFilters.categoryIds.length === 0
+                      ? "All Categories"
+                      : pendingFilters.categoryIds.length === 1
+                        ? availableCategories.find(
+                            (c) => c.id === pendingFilters.categoryIds[0]
+                          )?.name
+                        : `${pendingFilters.categoryIds.length} categories selected`}
+                  </span>
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {availableCategories.map((category) => (
+                  <DropdownMenuCheckboxItem
+                    key={category.id}
+                    className="capitalize"
+                    checked={pendingFilters.categoryIds.includes(category.id)}
+                    onCheckedChange={() => toggleCategory(category.id)}
                   >
-                    <span>
-                      {pendingFilters.categoryIds.length === 0
-                        ? "All Categories"
-                        : pendingFilters.categoryIds.length === 1
-                          ? availableCategories.find(
-                              (c) => c.id === pendingFilters.categoryIds[0]
-                            )?.name
-                          : `${pendingFilters.categoryIds.length} categories selected`}
-                    </span>
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  {availableCategories.map((category) => (
-                    <DropdownMenuCheckboxItem
-                      key={category.id}
-                      className="capitalize"
-                      checked={pendingFilters.categoryIds.includes(category.id)}
-                      onCheckedChange={() => toggleCategory(category.id)}
-                    >
-                      {category.name}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                    {category.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
           {/* Property Filter (if enabled) */}
           {showPropertyFilter && (
-            <div className="flex flex-col gap-2">
-              <Select
-                value={pendingFilters.propertyId}
-                onValueChange={(value) =>
-                  handleFilterChange("propertyId", value)
-                }
-                disabled={isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Properties" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Properties</SelectItem>
-                  {availableProperties.map((property) => (
-                    <SelectItem key={property.id} value={property.id}>
-                      {property.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              value={pendingFilters.propertyId}
+              onValueChange={(value) => handleFilterChange("propertyId", value)}
+              disabled={isPending}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Properties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Properties</SelectItem>
+                {availableProperties.map((property) => (
+                  <SelectItem key={property.id} value={property.id}>
+                    {property.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
 
           {/* Date Range Picker */}
-          <div className="flex flex-col gap-2">
-            <DateRangePicker
-              dateRange={dateRange}
-              onDateRangeChange={handleDateRangeChange}
-              placeholder="Select date range"
-              disabled={isPending}
-              className="w-full"
-            />
-          </div>
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
+            placeholder="Select date range"
+            disabled={isPending}
+            className="w-full"
+          />
         </div>
 
         {/* Advanced Filters - Collapsible */}

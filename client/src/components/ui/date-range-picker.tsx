@@ -33,7 +33,6 @@ interface DateRangePickerProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  showClearButton?: boolean;
 }
 
 const DATE_PRESETS = [
@@ -90,7 +89,6 @@ export function DateRangePicker({
   placeholder = "Pick a date range",
   disabled = false,
   className,
-  showClearButton = true,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [tempRange, setTempRange] = React.useState<DateRange | undefined>(
@@ -184,22 +182,21 @@ export function DateRangePicker({
   const hasValue = dateRange?.from || dateRange?.to;
 
   return (
-    <div className="flex items-center gap-2">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "justify-start text-left font-normal",
-              !hasValue && "text-muted-foreground",
-              className
-            )}
-            disabled={disabled}
-          >
-            <CalendarIcon className="h-4 w-4" />
-            {formatDateRange(dateRange)}
-          </Button>
-        </PopoverTrigger>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "justify-start text-left font-normal",
+            !hasValue && "text-muted-foreground",
+            className
+          )}
+          disabled={disabled}
+        >
+          <CalendarIcon className="h-4 w-4" />
+          {formatDateRange(dateRange)}
+        </Button>
+      </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <div className="flex flex-col lg:flex-row">
           {/* Presets */}
@@ -274,17 +271,5 @@ export function DateRangePicker({
         </div>
       </PopoverContent>
     </Popover>
-    {showClearButton && hasValue && (
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleClear}
-        disabled={disabled}
-        className="flex-shrink-0"
-      >
-        <X className="h-4 w-4" />
-      </Button>
-    )}
-  </div>
   );
 }
