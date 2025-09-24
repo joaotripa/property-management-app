@@ -15,11 +15,19 @@ import { COLUMN_VISIBILITY_OPTIONS } from "./TransactionColumns";
 
 interface ColumnSelectorProps {
   table: Table<Transaction>;
+  excludeColumns?: string[];
 }
 
-export function ColumnSelector({ table }: ColumnSelectorProps) {
+export function ColumnSelector({ table, excludeColumns = [] }: ColumnSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  const availableColumns = COLUMN_VISIBILITY_OPTIONS.filter((option) => {
+    if (excludeColumns.includes(option.id)) {
+      return false;
+    }
+    const column = table.getColumn(option.id);
+    return column && column.getCanHide();
+  });
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -35,10 +43,8 @@ export function ColumnSelector({ table }: ColumnSelectorProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {/* Column toggles */}
-        {COLUMN_VISIBILITY_OPTIONS.map((option) => {
+        {availableColumns.map((option) => {
           const column = table.getColumn(option.id);
-          if (!column?.getCanHide()) return null;
 
           return (
             <DropdownMenuCheckboxItem

@@ -44,7 +44,6 @@ interface TransactionTableWithActionsProps {
   className?: string;
 }
 
-// Local storage key for column visibility
 const COLUMN_VISIBILITY_KEY = "transaction-table-column-visibility";
 
 export function TransactionTableWithActions({
@@ -96,36 +95,27 @@ export function TransactionTableWithActions({
     }));
   }, [showPropertyColumn]);
 
-  // Sync global filter with URL search param
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
     setGlobalFilter(urlSearch);
   }, [searchParams]);
 
-  // Handle global filter changes with URL sync
   const handleGlobalFilterChange = (value: string) => {
     setGlobalFilter(value);
-
-    // Update URL with debouncing handled by TransactionFilters component
-    // This provides immediate table filtering for better UX
   };
 
-  // Get selected transactions for bulk operations
   const getSelectedTransactions = (): Transaction[] => {
     return table.getFilteredSelectedRowModel().rows.map((row) => row.original);
   };
 
-  // Handle bulk delete
   const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
     if (!onBulkDelete) return;
 
     try {
       await onBulkDelete(selectedTransactions);
-      // Clear selection after successful delete
       setRowSelection({});
     } catch (error) {
       console.error("Bulk delete failed:", error);
-      // Error handling is done in parent component
     }
   };
 
@@ -205,7 +195,10 @@ export function TransactionTableWithActions({
             </div>
           )}
         </div>
-        <ColumnSelector table={table} />
+        <ColumnSelector
+          table={table}
+          excludeColumns={showPropertyColumn ? [] : ["property"]}
+        />
       </div>
 
       {/* Table */}
