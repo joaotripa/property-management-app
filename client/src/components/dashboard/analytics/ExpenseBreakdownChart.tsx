@@ -14,21 +14,15 @@ import {
 } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, Label } from "recharts";
 import { ExpenseBreakdownData } from "@/lib/db/analytics/queries";
-import { PropertySelector, PropertyOption } from "./PropertySelector";
-import { useState, useEffect, useCallback } from "react";
-import { getExpenseBreakdown } from "@/lib/services/client/analyticsService";
 import {
   formatCompactCurrency,
   formatCurrency,
   formatPercentage,
 } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
-import { calculateDateRange } from "@/lib/utils/dateRange";
 
 interface ExpenseBreakdownChartProps {
-  properties: PropertyOption[];
   initialData?: ExpenseBreakdownData[];
-  timeRange?: string;
 }
 
 const COLORS = [
@@ -47,52 +41,9 @@ const COLORS = [
 ];
 
 export function ExpenseBreakdownChart({
-  properties,
   initialData = [],
-  timeRange = "semester",
 }: ExpenseBreakdownChartProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState<
-    string | undefined
-  >(undefined);
-  const [data, setData] = useState<ExpenseBreakdownData[]>(initialData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const { dateFrom, dateTo } = calculateDateRange(timeRange);
-      const result = await getExpenseBreakdown({
-        propertyId: selectedPropertyId,
-        dateFrom,
-        dateTo,
-      });
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch data");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedPropertyId, timeRange]);
-
-  useEffect(() => {
-    // Fetch when property is selected or time range changes
-    if (selectedPropertyId) {
-      fetchData();
-    } else {
-      // For portfolio view, refetch when time range changes
-      fetchData();
-    }
-  }, [fetchData, selectedPropertyId]);
-
-  const handlePropertyChange = (propertyId: string | undefined) => {
-    setSelectedPropertyId(propertyId);
-  };
-
-  const filteredData = data;
-
-  const chartConfig = filteredData.reduce(
+  const chartConfig = initialData.reduce(
     (config, item, index) => {
       config[item.categoryName] = {
         label: item.categoryName,
@@ -103,35 +54,12 @@ export function ExpenseBreakdownChart({
     {} as Record<string, { label: string; color: string }>
   );
 
-  const chartData = filteredData.map((item) => ({
+  const chartData = initialData.map((item) => ({
     ...item,
     fill: chartConfig[item.categoryName]?.color,
   }));
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Expense Breakdown</CardTitle>
-            <PropertySelector
-              properties={properties}
-              selectedPropertyId={selectedPropertyId}
-              onPropertyChange={handlePropertyChange}
-              isLoading={isLoading}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-red-600 py-8">
-            Error loading expense data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const totalExpenses = filteredData.reduce(
+  const totalExpenses = initialData.reduce(
     (sum, item) => sum + item.amount,
     0
   );
@@ -139,17 +67,9 @@ export function ExpenseBreakdownChart({
   return (
     <Card className="min-h-0">
       <CardHeader className="pb-3 sm:pb-4 md:pb-5">
-        <div className="flex flex-col md:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
-          <CardTitle className="text-lg sm:text-xl md:text-2xl">
-            Expense Breakdown
-          </CardTitle>
-          <PropertySelector
-            properties={properties}
-            selectedPropertyId={selectedPropertyId}
-            onPropertyChange={handlePropertyChange}
-            isLoading={isLoading}
-          />
-        </div>
+        <CardTitle className="text-lg sm:text-xl md:text-2xl">
+          Expense Breakdown
+        </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           Breakdown of {formatCurrency(totalExpenses)} total expenses by
           category.
@@ -162,7 +82,6 @@ export function ExpenseBreakdownChart({
           </div>
         ) : (
           <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 min-h-0">
-            {/* Chart Section */}
             <div className="flex-1 xl:flex-none xl:w-1/2 min-h-0">
               <div className="relative h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full">
                 <ChartContainer config={chartConfig} className="h-full w-full">
@@ -231,7 +150,6 @@ export function ExpenseBreakdownChart({
               </div>
             </div>
 
-            {/* Legend Section */}
             <div className="flex-1 xl:w-1/2 space-y-3 lg:space-y-4 min-h-0">
               <div className="flex items-center justify-between text-sm font-medium text-foreground border-b pb-2">
                 <span>Expense Categories</span>

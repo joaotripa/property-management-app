@@ -34,7 +34,8 @@ export interface AnalyticsPageData {
  */
 export async function getAnalyticsPageData(
   userId: string,
-  timeRange: string = "semester"
+  timeRange: string = "semester",
+  propertyId?: string
 ): Promise<AnalyticsPageData> {
   try {
     const { dateFrom, dateTo, monthsBack } = calculateDateRange(timeRange);
@@ -48,10 +49,10 @@ export async function getAnalyticsPageData(
       propertyRanking,
       properties
     ] = await Promise.all([
-      getPortfolioKPIs(userId, undefined, dateFrom, dateTo),
-      getPortfolioKPIs(userId, undefined, prevDateFrom, prevDateTo),
-      getCashFlowTrend(userId, undefined, monthsBack),
-      getExpenseBreakdown(userId, undefined, dateFrom, dateTo),
+      getPortfolioKPIs(userId, propertyId, dateFrom, dateTo),
+      getPortfolioKPIs(userId, propertyId, prevDateFrom, prevDateTo),
+      getCashFlowTrend(userId, propertyId, monthsBack),
+      getExpenseBreakdown(userId, propertyId, dateFrom, dateTo),
       getPropertyRanking(userId, dateFrom, dateTo),
       getUserProperties(userId)
     ]);

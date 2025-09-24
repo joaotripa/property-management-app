@@ -12,22 +12,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   AnyTimeSeriesData,
   formatDataLabel,
-  selectFinanceGranularity,
 } from "@/lib/types/granularity";
-import {
-  PropertySelector,
-  PropertyOption,
-} from "@/components/dashboard/analytics/PropertySelector";
-import { useState, useEffect, useCallback } from "react";
-import { getCashFlowTrend } from "@/lib/services/client/analyticsService";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
-import { calculateDateRange } from "@/lib/utils/dateRange";
 
 interface CashFlowChartProps {
-  properties: PropertyOption[];
   initialData?: AnyTimeSeriesData[];
-  timeRange?: string; // Finance time range (current, quarter, semester, year, full)
 }
 
 type ChartDataItem = AnyTimeSeriesData & {
@@ -46,128 +36,19 @@ const chartConfig = {
 } as const;
 
 export function CashFlowChart({
-  properties,
   initialData = [],
-  timeRange = "semester", // Default to semester
 }: CashFlowChartProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState<
-    string | undefined
-  >(undefined);
-  const [data, setData] = useState<AnyTimeSeriesData[]>(initialData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Determine granularity based on finance time range
-  const requestedGranularity = selectFinanceGranularity(timeRange);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { monthsBack } = calculateDateRange(timeRange);
-
-      const result = await getCashFlowTrend({
-        monthsBack,
-        propertyId: selectedPropertyId,
-        granularity: requestedGranularity,
-        timeRange, // Pass the time range for finance-aware processing
-      });
-
-      setData(result);
-    } catch (err) {
-      console.error("Error fetching cash flow data:", err);
-
-      // If weekly/daily fails, try monthly as fallback
-      if (
-        requestedGranularity === "weekly" ||
-        requestedGranularity === "daily"
-      ) {
-        try {
-          const { monthsBack: fallbackMonthsBack } =
-            calculateDateRange(timeRange);
-          console.info(
-            `${requestedGranularity} data fetch failed, falling back to monthly granularity`
-          );
-          const fallbackResult = await getCashFlowTrend({
-            monthsBack: fallbackMonthsBack,
-            propertyId: selectedPropertyId,
-            granularity: "monthly",
-            timeRange,
-          });
-          setData(fallbackResult);
-        } catch (fallbackErr) {
-          console.error("Fallback to monthly also failed:", fallbackErr);
-          setError(
-            fallbackErr instanceof Error
-              ? fallbackErr.message
-              : "Failed to fetch data"
-          );
-        }
-      } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedPropertyId, timeRange, requestedGranularity]);
-
-  useEffect(() => {
-    // Fetch when property is selected or time range changes
-    if (selectedPropertyId) {
-      fetchData();
-    } else {
-      // For portfolio view, refetch when time range changes
-      fetchData();
-    }
-  }, [fetchData, selectedPropertyId]);
-
-  const handlePropertyChange = (propertyId: string | undefined) => {
-    setSelectedPropertyId(propertyId);
-  };
-
-  const chartData: ChartDataItem[] = data.map((item) => ({
+  const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
   }));
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Cash Flow Trend</CardTitle>
-            <PropertySelector
-              properties={properties}
-              selectedPropertyId={selectedPropertyId}
-              onPropertyChange={handlePropertyChange}
-              isLoading={isLoading}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-red-600 py-8">
-            Error loading cash flow data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="min-h-0">
       <CardHeader className="pb-3 sm:pb-4 md:pb-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
-          <CardTitle className="text-lg sm:text-xl md:text-2xl">
-            Cash Flow Trend
-          </CardTitle>
-          <PropertySelector
-            properties={properties}
-            selectedPropertyId={selectedPropertyId}
-            onPropertyChange={handlePropertyChange}
-            isLoading={isLoading}
-          />
-        </div>
+        <CardTitle className="text-lg sm:text-xl md:text-2xl">
+          Cash Flow Trend
+        </CardTitle>
       </CardHeader>
       <CardContent className="min-h-0">
         {chartData.length === 0 ? (

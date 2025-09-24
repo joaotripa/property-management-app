@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import {
   Select,
   SelectContent,
@@ -16,72 +18,66 @@ export interface PropertyOption {
 
 interface PropertySelectorProps {
   properties: PropertyOption[];
-  selectedPropertyId?: string;
-  onPropertyChange: (propertyId: string | undefined) => void;
-  placeholder?: string;
-  includeAllOption?: boolean;
-  isLoading?: boolean;
-  className?: string;
+  defaultValue?: string;
 }
 
 export function PropertySelector({
   properties,
-  selectedPropertyId,
-  onPropertyChange,
-  placeholder = "Select property",
-  includeAllOption = true,
-  isLoading = false,
-  className = "",
+  defaultValue = "all",
 }: PropertySelectorProps) {
-  const handleValueChange = (value: string) => {
-    if (value === "all") {
-      onPropertyChange(undefined);
-    } else {
-      onPropertyChange(value);
-    }
-  };
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const getCurrentValue = () => {
-    if (!selectedPropertyId) return "all";
-    return selectedPropertyId;
-  };
+  const currentPropertyId = searchParams.get("propertyId") || defaultValue;
 
-  if (isLoading) {
-    return (
-      <div className={`w-full sm:w-auto sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] xl:min-w-[200px] ${className}`}>
-        <Select disabled>
-          <SelectTrigger className="h-8 sm:h-9 md:h-10">
-            <SelectValue placeholder="Loading..." />
-          </SelectTrigger>
-        </Select>
-      </div>
-    );
-  }
+  const handlePropertyChange = (value: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams);
+
+      if (value === "all" || value === defaultValue) {
+        params.delete("propertyId");
+      } else {
+        params.set("propertyId", value);
+      }
+
+      router.push(`/dashboard/analytics?${params.toString()}`, {
+        scroll: false,
+      });
+    });
+  };
 
   return (
-    <div className={`w-full sm:w-auto sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] xl:min-w-[200px] ${className}`}>
-      <Select value={getCurrentValue()} onValueChange={handleValueChange}>
-        <SelectTrigger className="h-8 sm:h-9 md:h-10">
-          <div className="flex items-center min-w-0">
-            <SelectValue placeholder={placeholder} />
-          </div>
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-medium text-muted-foreground">
+        Property:
+      </span>
+      <Select
+        value={currentPropertyId}
+        onValueChange={handlePropertyChange}
+        disabled={isPending}
+      >
+        <SelectTrigger
+          className={`w-44 sm:w-48 h-8 ${isPending ? "opacity-70" : ""}`}
+        >
+          <SelectValue placeholder="Select property" />
         </SelectTrigger>
         <SelectContent>
-          {includeAllOption && (
-            <SelectItem value="all">
-              <div className="flex items-center">All Properties</div>
-            </SelectItem>
-          )}
+          <SelectItem value="all">
+            <div className="flex items-center">All Properties</div>
+          </SelectItem>
           {properties.map((property) => (
             <SelectItem key={property.id} value={property.id}>
-              <div className="flex flex-col min-w-0">
+              <div className="flex flex-col items-start min-w-0">
                 <span className="truncate text-sm">{property.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{property.address}</span>
               </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+      {isPending && (
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+      )}
     </div>
   );
 }

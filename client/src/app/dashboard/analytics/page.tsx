@@ -15,6 +15,7 @@ import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
 import { IncomeExpensesChart } from "@/components/dashboard/analytics/IncomeExpensesChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
 import { PropertyPerformanceChart } from "@/components/dashboard/analytics/PropertyPerformanceChart";
+import { PropertySelector } from "@/components/dashboard/analytics/PropertySelector";
 
 interface AnalyticsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -32,6 +33,8 @@ export default async function AnalyticsPage({
   const params = await searchParams;
   const timeRange =
     typeof params.timeRange === "string" ? params.timeRange : "semester";
+  const propertyId =
+    typeof params.propertyId === "string" ? params.propertyId : undefined;
 
   const {
     kpis,
@@ -40,7 +43,7 @@ export default async function AnalyticsPage({
     expenseBreakdown,
     propertyRanking,
     properties,
-  } = await getAnalyticsPageData(session.user.id, timeRange);
+  } = await getAnalyticsPageData(session.user.id, timeRange, propertyId);
 
   const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
     return [
@@ -97,7 +100,8 @@ export default async function AnalyticsPage({
             Comprehensive insights into your property portfolio performance
           </p>
         </div>
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+          <PropertySelector properties={properties} />
           <TimeRangeSelector />
         </div>
       </div>
@@ -112,26 +116,14 @@ export default async function AnalyticsPage({
         <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
             <div className="min-h-0">
-              <CashFlowChart
-                properties={properties}
-                initialData={cashFlowTrend}
-                timeRange={timeRange}
-              />
+              <CashFlowChart initialData={cashFlowTrend} />
             </div>
             <div className="min-h-0">
-              <IncomeExpensesChart
-                properties={properties}
-                initialData={cashFlowTrend}
-                timeRange={timeRange}
-              />
+              <IncomeExpensesChart initialData={cashFlowTrend} />
             </div>
           </div>
           <div className="min-h-0">
-            <ExpenseBreakdownChart
-              properties={properties}
-              initialData={expenseBreakdown}
-              timeRange={timeRange}
-            />
+            <ExpenseBreakdownChart initialData={expenseBreakdown} />
           </div>
         </div>
       </section>
