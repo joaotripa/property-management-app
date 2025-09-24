@@ -48,7 +48,7 @@ export default async function AnalyticsPage({
   const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
     return [
       {
-        title: "Total Invested",
+        title: "Capital Invested",
         value: formatCompactCurrency(kpis.totalInvestment || 0),
         ...getTrendData(
           kpis.totalInvestment || 0,
@@ -79,7 +79,7 @@ export default async function AnalyticsPage({
         ),
       },
       {
-        title: "Portfolio ROI",
+        title: "ROI %",
         value: formatPercentage(kpis.protfolioROI || 0),
         ...getTrendData(kpis.protfolioROI || 0, previousKpis.protfolioROI),
       },

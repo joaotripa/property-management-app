@@ -35,15 +35,14 @@ export function TimeRangeSelector({
         params.set("timeRange", value);
       }
 
-      router.push(`/dashboard/analytics?${params.toString()}`);
+      router.push(`/dashboard/analytics?${params.toString()}`, {
+        scroll: false,
+      });
     });
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-muted-foreground">
-        Time Range:
-      </span>
       <Select
         value={currentTimeRange}
         onValueChange={handleTimeRangeChange}
