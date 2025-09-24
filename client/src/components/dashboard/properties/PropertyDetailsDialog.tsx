@@ -28,9 +28,9 @@ import { PropertyEditForm } from "./PropertyEditForm";
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
 import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
 import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
-import { usePropertyTransactions } from "@/hooks/usePropertyTransactions";
-import { useTransactionFilters } from "@/hooks/useTransactionFilters";
-import { CategoryOption } from "@/types/transactions";
+import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
+import { usePropertyTransactionsQuery } from "@/hooks/queries/usePropertyTransactionsQuery";
+import { CategoryOption, TransactionFilters as TransactionFiltersType } from "@/types/transactions";
 import { Property } from "@/types/properties";
 import { OccupancyStatus } from "@prisma/client";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
@@ -83,15 +83,21 @@ export function PropertyDetailsDialog({
     roi: number;
   } | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filters, setFilters] = useState<TransactionFiltersType>({});
 
-  const { filters } = useTransactionFilters({
-    propertyId: property?.id,
-  });
-
-  const { transactions, loading, error, totalCount } = usePropertyTransactions(
+  const { data, isLoading, error } = usePropertyTransactionsQuery(
     property?.id,
-    filters
+    filters,
+    page,
+    pageSize
   );
+
+  const transactions = data?.transactions || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = data?.totalPages || 0;
+  const currentPage = data?.currentPage || 1;
 
   useEffect(() => {
     if (!isOpen) {
@@ -108,6 +114,8 @@ export function PropertyDetailsDialog({
     setLoadingImages(true);
     setCurrentMonthMetrics(null);
     setLoadingMetrics(true);
+    setPage(1);
+    setFilters({});
 
     const loadData = async () => {
       try {
@@ -549,6 +557,8 @@ export function PropertyDetailsDialog({
                 <CardContent className="flex flex-col gap-4">
                   {/* Transaction Filters */}
                   <TransactionFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
                     availableCategories={availableCategories}
                     availableProperties={[]}
                     showPropertyFilter={false}
@@ -558,12 +568,12 @@ export function PropertyDetailsDialog({
                   <div className="mt-4">
                     {error ? (
                       <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4">
-                        <p className="text-sm text-destructive">{error}</p>
+                        <p className="text-sm text-destructive">{error.message}</p>
                       </div>
                     ) : (
                       <TransactionTableWithActions
                         transactions={transactions}
-                        loading={loading}
+                        loading={isLoading}
                         showPropertyColumn={false}
                         emptyMessage={`No transactions found for ${currentProperty.name}`}
                         onEdit={undefined}
@@ -571,14 +581,20 @@ export function PropertyDetailsDialog({
                       />
                     )}
 
-                    {/* Transaction Summary */}
-                    {!loading && transactions.length > 0 && (
-                      <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                        <span>
-                          Showing {transactions.length} of {totalCount}{" "}
-                          transactions
-                        </span>
-                      </div>
+                    {/* Transaction Pagination */}
+                    {totalCount > 0 && (
+                      <TransactionsPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        onPageChange={setPage}
+                        onPageSizeChange={(newSize) => {
+                          setPageSize(newSize);
+                          setPage(1);
+                        }}
+                        loading={isLoading}
+                      />
                     )}
                   </div>
                 </CardContent>

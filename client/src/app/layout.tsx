@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 
 import Script from "next/script";
 import AuthProvider from "@/components/providers/AuthProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -21,10 +22,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         ></Script>
       </head>
       <body suppressHydrationWarning>
-        <AuthProvider>
-          <Toaster richColors closeButton theme="light" />
-          {children}
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <Toaster richColors closeButton theme="light" />
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

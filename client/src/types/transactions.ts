@@ -40,27 +40,31 @@ export interface TransactionFilters {
   // Date range (strings for server/client component stability)
   dateFrom?: string;
   dateTo?: string;
-  
+
   // Transaction type
   type?: TransactionType | 'all';
-  
+
   // Amount range
   amountMin?: number;
   amountMax?: number;
-  
+
   // Category filter
   categoryIds?: string[];
-  
-  
+
+
   // Property filter (for global view)
   propertyId?: string;
-  
+
   // Search term for description
   search?: string;
-  
+
   // Sorting
   sortBy?: 'transactionDate' | 'amount' | 'type' | 'category';
   sortOrder?: 'asc' | 'desc';
+
+  // Pagination
+  page?: number;
+  pageSize?: number;
 }
 
 // Database-specific filter interface (server-side, uses Date objects for database queries)
@@ -137,5 +141,7 @@ export interface UsePropertyTransactionsReturn {
   loading: boolean;
   error: string | null;
   totalCount: number;
+  totalPages: number;
+  currentPage: number;
   refetch: () => void;
 }
