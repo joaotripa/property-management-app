@@ -415,7 +415,7 @@ export function PropertyDetailsDialog({
                       <div className="flex items-center justify-center gap-2">
                         <Euro className="w-4 h-4" />
                         <span className="text-sm font-medium">
-                          Monthly Rent
+                          Expected Monthly Rent
                         </span>
                       </div>
                       <p className="text-lg font-semibold text-center">

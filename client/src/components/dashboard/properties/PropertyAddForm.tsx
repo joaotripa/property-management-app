@@ -32,12 +32,8 @@ import {
   propertyFormSchema,
 } from "@/lib/validations/property";
 import { z } from "zod";
-import {
-  uploadPropertyImages,
-} from "@/lib/services/client/imageService";
-import {
-  validatePropertyFiles,
-} from "@/lib/services/shared/imageUtils";
+import { uploadPropertyImages } from "@/lib/services/client/imageService";
+import { validatePropertyFiles } from "@/lib/services/shared/imageUtils";
 import {
   MultiImageUpload,
   type FileWithPreview,
@@ -105,7 +101,6 @@ export function PropertyAddForm({
     setUploadError(null);
     setSelectedFiles(files);
 
-
     if (coverImageIndex >= files.length) {
       setCoverImageIndex(0);
     }
@@ -114,7 +109,6 @@ export function PropertyAddForm({
   const handleCoverImageChange = (index: number) => {
     setCoverImageIndex(index);
   };
-
 
   const onSubmit = async (data: PropertyFormInput) => {
     try {
@@ -276,7 +270,7 @@ export function PropertyAddForm({
                   name="rent"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rent (€) *</FormLabel>
+                      <FormLabel>Expected Monthly Rent (€) *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
