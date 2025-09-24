@@ -10,7 +10,6 @@ export interface KPIMetrics {
   totalIncome: number;
   totalExpenses: number;
   cashFlow: number;
-  cashOnCashReturn: number;
   expenseToIncomeRatio: number;
   protfolioROI: number;
   totalPortfolioValue: number;
@@ -23,7 +22,6 @@ export interface PropertyKPIMetrics {
   totalIncome: number;
   totalExpenses: number;
   cashFlow: number;
-  cashOnCashReturn: number;
   roi: number;
   purchasePrice: number;
   marketValue: number;
@@ -110,9 +108,6 @@ export async function getPortfolioKPIs(
     const { totalIncome, totalExpenses, cashFlow } = metricsData;
     const totalInvestment = Number(propertyStats._sum.purchasePrice || 0);
     const totalPortfolioValue = Number(propertyStats._sum.marketValue || totalInvestment);
-
-    const cashOnCashReturn = totalInvestment > 0 ? roundToTwoDecimals((cashFlow / totalInvestment) * 100) : 0;
-
     const expenseToIncomeRatio = totalIncome > 0 ? roundToTwoDecimals((totalExpenses / totalIncome) * 100) : 0;
 
     const protfolioROI = totalInvestment > 0
@@ -124,7 +119,6 @@ export async function getPortfolioKPIs(
       totalIncome,
       totalExpenses,
       cashFlow,
-      cashOnCashReturn,
       expenseToIncomeRatio,
       protfolioROI,
       totalPortfolioValue,
@@ -182,7 +176,6 @@ export async function getPropertyKPIs(
       const marketValue = Number(property.marketValue || purchasePrice);
       const monthlyRent = Number(property.rent);
 
-      const cashOnCashReturn = purchasePrice > 0 ? roundToTwoDecimals((metrics.cashFlow / purchasePrice) * 100) : 0;
       const roi = purchasePrice > 0 ? roundToTwoDecimals((metrics.cashFlow / purchasePrice) * 100) : 0;
 
       return {
@@ -191,7 +184,6 @@ export async function getPropertyKPIs(
         totalIncome: metrics.totalIncome,
         totalExpenses: metrics.totalExpenses,
         cashFlow: metrics.cashFlow,
-        cashOnCashReturn,
         roi,
         purchasePrice,
         marketValue,

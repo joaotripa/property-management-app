@@ -2,6 +2,7 @@ import { prisma } from "@/lib/config/database";
 import { PropertyFilters, propertyFiltersSchema } from "@/lib/validations/property";
 import { Property } from "@/types/properties";
 import { Prisma } from "@prisma/client";
+import { getTotalMetrics } from "@/lib/db/monthlyMetrics/queries";
 
 /**
  * Get all properties for a user with optional filtering
@@ -167,7 +168,7 @@ export async function getPropertyOptions(userId: string) {
  */
 export async function getPropertyStats(userId: string) {
   try {
-    const [totalProperties, occupiedProperties, totalRent, averageRent] = await Promise.all([
+    const [totalProperties, occupiedProperties, totalRent, averageRent, totalInvestment, allTimeMetrics] = await Promise.all([
       prisma.property.count({
         where: {
           userId,
@@ -200,17 +201,33 @@ export async function getPropertyStats(userId: string) {
           rent: true,
         },
       }),
+      prisma.property.aggregate({
+        where: {
+          userId,
+          deletedAt: null,
+        },
+        _sum: {
+          purchasePrice: true,
+        },
+      }),
+      getTotalMetrics(userId),
     ]);
 
     const occupancyRate = totalProperties > 0 ? (occupiedProperties / totalProperties) * 100 : 0;
+    const totalInvestmentValue = Number(totalInvestment._sum.purchasePrice || 0);
+    const totalRentValue = Number(totalRent._sum.rent || 0);
+    const portfolioROI = totalInvestmentValue > 0
+      ? Math.round(((allTimeMetrics.cashFlow / totalInvestmentValue) * 100) * 100) / 100
+      : 0;
 
     return {
       totalProperties,
       occupiedProperties,
       availableProperties: totalProperties - occupiedProperties,
       occupancyRate: Math.round(occupancyRate * 100) / 100,
-      totalRent: Number(totalRent._sum.rent || 0),
+      totalRent: totalRentValue,
       averageRent: Number(averageRent._avg.rent || 0),
+      portfolioROI,
     };
   } catch (error) {
     console.error('Error fetching property statistics:', error);

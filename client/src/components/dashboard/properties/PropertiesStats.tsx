@@ -3,7 +3,7 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { formatCompactCurrency } from "@/lib/utils/formatting";
+import { formatCompactCurrency, formatPercentage } from "@/lib/utils/formatting";
 
 interface PropertyStats {
   totalProperties: number;
@@ -12,6 +12,7 @@ interface PropertyStats {
   occupancyRate: number;
   totalRent: number;
   averageRent: number;
+  portfolioROI: number;
 }
 
 interface PropertiesStatsProps {
@@ -38,6 +39,10 @@ const PropertiesStats = ({ stats }: PropertiesStatsProps) => {
     {
       title: "Average Rent",
       value: formatCompactCurrency(stats.averageRent),
+    },
+    {
+      title: "Portfolio ROI %",
+      value: formatPercentage(stats.portfolioROI),
     },
   ];
 

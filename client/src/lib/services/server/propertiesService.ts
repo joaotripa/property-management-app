@@ -8,6 +8,7 @@ interface PropertyStats {
   occupancyRate: number;
   totalRent: number;
   averageRent: number;
+  portfolioROI: number;
 }
 
 interface PropertiesData {
