@@ -18,9 +18,9 @@ import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 const chartConfig = {
-  income: {
-    label: "Revenue",
-    color: "var(--color-success)",
+  cashFlow: {
+    label: "Cash Flow",
+    color: "var(--color-primary)",
   },
 } as const;
 
@@ -35,7 +35,7 @@ function formatMonthYear(monthString: string): string {
 
 function generateEmptyChartData(): Array<{
   month: string;
-  income: number;
+  cashFlow: number;
   monthLabel: string;
 }> {
   const data = [];
@@ -46,7 +46,7 @@ function generateEmptyChartData(): Array<{
     const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     data.push({
       month: monthString,
-      income: 0,
+      cashFlow: 0,
       monthLabel: formatMonthYear(monthString),
     });
   }
@@ -54,11 +54,11 @@ function generateEmptyChartData(): Array<{
   return data;
 }
 
-interface RevenueTrendProps {
+interface CashFlowTrendChartProps {
   initialData: CashFlowTrendData[];
 }
 
-export function RevenueTrend({ initialData }: RevenueTrendProps) {
+export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
   const chartData =
     initialData.length > 0
       ? initialData.map((item) => ({
@@ -71,11 +71,13 @@ export function RevenueTrend({ initialData }: RevenueTrendProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Income Trend</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Cash Flow Trend
+          </CardTitle>
           <div className="text-sm text-muted-foreground">Last 6 months</div>
         </div>
         <CardDescription>
-          Showing total revenue income for the last 6 months
+          Showing net cash flow for the last 6 months
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -111,7 +113,7 @@ export function RevenueTrend({ initialData }: RevenueTrendProps) {
             />
 
             <defs>
-              <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="fillCashFlow" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
                   stopColor="var(--color-primary)"
@@ -120,17 +122,18 @@ export function RevenueTrend({ initialData }: RevenueTrendProps) {
                 <stop
                   offset="95%"
                   stopColor="var(--color-primary)"
-                  stopOpacity={0.1}
+                  stopOpacity={0.2}
                 />
               </linearGradient>
             </defs>
 
             <Area
               type="natural"
-              dataKey="income"
+              dataKey="cashFlow"
               stroke="var(--color-primary)"
-              fill="url(#fillRevenue)"
+              fill="url(#fillCashFlow)"
               fillOpacity={0.4}
+              baseValue="dataMin"
             />
           </AreaChart>
         </ChartContainer>

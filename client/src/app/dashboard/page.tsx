@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { getOverviewPageData } from "@/lib/services/server/overviewService";
 import { OverviewKPIs } from "@/components/dashboard/overview/OverviewKPIs";
-import { RevenueTrend } from "@/components/dashboard/overview/RevenueTrend";
+import { CashFlowTrendChart } from "@/components/dashboard/overview/CashFlowTrendChart";
 import { TopPropertiesCard } from "@/components/dashboard/overview/TopPropertiesCard";
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 import { redirect } from "next/navigation";
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
 
       {/* Middle Section: Cash Flow & Top Properties */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RevenueTrend initialData={cashFlowTrend} />
+        <CashFlowTrendChart initialData={cashFlowTrend} />
         <TopPropertiesCard
           topProperties={topProperties}
           previousTopProperties={previousTopProperties}
