@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar/DashboardSidebar";
+import { Loading } from "@/components/ui/loading";
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,10 +24,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <SidebarInset>
         {status === "loading" ? (
           <div className="flex min-h-svh w-full items-center justify-center">
-            <div className="flex flex-row items-center justify-center gap-4">
-              <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
-              Loading...
-            </div>
+            <Loading />
           </div>
         ) : (
           <>

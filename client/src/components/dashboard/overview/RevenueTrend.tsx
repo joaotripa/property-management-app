@@ -22,10 +22,6 @@ const chartConfig = {
     label: "Revenue",
     color: "var(--color-success)",
   },
-  expenses: {
-    label: "Expenses",
-    color: "var(--color-destructive)",
-  },
 } as const;
 
 function formatMonthYear(monthString: string): string {
@@ -63,7 +59,6 @@ interface RevenueTrendProps {
 }
 
 export function RevenueTrend({ initialData }: RevenueTrendProps) {
-
   const chartData =
     initialData.length > 0
       ? initialData.map((item) => ({
@@ -76,7 +71,7 @@ export function RevenueTrend({ initialData }: RevenueTrendProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Revenue Trend</CardTitle>
+          <CardTitle className="text-lg font-semibold">Income Trend</CardTitle>
           <div className="text-sm text-muted-foreground">Last 6 months</div>
         </div>
         <CardDescription>

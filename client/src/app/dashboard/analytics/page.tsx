@@ -12,10 +12,9 @@ import {
 } from "@/lib/utils/formatting";
 import { getTrendData } from "@/lib/utils/analytics";
 import { CashFlowChart } from "@/components/dashboard/analytics/CashFlowChart";
+import { IncomeExpensesChart } from "@/components/dashboard/analytics/IncomeExpensesChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/analytics/ExpenseBreakdownChart";
-import { TopIncomeChart } from "@/components/dashboard/analytics/TopIncomeChart";
-import { CashFlowComparisonChart } from "@/components/dashboard/analytics/CashFlowComparisonChart";
-import { ROIChart } from "@/components/dashboard/analytics/ROIChart";
+import { PropertyPerformanceChart } from "@/components/dashboard/analytics/PropertyPerformanceChart";
 
 interface AnalyticsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -110,21 +109,22 @@ export default async function AnalyticsPage({
 
       {/* Charts Section */}
       <section className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
-              Performance Charts
-            </h2>
-          </div>
-        </div>
-
         <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
-          <div className="min-h-0">
-            <CashFlowChart
-              properties={properties}
-              initialData={cashFlowTrend}
-              timeRange={timeRange}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
+            <div className="min-h-0">
+              <CashFlowChart
+                properties={properties}
+                initialData={cashFlowTrend}
+                timeRange={timeRange}
+              />
+            </div>
+            <div className="min-h-0">
+              <IncomeExpensesChart
+                properties={properties}
+                initialData={cashFlowTrend}
+                timeRange={timeRange}
+              />
+            </div>
           </div>
           <div className="min-h-0">
             <ExpenseBreakdownChart
@@ -138,25 +138,11 @@ export default async function AnalyticsPage({
 
       {/* Property Comparison Section */}
       <section className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
-        <div className="flex items-center">
-          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
-            Property Analysis
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
-          <div className="min-h-0">
-            <TopIncomeChart data={propertyRanking} timeRange={timeRange} />
-          </div>
-          <div className="min-h-0">
-            <CashFlowComparisonChart
-              data={propertyRanking}
-              timeRange={timeRange}
-            />
-          </div>
-          <div className="lg:col-span-2 min-h-0">
-            <ROIChart data={propertyRanking} timeRange={timeRange} />
-          </div>
+        <div className="min-h-0">
+          <PropertyPerformanceChart
+            data={propertyRanking}
+            timeRange={timeRange}
+          />
         </div>
       </section>
     </div>

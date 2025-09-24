@@ -39,7 +39,7 @@ export function OverviewKPIs({
 
   const overviewKPIConfigs: KPICardConfig[] = [
     {
-      title: "Monthly Revenue",
+      title: "Monthly Income",
       value: formatCompactCurrency(currentIncome),
       trend: incomeTrend.trend,
       trendValue: incomeTrend.trendValue

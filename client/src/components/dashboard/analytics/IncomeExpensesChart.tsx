@@ -24,7 +24,7 @@ import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 import { calculateDateRange } from "@/lib/utils/dateRange";
 
-interface CashFlowChartProps {
+interface IncomeExpensesChartProps {
   properties: PropertyOption[];
   initialData?: AnyTimeSeriesData[];
   timeRange?: string; // Finance time range (current, quarter, semester, year, full)
@@ -35,21 +35,21 @@ type ChartDataItem = AnyTimeSeriesData & {
 };
 
 const chartConfig = {
-  cashFlow: {
-    label: "Net Income",
-    color: "var(--color-indigo-500)",
+  income: {
+    label: "Income",
+    color: "var(--color-emerald-500)",
   },
-  cumulativeCashFlow: {
-    label: "Cumulative Total",
-    color: "var(--color-blue-500)",
+  expenses: {
+    label: "Expenses",
+    color: "var(--color-coral-500)",
   },
 } as const;
 
-export function CashFlowChart({
+export function IncomeExpensesChart({
   properties,
   initialData = [],
   timeRange = "semester", // Default to semester
-}: CashFlowChartProps) {
+}: IncomeExpensesChartProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | undefined
   >(undefined);
@@ -57,7 +57,6 @@ export function CashFlowChart({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Determine granularity based on finance time range
   const requestedGranularity = selectFinanceGranularity(timeRange);
 
   const fetchData = useCallback(async () => {
@@ -71,14 +70,13 @@ export function CashFlowChart({
         monthsBack,
         propertyId: selectedPropertyId,
         granularity: requestedGranularity,
-        timeRange, // Pass the time range for finance-aware processing
+        timeRange,
       });
 
       setData(result);
     } catch (err) {
       console.error("Error fetching cash flow data:", err);
 
-      // If weekly/daily fails, try monthly as fallback
       if (
         requestedGranularity === "weekly" ||
         requestedGranularity === "daily"
@@ -113,11 +111,9 @@ export function CashFlowChart({
   }, [selectedPropertyId, timeRange, requestedGranularity]);
 
   useEffect(() => {
-    // Fetch when property is selected or time range changes
     if (selectedPropertyId) {
       fetchData();
     } else {
-      // For portfolio view, refetch when time range changes
       fetchData();
     }
   }, [fetchData, selectedPropertyId]);
@@ -147,7 +143,7 @@ export function CashFlowChart({
         </CardHeader>
         <CardContent>
           <div className="text-center text-red-600 py-8">
-            Error loading cash flow data: {error}
+            Error loading income and expenses data: {error}
           </div>
         </CardContent>
       </Card>
@@ -159,7 +155,7 @@ export function CashFlowChart({
       <CardHeader className="pb-3 sm:pb-4 md:pb-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
           <CardTitle className="text-lg sm:text-xl md:text-2xl">
-            Cash Flow Trend
+            Income vs Expenses Trend
           </CardTitle>
           <PropertySelector
             properties={properties}
@@ -172,7 +168,7 @@ export function CashFlowChart({
       <CardContent className="min-h-0">
         {chartData.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
-            No cash flow data available for the selected period.
+            No income or expenses data available for the selected period.
           </div>
         ) : (
           <ChartContainer
@@ -223,16 +219,16 @@ export function CashFlowChart({
 
               <Line
                 type="monotone"
-                dataKey="cashFlow"
-                stroke="var(--color-purple-500)"
+                dataKey="income"
+                stroke="var(--color-success)"
                 strokeWidth={2}
                 dot={false}
               />
 
               <Line
                 type="monotone"
-                dataKey="cumulativeCashFlow"
-                stroke="var(--color-primary)"
+                dataKey="expenses"
+                stroke="var(--color-destructive)"
                 strokeWidth={2}
                 dot={false}
               />
