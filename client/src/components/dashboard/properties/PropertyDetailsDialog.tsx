@@ -13,10 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Euro,
-  Users,
   Edit,
   Home,
-  Percent,
   ArrowLeft,
   ChevronRight,
   Trash2,
@@ -49,6 +47,8 @@ import {
 import { ImageServiceError } from "@/lib/services/shared/imageUtils";
 import { UpdatePropertyInput } from "@/lib/validations/property";
 import { toast } from "sonner";
+import { formatCurrency, formatPercentage } from "@/lib/utils/formatting";
+import { Separator } from "@/components/ui/separator";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -76,6 +76,13 @@ export function PropertyDetailsDialog({
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [currentMonthMetrics, setCurrentMonthMetrics] = useState<{
+    income: number;
+    expenses: number;
+    cashFlow: number;
+    roi: number;
+  } | null>(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
 
   const { filters } = useTransactionFilters({
     propertyId: property?.id,
@@ -99,6 +106,8 @@ export function PropertyDetailsDialog({
 
     setPropertyImages([]);
     setLoadingImages(true);
+    setCurrentMonthMetrics(null);
+    setLoadingMetrics(true);
 
     const loadData = async () => {
       try {
@@ -122,6 +131,46 @@ export function PropertyDetailsDialog({
       } finally {
         setLoadingImages(false);
       }
+
+      try {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const dateFrom = firstDayOfMonth.toISOString();
+        const dateTo = now.toISOString();
+
+        const [currentMonthResponse, lifetimeResponse] = await Promise.all([
+          fetch(
+            `/api/analytics/kpis?propertyId=${property.id}&dateFrom=${dateFrom}&dateTo=${dateTo}&includePropertyDetails=true`
+          ),
+          fetch(
+            `/api/analytics/kpis?propertyId=${property.id}&includePropertyDetails=true`
+          ),
+        ]);
+
+        if (!currentMonthResponse.ok || !lifetimeResponse.ok) {
+          throw new Error("Failed to fetch metrics");
+        }
+
+        const currentMonthData = await currentMonthResponse.json();
+        const lifetimeData = await lifetimeResponse.json();
+
+        const currentMetrics = currentMonthData.properties?.[0];
+        const lifetimeMetrics = lifetimeData.properties?.[0];
+
+        if (currentMetrics || lifetimeMetrics) {
+          setCurrentMonthMetrics({
+            income: currentMetrics?.totalIncome || 0,
+            expenses: currentMetrics?.totalExpenses || 0,
+            cashFlow: currentMetrics?.cashFlow || 0,
+            roi: lifetimeMetrics?.roi || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load property metrics:", error);
+        setCurrentMonthMetrics(null);
+      } finally {
+        setLoadingMetrics(false);
+      }
     };
 
     loadData();
@@ -130,8 +179,6 @@ export function PropertyDetailsDialog({
   if (!property) return null;
 
   const currentProperty = editProperty || refreshedProperty || property;
-  const occupancyRate =
-    currentProperty.occupancy === OccupancyStatus.OCCUPIED ? 100 : 0;
   const city = currentProperty.city || null;
   const country = currentProperty.country || null;
 
@@ -396,7 +443,7 @@ export function PropertyDetailsDialog({
                       </div>
                       <p className="text-sm text-muted-foreground ml-6">
                         {currentProperty.purchasePrice
-                          ? `€${currentProperty.purchasePrice.toLocaleString()}`
+                          ? formatCurrency(currentProperty.purchasePrice)
                           : "Not specified"}
                       </p>
                     </div>
@@ -404,73 +451,91 @@ export function PropertyDetailsDialog({
                 </CardContent>
               </Card>
 
-              {/* Financial & Occupancy Information */}
+              {/* Rental Information */}
               <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Rental Information</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Euro className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Expected Monthly Rent
-                        </span>
-                      </div>
-                      <p className="text-lg font-semibold text-center">
-                        €{currentProperty.rent}
+                <CardContent className="px-6 py-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-3">
+                    <div className="flex flex-col gap-2 p-6 items-center">
+                      <p className="text-sm text-muted-foreground">
+                        Expected Monthly Rent
+                      </p>
+                      <p className="text-3xl font-semibold">
+                        {formatCurrency(currentProperty.rent)}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Users className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Current Tenants
-                        </span>
-                      </div>
-                      <p className="text-lg font-semibold text-center">
+                    <div className="flex flex-col gap-2 p-6 items-center ">
+                      <p className="text-sm text-muted-foreground">
+                        Current Tenants
+                      </p>
+                      <p className="text-3xl font-semibold">
                         {currentProperty.tenants}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Percent className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Occupancy Rate
-                        </span>
-                      </div>
-                      <p className="text-lg font-semibold text-center">
-                        {occupancyRate}%
+                    <div className="flex flex-col gap-2 p-6 items-center">
+                      <p className="text-sm text-muted-foreground">
+                        Availability
+                      </p>
+                      <Badge
+                        variant={
+                          currentProperty.occupancy ===
+                          OccupancyStatus.AVAILABLE
+                            ? "secondary"
+                            : "default"
+                        }
+                        className={`w-fit ${
+                          currentProperty.occupancy ===
+                          OccupancyStatus.AVAILABLE
+                            ? "bg-success/10 text-success"
+                            : "bg-destructive/10 text-destructive"
+                        }`}
+                      >
+                        {currentProperty.occupancy}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Current Month Financial Performance */}
+              <Card className="col-span-1 lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Current Month Performance</CardTitle>
+                </CardHeader>
+                <CardContent className="px-6 py-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-3">
+                    <div className="flex flex-col gap-2 p-6 items-center">
+                      <p className="text-sm text-muted-foreground">Income</p>
+                      <p className="text-3xl font-semibold ">
+                        {formatCurrency(currentMonthMetrics?.income || 0)}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-center gap-2">
-                        <span className="text-sm font-medium">
-                          Availability
-                        </span>
-                      </div>
-                      <div className="flex justify-center">
-                        <Badge
-                          variant={
-                            currentProperty.occupancy ===
-                            OccupancyStatus.AVAILABLE
-                              ? "secondary"
-                              : "default"
-                          }
-                          className={`${
-                            currentProperty.occupancy ===
-                            OccupancyStatus.AVAILABLE
-                              ? "bg-success/10 text-success"
-                              : "bg-destructive/10 text-destructive"
-                          }`}
-                        >
-                          {currentProperty.occupancy}
-                        </Badge>
-                      </div>
+                    <div className="flex flex-col gap-2 p-6 items-center">
+                      <p className="text-sm text-muted-foreground">Expenses</p>
+                      <p className="text-3xl font-semibold">
+                        {formatCurrency(currentMonthMetrics?.expenses || 0)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 p-6 items-center">
+                      <p className="text-sm text-muted-foreground">Cash Flow</p>
+                      <p
+                        className={`text-3xl font-semibold ${
+                          (currentMonthMetrics?.cashFlow || 0) >= 0
+                            ? "text-success"
+                            : "text-destructive"
+                        }`}
+                      >
+                        {(currentMonthMetrics?.cashFlow || 0) >= 0 ? "+" : "-"}
+                        {formatCurrency(
+                          Math.abs(currentMonthMetrics?.cashFlow || 0)
+                        )}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
