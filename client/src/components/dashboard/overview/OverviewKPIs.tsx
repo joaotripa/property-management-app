@@ -37,6 +37,10 @@ export function OverviewKPIs({
   const previousExpenses = previousKpis?.totalExpenses || 0;
   const expensesTrend = getTrendData(currentExpenses, previousExpenses);
 
+  const currentCashFlow = monthlyStats?.cashFlow || 0;
+  const previousCashFlow = previousKpis?.cashFlow || 0;
+  const cashFlowTrend = getTrendData(currentCashFlow, previousCashFlow);
+
   const overviewKPIConfigs: KPICardConfig[] = [
     {
       title: "Monthly Income",
@@ -56,8 +60,12 @@ export function OverviewKPIs({
       invertTrendColors: true,
     },
     {
-      title: "Total Properties",
-      value: totalProperties.toString(),
+      title: "Monthly Cash Flow",
+      value: formatCompactCurrency(currentCashFlow),
+      trend: cashFlowTrend.trend,
+      trendValue: cashFlowTrend.trendValue
+        ? `${cashFlowTrend.trendValue}`
+        : undefined,
     },
     {
       title: "Occupied Properties",
