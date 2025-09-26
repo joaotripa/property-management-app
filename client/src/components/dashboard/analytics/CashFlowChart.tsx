@@ -9,10 +9,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import {
-  AnyTimeSeriesData,
-  formatDataLabel,
-} from "@/lib/types/granularity";
+import { AnyTimeSeriesData, formatDataLabel } from "@/lib/types/granularity";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
@@ -26,18 +23,16 @@ type ChartDataItem = AnyTimeSeriesData & {
 
 const chartConfig = {
   cashFlow: {
-    label: "Net Income",
-    color: "var(--color-indigo-500)",
+    label: "Cash Flow",
+    color: "var(--color-purple-500)",
   },
   cumulativeCashFlow: {
-    label: "Cumulative Total",
-    color: "var(--color-blue-500)",
+    label: "Cumulative Cash Flow",
+    color: "var(--color-primary)",
   },
 } as const;
 
-export function CashFlowChart({
-  initialData = [],
-}: CashFlowChartProps) {
+export function CashFlowChart({ initialData = [] }: CashFlowChartProps) {
   const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -105,7 +100,7 @@ export function CashFlowChart({
               <Line
                 type="monotone"
                 dataKey="cashFlow"
-                stroke="var(--color-purple-500)"
+                stroke={chartConfig.cashFlow.color}
                 strokeWidth={2}
                 dot={false}
               />
@@ -113,7 +108,7 @@ export function CashFlowChart({
               <Line
                 type="monotone"
                 dataKey="cumulativeCashFlow"
-                stroke="var(--color-primary)"
+                stroke={chartConfig.cumulativeCashFlow.color}
                 strokeWidth={2}
                 dot={false}
               />

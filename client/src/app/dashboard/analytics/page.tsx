@@ -116,10 +116,10 @@ export default async function AnalyticsPage({
         <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
             <div className="min-h-0">
-              <CashFlowChart initialData={cashFlowTrend} />
+              <IncomeExpensesChart initialData={cashFlowTrend} />
             </div>
             <div className="min-h-0">
-              <IncomeExpensesChart initialData={cashFlowTrend} />
+              <CashFlowChart initialData={cashFlowTrend} />
             </div>
           </div>
           <div className="min-h-0">

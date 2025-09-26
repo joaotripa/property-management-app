@@ -16,10 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
-import {
-  formatCurrency,
-  formatPercentage,
-} from "@/lib/utils/formatting";
+import { formatCurrency, formatPercentage } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 import { getPropertyComparison } from "@/lib/services/client/analyticsService";
 import { calculateDateRange } from "@/lib/utils/dateRange";
@@ -236,7 +233,6 @@ export function PropertyPerformanceChart({
               tickLine={false}
               tickMargin={8}
               tick={{ fontSize: 10 }}
-              width={60}
             />
 
             <ChartTooltip
@@ -248,7 +244,7 @@ export function PropertyPerformanceChart({
               }
             />
 
-            <Bar dataKey={dataKey} radius={8} barSize={40} />
+            <Bar dataKey={dataKey} radius={8} />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>

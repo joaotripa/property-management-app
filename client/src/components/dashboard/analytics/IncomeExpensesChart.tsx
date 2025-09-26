@@ -9,10 +9,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import {
-  AnyTimeSeriesData,
-  formatDataLabel,
-} from "@/lib/types/granularity";
+import { AnyTimeSeriesData, formatDataLabel } from "@/lib/types/granularity";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
@@ -27,11 +24,11 @@ type ChartDataItem = AnyTimeSeriesData & {
 const chartConfig = {
   income: {
     label: "Income",
-    color: "var(--color-emerald-500)",
+    color: "var(--color-success)",
   },
   expenses: {
     label: "Expenses",
-    color: "var(--color-coral-500)",
+    color: "var(--color-destructive)",
   },
 } as const;
 
@@ -105,7 +102,7 @@ export function IncomeExpensesChart({
               <Line
                 type="monotone"
                 dataKey="income"
-                stroke="var(--color-success)"
+                stroke={chartConfig.income.color}
                 strokeWidth={2}
                 dot={false}
               />
@@ -113,7 +110,7 @@ export function IncomeExpensesChart({
               <Line
                 type="monotone"
                 dataKey="expenses"
-                stroke="var(--color-destructive)"
+                stroke={chartConfig.expenses.color}
                 strokeWidth={2}
                 dot={false}
               />
