@@ -98,7 +98,7 @@ export function ProfileForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name *</Label>
           <Input
@@ -111,34 +111,6 @@ export function ProfileForm() {
             <p className="text-sm text-destructive">{errors.name.message}</p>
           )}
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address *</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            {...register("email")}
-            className={errors.email ? "border-destructive" : ""}
-          />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          placeholder="Enter your phone number (optional)"
-          {...register("phone")}
-          className={errors.phone ? "border-destructive" : ""}
-        />
-        {errors.phone && (
-          <p className="text-sm text-destructive">{errors.phone.message}</p>
-        )}
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-4">
