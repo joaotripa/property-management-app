@@ -125,7 +125,6 @@ export function TransactionTableWithActions({
     }
   };
 
-  // Default showSelection based on readOnly state if not explicitly set
   const shouldShowSelection = showSelection ?? !readOnly;
 
   const columns = getTransactionColumns({
@@ -135,8 +134,20 @@ export function TransactionTableWithActions({
     onDelete: readOnly ? undefined : onDelete,
   });
 
-  // Limit transactions if maxRows is specified
-  const displayTransactions = maxRows ? transactions.slice(0, maxRows) : transactions;
+  const displayTransactions = maxRows
+    ? transactions.slice(0, maxRows)
+    : transactions;
+
+  const existingColumnIds = new Set(
+    columns.map(
+      (col) => col.id || (col as { accessorKey?: string }).accessorKey
+    )
+  );
+  const filteredColumnVisibility = Object.fromEntries(
+    Object.entries(columnVisibility).filter(([key]) =>
+      existingColumnIds.has(key)
+    )
+  );
 
   const table = useReactTable({
     data: displayTransactions,
@@ -152,7 +163,7 @@ export function TransactionTableWithActions({
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
+      columnVisibility: filteredColumnVisibility,
       rowSelection,
       globalFilter,
     },

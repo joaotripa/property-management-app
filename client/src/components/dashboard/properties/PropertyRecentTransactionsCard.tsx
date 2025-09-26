@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,9 +36,6 @@ export function PropertyRecentTransactionsCard({
     const url = `/dashboard/transactions?propertyId=${propertyId}`;
     if (onNavigate) {
       onNavigate(url);
-    } else {
-      // Fallback for backward compatibility
-      router.push(url);
     }
   };
 
@@ -51,6 +54,9 @@ export function PropertyRecentTransactionsCard({
             <ExternalLink className="h-4 w-4" />
           </Button>
         </div>
+        <CardDescription>
+          Last 25 transactions of this property.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {error ? (

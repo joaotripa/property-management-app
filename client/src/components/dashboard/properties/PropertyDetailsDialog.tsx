@@ -10,12 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Edit,
-  ArrowLeft,
-  ChevronRight,
-  Trash2,
-} from "lucide-react";
+import { Edit, ArrowLeft, ChevronRight, Trash2 } from "lucide-react";
 import { PropertyEditForm } from "./PropertyEditForm";
 import { PropertyDetailsView } from "./PropertyDetailsView";
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
@@ -40,7 +35,7 @@ interface PropertyDetailsDialogProps {
   property: Property | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (property: Property) => void;
+  onSave: () => void;
   onDelete?: () => void | Promise<void>;
 }
 
@@ -67,9 +62,11 @@ export function PropertyDetailsDialog({
     roi: number;
   } | null>(null);
 
-  const { data: transactions = [], isLoading, error } = usePropertyTransactionsQuery(
-    property?.id
-  );
+  const {
+    data: transactions = [],
+    isLoading,
+    error,
+  } = usePropertyTransactionsQuery(property?.id);
 
   useEffect(() => {
     if (!isOpen) {
@@ -149,7 +146,7 @@ export function PropertyDetailsDialog({
       const freshProperty = await getPropertyById(property.id);
       if (freshProperty) {
         setRefreshedProperty(freshProperty);
-        onSave(freshProperty);
+        onSave();
       }
     } catch (error) {
       console.error("Failed to refresh property data:", error);
@@ -176,9 +173,9 @@ export function PropertyDetailsDialog({
     if (!editProperty || !property) return;
 
     try {
-      const updatedProperty = await updateProperty(property.id, data);
+      await updateProperty(property.id, data);
 
-      onSave(updatedProperty);
+      onSave();
 
       if (
         hasCoverImageChanged &&
@@ -260,8 +257,8 @@ export function PropertyDetailsDialog({
   };
 
   const handleNavigateToTransactions = (url: string) => {
-    onClose(); // Close dialog first
-    router.push(url); // Then navigate
+    onClose();
+    router.push(url);
   };
 
   return (
