@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Settings,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/dashboard/sidebar/NavMain";
 import { NavInsights } from "./NavInsights";
@@ -21,11 +22,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Overview",
@@ -60,6 +56,8 @@ const data = {
 export function DashboardSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+
   return (
     <Sidebar
       variant="inset"
@@ -75,7 +73,7 @@ export function DashboardSidebar({
         <NavInsights items={data.navInsights} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={session?.user} />
       </SidebarFooter>
     </Sidebar>
   );

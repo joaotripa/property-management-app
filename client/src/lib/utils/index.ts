@@ -47,3 +47,26 @@ export function isValidUUID(uuid: string): boolean {
   return uuidRegex.test(uuid);
 }
 
+export function getUserInitials(name: string): string {
+  if (!name || typeof name !== "string") {
+    return "";
+  }
+
+  // Clean the name and split into words
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(word => word.length > 0);
+
+  if (words.length === 0) {
+    return "";
+  }
+
+  // Get first letter of first word and first letter of last word (if exists)
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+}
+
