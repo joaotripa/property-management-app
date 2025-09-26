@@ -1,17 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Trash2 } from "lucide-react";
+import { Info, Shield, Trash2 } from "lucide-react";
 import { ProfileForm } from "./ProfileForm";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface UserAccountInfo {
+  hasGoogleAccount: boolean;
+  hasPassword: boolean;
+  canChangePassword: boolean;
+}
 
 export function AccountSettings() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [accountInfo, setAccountInfo] = useState<UserAccountInfo | null>(null);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+
+  useEffect(() => {
+    const fetchAccountInfo = async () => {
+      try {
+        const response = await fetch("/api/user/accounts");
+        if (response.ok) {
+          const data = await response.json();
+          setAccountInfo(data);
+        }
+      } catch (error) {
+        console.error("Error fetching account info:", error);
+      } finally {
+        setIsLoadingAccounts(false);
+      }
+    };
+
+    fetchAccountInfo();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -44,15 +81,26 @@ export function AccountSettings() {
             <div>
               <h4 className="font-medium">Password</h4>
               <p className="text-sm text-muted-foreground">
-                Change your password to keep your account secure
+                Change your password to keep your account secure"
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsPasswordDialogOpen(true)}
-            >
-              Change Password
-            </Button>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info size={20} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>Password cannot be changed for Google accounts</span>
+                </TooltipContent>
+              </Tooltip>
+              <Button
+                variant="outline"
+                disabled={isLoadingAccounts || accountInfo?.hasGoogleAccount}
+                onClick={() => setIsPasswordDialogOpen(true)}
+              >
+                Change Password
+              </Button>
+            </div>
           </div>
 
           <Separator />
@@ -67,8 +115,8 @@ export function AccountSettings() {
                 Permanently delete your account and all associated data
               </p>
             </div>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
               Delete Account
@@ -78,12 +126,12 @@ export function AccountSettings() {
       </Card>
 
       {/* Dialogs */}
-      <ChangePasswordDialog 
+      <ChangePasswordDialog
         isOpen={isPasswordDialogOpen}
         onClose={() => setIsPasswordDialogOpen(false)}
       />
-      
-      <DeleteAccountDialog 
+
+      <DeleteAccountDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
       />
