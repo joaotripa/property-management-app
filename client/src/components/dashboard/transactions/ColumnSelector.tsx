@@ -45,6 +45,7 @@ export function ColumnSelector({ table, excludeColumns = [] }: ColumnSelectorPro
       <DropdownMenuContent align="end" className="w-48">
         {availableColumns.map((option) => {
           const column = table.getColumn(option.id);
+          if (!column) return null;
 
           return (
             <DropdownMenuCheckboxItem

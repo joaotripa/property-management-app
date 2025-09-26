@@ -10,7 +10,7 @@ import {
   endOfYear,
   subDays,
 } from "date-fns";
-import { CalendarIcon, X, Check } from "lucide-react";
+import { CalendarIcon, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";

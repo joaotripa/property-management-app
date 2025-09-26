@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { PropertyImage } from "@prisma/client";
 import {
   Dialog,
@@ -9,30 +10,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Euro,
   Edit,
-  Home,
   ArrowLeft,
   ChevronRight,
   Trash2,
-  LandPlot,
-  MapPinHouse,
-  Building2,
-  Globe,
 } from "lucide-react";
-import { ImageCarousel } from "@/components/ui/image-carousel";
 import { PropertyEditForm } from "./PropertyEditForm";
+import { PropertyDetailsView } from "./PropertyDetailsView";
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
-import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
-import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
 import { usePropertyTransactionsQuery } from "@/hooks/queries/usePropertyTransactionsQuery";
-import { CategoryOption, TransactionFilters as TransactionFiltersType } from "@/types/transactions";
 import { Property } from "@/types/properties";
-import { OccupancyStatus } from "@prisma/client";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
 import {
   updateProperty,
@@ -47,8 +35,6 @@ import {
 import { ImageServiceError } from "@/lib/services/shared/imageUtils";
 import { UpdatePropertyInput } from "@/lib/validations/property";
 import { toast } from "sonner";
-import { formatCurrency, formatPercentage } from "@/lib/utils/formatting";
-import { Separator } from "@/components/ui/separator";
 
 interface PropertyDetailsDialogProps {
   property: Property | null;
@@ -65,14 +51,12 @@ export function PropertyDetailsDialog({
   onSave,
   onDelete,
 }: PropertyDetailsDialogProps) {
+  const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [refreshedProperty, setRefreshedProperty] = useState<Property | null>(
     null
   );
-  const [availableCategories, setAvailableCategories] = useState<
-    CategoryOption[]
-  >([]);
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -82,22 +66,10 @@ export function PropertyDetailsDialog({
     cashFlow: number;
     roi: number;
   } | null>(null);
-  const [loadingMetrics, setLoadingMetrics] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [filters, setFilters] = useState<TransactionFiltersType>({});
 
-  const { data, isLoading, error } = usePropertyTransactionsQuery(
-    property?.id,
-    filters,
-    page,
-    pageSize
+  const { data: transactions = [], isLoading, error } = usePropertyTransactionsQuery(
+    property?.id
   );
-
-  const transactions = data?.transactions || [];
-  const totalCount = data?.totalCount || 0;
-  const totalPages = data?.totalPages || 0;
-  const currentPage = data?.currentPage || 1;
 
   useEffect(() => {
     if (!isOpen) {
@@ -113,23 +85,8 @@ export function PropertyDetailsDialog({
     setPropertyImages([]);
     setLoadingImages(true);
     setCurrentMonthMetrics(null);
-    setLoadingMetrics(true);
-    setPage(1);
-    setFilters({});
 
     const loadData = async () => {
-      try {
-        const response = await fetch("/api/categories");
-        if (!response.ok) {
-          throw new Error("Failed to fetch categories");
-        }
-        const data = await response.json();
-        setAvailableCategories(data.categories);
-      } catch (error) {
-        console.error("Failed to load categories:", error);
-        setAvailableCategories([]);
-      }
-
       try {
         const images = await getPropertyImages(property.id);
         setPropertyImages(images);
@@ -176,8 +133,6 @@ export function PropertyDetailsDialog({
       } catch (error) {
         console.error("Failed to load property metrics:", error);
         setCurrentMonthMetrics(null);
-      } finally {
-        setLoadingMetrics(false);
       }
     };
 
@@ -187,8 +142,6 @@ export function PropertyDetailsDialog({
   if (!property) return null;
 
   const currentProperty = editProperty || refreshedProperty || property;
-  const city = currentProperty.city || null;
-  const country = currentProperty.country || null;
 
   const refreshPropertyData = async () => {
     if (!property?.id) return;
@@ -306,6 +259,11 @@ export function PropertyDetailsDialog({
     }
   };
 
+  const handleNavigateToTransactions = (url: string) => {
+    onClose(); // Close dialog first
+    router.push(url); // Then navigate
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-[80vw] max-h-[90vh] overflow-y-auto">
@@ -368,238 +326,16 @@ export function PropertyDetailsDialog({
 
           {/* Content based on active mode */}
           {mode === "view" ? (
-            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Property Images Carousel */}
-              <div className="flex flex-col gap-4">
-                <ImageCarousel
-                  images={propertyImages}
-                  propertyName={currentProperty.name}
-                  className="w-full"
-                  aspectRatio="video"
-                  showThumbnails={propertyImages.length > 1}
-                  isLoading={loadingImages}
-                />
-              </div>
-
-              {/* Property Information Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Property Information</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Home className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Property Name
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {currentProperty.name}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <LandPlot className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Property Type
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {currentProperty.type}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <MapPinHouse className="w-4 h-4" />
-                        <span className="text-sm font-medium">Address</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {currentProperty.address}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4" />
-                        <span className="text-sm font-medium">City</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {city}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4" />
-                        <span className="text-sm font-medium">Country</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {country}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Euro className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          Purchase Price
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-6">
-                        {currentProperty.purchasePrice
-                          ? formatCurrency(currentProperty.purchasePrice)
-                          : "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Rental Information */}
-              <Card className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Rental Information</CardTitle>
-                </CardHeader>
-                <CardContent className="px-6 py-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-3">
-                    <div className="flex flex-col gap-2 p-6 items-center">
-                      <p className="text-sm text-muted-foreground">
-                        Expected Monthly Rent
-                      </p>
-                      <p className="text-3xl font-semibold">
-                        {formatCurrency(currentProperty.rent)}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 p-6 items-center ">
-                      <p className="text-sm text-muted-foreground">
-                        Current Tenants
-                      </p>
-                      <p className="text-3xl font-semibold">
-                        {currentProperty.tenants}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 p-6 items-center">
-                      <p className="text-sm text-muted-foreground">
-                        Availability
-                      </p>
-                      <Badge
-                        variant={
-                          currentProperty.occupancy ===
-                          OccupancyStatus.AVAILABLE
-                            ? "secondary"
-                            : "default"
-                        }
-                        className={`w-fit ${
-                          currentProperty.occupancy ===
-                          OccupancyStatus.AVAILABLE
-                            ? "bg-success/10 text-success"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        {currentProperty.occupancy}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Current Month Financial Performance */}
-              <Card className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Current Month Performance</CardTitle>
-                </CardHeader>
-                <CardContent className="px-6 py-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-3">
-                    <div className="flex flex-col gap-2 p-6 items-center">
-                      <p className="text-sm text-muted-foreground">Income</p>
-                      <p className="text-3xl font-semibold ">
-                        {formatCurrency(currentMonthMetrics?.income || 0)}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 p-6 items-center">
-                      <p className="text-sm text-muted-foreground">Expenses</p>
-                      <p className="text-3xl font-semibold">
-                        {formatCurrency(currentMonthMetrics?.expenses || 0)}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 p-6 items-center">
-                      <p className="text-sm text-muted-foreground">Cash Flow</p>
-                      <p
-                        className={`text-3xl font-semibold ${
-                          (currentMonthMetrics?.cashFlow || 0) >= 0
-                            ? "text-success"
-                            : "text-destructive"
-                        }`}
-                      >
-                        {(currentMonthMetrics?.cashFlow || 0) >= 0 ? "+" : "-"}
-                        {formatCurrency(
-                          Math.abs(currentMonthMetrics?.cashFlow || 0)
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Transaction Details */}
-              <Card className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Transaction Details</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  {/* Transaction Filters */}
-                  <TransactionFilters
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    availableCategories={availableCategories}
-                    availableProperties={[]}
-                    showPropertyFilter={false}
-                  />
-
-                  {/* Transaction Table */}
-                  <div className="mt-4">
-                    {error ? (
-                      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4">
-                        <p className="text-sm text-destructive">{error.message}</p>
-                      </div>
-                    ) : (
-                      <TransactionTableWithActions
-                        transactions={transactions}
-                        loading={isLoading}
-                        showPropertyColumn={false}
-                        emptyMessage={`No transactions found for ${currentProperty.name}`}
-                        onEdit={undefined}
-                        onDelete={undefined}
-                      />
-                    )}
-
-                    {/* Transaction Pagination */}
-                    {totalCount > 0 && (
-                      <TransactionsPagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        totalCount={totalCount}
-                        pageSize={pageSize}
-                        onPageChange={setPage}
-                        onPageSizeChange={(newSize) => {
-                          setPageSize(newSize);
-                          setPage(1);
-                        }}
-                        loading={isLoading}
-                      />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <PropertyDetailsView
+              property={currentProperty}
+              propertyImages={propertyImages}
+              loadingImages={loadingImages}
+              currentMonthMetrics={currentMonthMetrics}
+              transactions={transactions}
+              isLoadingTransactions={isLoading}
+              transactionError={error}
+              onNavigateToTransactions={handleNavigateToTransactions}
+            />
           ) : (
             <PropertyEditForm
               property={currentProperty}

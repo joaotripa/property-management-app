@@ -42,6 +42,9 @@ interface TransactionTableWithActionsProps {
   onBulkDelete?: (transactions: Transaction[]) => Promise<void>;
   emptyMessage?: string;
   className?: string;
+  readOnly?: boolean;
+  maxRows?: number;
+  showSelection?: boolean;
 }
 
 const COLUMN_VISIBILITY_KEY = "transaction-table-column-visibility";
@@ -55,6 +58,9 @@ export function TransactionTableWithActions({
   onBulkDelete,
   emptyMessage = "No transactions found",
   className,
+  readOnly = false,
+  maxRows,
+  showSelection,
 }: TransactionTableWithActionsProps) {
   const searchParams = useSearchParams();
 
@@ -119,14 +125,21 @@ export function TransactionTableWithActions({
     }
   };
 
+  // Default showSelection based on readOnly state if not explicitly set
+  const shouldShowSelection = showSelection ?? !readOnly;
+
   const columns = getTransactionColumns({
     showPropertyColumn,
-    onEdit,
-    onDelete,
+    showSelection: shouldShowSelection,
+    onEdit: readOnly ? undefined : onEdit,
+    onDelete: readOnly ? undefined : onDelete,
   });
 
+  // Limit transactions if maxRows is specified
+  const displayTransactions = maxRows ? transactions.slice(0, maxRows) : transactions;
+
   const table = useReactTable({
-    data: transactions,
+    data: displayTransactions,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -160,46 +173,48 @@ export function TransactionTableWithActions({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Table controls */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          <Input
-            placeholder="Search transactions..."
-            value={globalFilter}
-            onChange={(event) => handleGlobalFilterChange(event.target.value)}
-            className="max-w-sm"
-          />
-          {selectedRowsCount > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {selectedRowsCount} of {totalRowsCount} row(s) selected
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRowSelection({})}
-              >
-                Clear selection
-              </Button>
-              {onBulkDelete && (
+      {/* Table controls - only show in non-read-only mode */}
+      {!readOnly && (
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
+            <Input
+              placeholder="Search transactions..."
+              value={globalFilter}
+              onChange={(event) => handleGlobalFilterChange(event.target.value)}
+              className="max-w-sm"
+            />
+            {selectedRowsCount > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {selectedRowsCount} of {totalRowsCount} row(s) selected
+                </span>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
-                  onClick={() => setShowBulkDeleteDialog(true)}
-                  disabled={loading}
+                  onClick={() => setRowSelection({})}
                 >
-                  <Trash2 className="h-4 w-4" />
-                  Delete Selected ({selectedRowsCount})
+                  Clear selection
                 </Button>
-              )}
-            </div>
-          )}
+                {onBulkDelete && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowBulkDeleteDialog(true)}
+                    disabled={loading}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected ({selectedRowsCount})
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+          <ColumnSelector
+            table={table}
+            excludeColumns={showPropertyColumn ? [] : ["property"]}
+          />
         </div>
-        <ColumnSelector
-          table={table}
-          excludeColumns={showPropertyColumn ? [] : ["property"]}
-        />
-      </div>
+      )}
 
       {/* Table */}
       <div className="rounded-lg border">
@@ -265,14 +280,16 @@ export function TransactionTableWithActions({
         )}
       </div>
 
-      {/* Bulk Delete Dialog */}
-      <BulkDeleteDialog
-        isOpen={showBulkDeleteDialog}
-        onClose={() => setShowBulkDeleteDialog(false)}
-        onConfirm={handleBulkDelete}
-        transactions={getSelectedTransactions()}
-        loading={loading}
-      />
+      {/* Bulk Delete Dialog - only show in non-read-only mode */}
+      {!readOnly && (
+        <BulkDeleteDialog
+          isOpen={showBulkDeleteDialog}
+          onClose={() => setShowBulkDeleteDialog(false)}
+          onConfirm={handleBulkDelete}
+          transactions={getSelectedTransactions()}
+          loading={loading}
+        />
+      )}
     </div>
   );
 }

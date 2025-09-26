@@ -63,18 +63,22 @@ function TransactionActions({
 
 interface GetColumnsProps {
   showPropertyColumn?: boolean;
+  showSelection?: boolean;
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (transaction: Transaction) => void;
 }
 
 export function getTransactionColumns({
   showPropertyColumn = true,
+  showSelection = true,
   onEdit,
   onDelete,
 }: GetColumnsProps = {}): ColumnDef<Transaction>[] {
-  const columns: ColumnDef<Transaction>[] = [
-    // Row selection column
-    {
+  const columns: ColumnDef<Transaction>[] = [];
+
+  // Conditionally add row selection column
+  if (showSelection) {
+    columns.push({
       id: "select",
       header: ({ table }) => (
         <Checkbox
@@ -95,9 +99,11 @@ export function getTransactionColumns({
       ),
       enableSorting: false,
       enableHiding: false,
-    },
-    // Amount column
-    {
+    });
+  }
+
+  // Amount column
+  columns.push({
       accessorKey: "amount",
       header: ({ column }) => (
         <Button
@@ -129,9 +135,10 @@ export function getTransactionColumns({
       },
       enableSorting: true,
       sortingFn: "alphanumeric",
-    },
-    // Type column
-    {
+    });
+
+  // Type column
+  columns.push({
       accessorKey: "type",
       header: ({ column }) => (
         <Button
@@ -159,9 +166,10 @@ export function getTransactionColumns({
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id));
       },
-    },
-    // Description column
-    {
+    });
+
+  // Description column
+  columns.push({
       accessorKey: "description",
       header: "Description",
       cell: ({ row }) => {
@@ -173,9 +181,10 @@ export function getTransactionColumns({
         );
       },
       enableSorting: false,
-    },
-    // Date column
-    {
+    });
+
+  // Date column
+  columns.push({
       accessorKey: "transactionDate",
       header: ({ column }) => (
         <Button
@@ -193,9 +202,10 @@ export function getTransactionColumns({
       },
       enableSorting: true,
       sortingFn: "datetime",
-    },
-    // Category column
-    {
+    });
+
+  // Category column
+  columns.push({
       accessorKey: "category",
       header: ({ column }) => (
         <Button
@@ -221,8 +231,7 @@ export function getTransactionColumns({
         const categoryName = row.original.category?.name || "Uncategorized";
         return value.includes(categoryName);
       },
-    },
-  ];
+    });
 
   // Conditionally add property column
   if (showPropertyColumn) {

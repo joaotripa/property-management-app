@@ -17,7 +17,6 @@ import {
 } from "recharts";
 import { PropertyRankingData } from "@/lib/db/analytics/queries";
 import {
-  formatCompactCurrency,
   formatCurrency,
   formatPercentage,
 } from "@/lib/utils/formatting";
