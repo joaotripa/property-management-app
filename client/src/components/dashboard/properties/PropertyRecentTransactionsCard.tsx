@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
 import { Transaction } from "@/types/transactions";
 
@@ -30,8 +29,6 @@ export function PropertyRecentTransactionsCard({
   error,
   onNavigate,
 }: PropertyRecentTransactionsCardProps) {
-  const router = useRouter();
-
   const handleViewAllTransactions = () => {
     const url = `/dashboard/transactions?propertyId=${propertyId}`;
     if (onNavigate) {

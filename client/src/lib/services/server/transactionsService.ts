@@ -1,13 +1,5 @@
-import { getTransactions, getTransactionStats, getUserCategories, getUserProperties } from "@/lib/db/transactions/queries";
+import { getTransactions, getUserCategories, getUserProperties } from "@/lib/db/transactions/queries";
 import { Transaction, CategoryOption, PropertyOption } from "@/types/transactions";
-
-interface TransactionStats {
-  totalIncome: number;
-  totalExpenses: number;
-  cashFlow: number;
-  transactionCount: number;
-  recurringCount: number;
-}
 
 interface TransactionsPageData {
   transactions: Transaction[];
@@ -15,7 +7,6 @@ interface TransactionsPageData {
   totalPages: number;
   currentPage: number;
   pageSize: number;
-  stats: TransactionStats;
   categories: CategoryOption[];
   properties: PropertyOption[];
 }
@@ -68,26 +59,13 @@ export async function getTransactionsPageData(
       offset,
     };
 
-    // Prepare stats filters (current month only, ignoring URL filter parameters)
-    const now = new Date();
-    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-
-    const statsFilters = {
-      dateFrom: currentMonthStart,
-      dateTo: currentMonthEnd,
-      // Stats should only be for current month, ignoring all other filters
-    };
-
     // Fetch all data in parallel for optimal performance
     const [
       transactionsResult,
-      stats,
       categories,
       properties
     ] = await Promise.all([
       getTransactions(userId, transactionFilters),
-      getTransactionStats(userId, statsFilters),
       getUserCategories(),
       getUserProperties(userId)
     ]);
@@ -100,7 +78,6 @@ export async function getTransactionsPageData(
       totalPages,
       currentPage: page,
       pageSize,
-      stats,
       categories,
       properties
     };

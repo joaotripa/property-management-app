@@ -25,7 +25,6 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
     totalPages,
     currentPage,
     pageSize,
-    stats,
     categories,
     properties
   } = await getTransactionsPageData(session.user.id, params);
@@ -44,7 +43,7 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
       </div>
 
       {/* Summary Cards */}
-      <TransactionStats stats={stats} />
+      <TransactionStats />
 
       {/* Beautiful shadcn/ui Filters with Instant Filtering */}
       <TransactionFilters
