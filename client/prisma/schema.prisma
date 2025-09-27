@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   transactions  Transaction[]
   monthlyMetrics MonthlyMetrics[]
+  userSettings  UserSettings?
 
   @@index([deletedAt])
   @@map("users")
@@ -181,6 +182,49 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model Currency {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String         @unique // ISO 4217 (e.g., 'USD', 'EUR')
+  symbol       String         // e.g., '$', '€', '£'
+  name         String         // e.g., 'US Dollar', 'Euro'
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
+  userSettings UserSettings[]
+
+  @@index([isActive])
+  @@map("currencies")
+}
+
+model Timezone {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  iana         String         @unique // IANA timezone (e.g., 'America/New_York')
+  label        String         // Human-readable label (e.g., 'Eastern Time (ET)')
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
+  userSettings UserSettings[]
+
+  @@index([isActive])
+  @@map("timezones")
+}
+
+model UserSettings {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @unique @map("user_id") @db.Uuid
+  currencyId String   @map("currency_id") @db.Uuid
+  timezoneId String   @map("timezone_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency Currency @relation(fields: [currencyId], references: [id])
+  timezone Timezone @relation(fields: [timezoneId], references: [id])
+
+  @@index([userId])
+  @@map("user_settings")
 }
 
 enum TransactionType {

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountSettings } from "@/components/dashboard/settings/AccountSettings";
 import { BillingSettings } from "@/components/dashboard/settings/BillingSettings";
+import { PreferencesSettings } from "@/components/dashboard/settings/PreferencesSettings";
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -12,7 +13,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("account");
 
   useEffect(() => {
-    if (tabParam === "billing" || tabParam === "account") {
+    if (tabParam === "billing" || tabParam === "account" || tabParam === "preferences") {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -31,13 +32,18 @@ export default function SettingsPage() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="preferences">Preferences</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account" className="space-y-6">
           <AccountSettings />
+        </TabsContent>
+
+        <TabsContent value="preferences" className="space-y-6">
+          <PreferencesSettings />
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">

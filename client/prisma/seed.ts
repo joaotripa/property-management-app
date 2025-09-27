@@ -5,7 +5,136 @@ import { TransactionType } from "@/types/transactions";
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🏠 Starting fixed categories seed data...')
+  console.log('🏠 Starting seed data...')
+
+  // Seed currencies first
+  console.log('💰 Seeding currencies...')
+
+  const currencies = [
+    {
+      code: 'EUR',
+      symbol: '€',
+      name: 'Euro',
+    },
+    {
+      code: 'USD',
+      symbol: '$',
+      name: 'US Dollar',
+    },
+    {
+      code: 'GBP',
+      symbol: '£',
+      name: 'British Pound',
+    },
+    {
+      code: 'AUD',
+      symbol: 'A$',
+      name: 'Australian Dollar',
+    },
+    {
+      code: 'CAD',
+      symbol: 'C$',
+      name: 'Canadian Dollar',
+    },
+    {
+      code: 'CHF',
+      symbol: 'Fr',
+      name: 'Swiss Franc',
+    },
+  ]
+
+  for (const currency of currencies) {
+    const existingCurrency = await prisma.currency.findUnique({
+      where: { code: currency.code },
+    })
+
+    if (!existingCurrency) {
+      await prisma.currency.create({
+        data: currency,
+      })
+      console.log(`✓ Created currency: ${currency.name} (${currency.code})`)
+    } else {
+      await prisma.currency.update({
+        where: { code: currency.code },
+        data: {
+          symbol: currency.symbol,
+          name: currency.name,
+          isActive: true,
+        },
+      })
+      console.log(`↻ Updated currency: ${currency.name} (${currency.code})`)
+    }
+  }
+
+  // Seed timezones
+  console.log('🌍 Seeding timezones...')
+
+  const timezones = [
+    {
+      iana: 'Europe/London',
+      label: 'London (GMT+0)',
+    },
+    {
+      iana: 'Europe/Paris',
+      label: 'Paris (GMT+1)',
+    },
+    {
+      iana: 'Europe/Berlin',
+      label: 'Berlin (GMT+1)',
+    },
+    {
+      iana: 'Europe/Zurich',
+      label: 'Zurich (GMT+1)',
+    },
+    {
+      iana: 'America/New_York',
+      label: 'New York (GMT-5)',
+    },
+    {
+      iana: 'America/Chicago',
+      label: 'Chicago (GMT-6)',
+    },
+    {
+      iana: 'America/Denver',
+      label: 'Denver (GMT-7)',
+    },
+    {
+      iana: 'America/Los_Angeles',
+      label: 'Los Angeles (GMT-8)',
+    },
+    {
+      iana: 'Australia/Sydney',
+      label: 'Sydney (GMT+11)',
+    },
+    {
+      iana: 'Australia/Melbourne',
+      label: 'Melbourne (GMT+11)',
+    },
+  ]
+
+  for (const timezone of timezones) {
+    const existingTimezone = await prisma.timezone.findUnique({
+      where: { iana: timezone.iana },
+    })
+
+    if (!existingTimezone) {
+      await prisma.timezone.create({
+        data: timezone,
+      })
+      console.log(`✓ Created timezone: ${timezone.label} (${timezone.iana})`)
+    } else {
+      await prisma.timezone.update({
+        where: { iana: timezone.iana },
+        data: {
+          label: timezone.label,
+          isActive: true,
+        },
+      })
+      console.log(`↻ Updated timezone: ${timezone.label} (${timezone.iana})`)
+    }
+  }
+
+  console.log('📝 Starting categories seed data...')
 
   // Property Income Categories (MVP - Essential only)
   const incomeCategories = [
@@ -115,10 +244,12 @@ async function main() {
     }
   }
 
-  console.log('✅ Fixed categories seed data completed!')
+  console.log('✅ Seed data completed!')
+  console.log(`💰 Created ${currencies.length} currencies`)
+  console.log(`🌍 Created ${timezones.length} timezones`)
   console.log(`📊 Created ${incomeCategories.length} income categories`)
-  console.log(`💰 Created ${expenseCategories.length} expense categories`)
-  console.log('🎯 All users will share these curated categories')
+  console.log(`💸 Created ${expenseCategories.length} expense categories`)
+  console.log('🎯 All users will share these curated currencies, timezones, and categories')
 }
 
 main()
