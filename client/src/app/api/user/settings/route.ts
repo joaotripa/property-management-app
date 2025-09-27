@@ -5,8 +5,6 @@ import {
   upsertUserSettings
 } from "@/lib/db/userSettings";
 import {
-  getDefaultCurrency,
-  getDefaultTimezone,
   getCurrencyById,
   getTimezoneById
 } from "@/lib/db/preferences";
@@ -26,26 +24,7 @@ export async function GET() {
       );
     }
 
-    let userSettings = await getUserSettings(session.user.id);
-
-    // If user doesn't have settings, create default ones
-    if (!userSettings) {
-      const defaultCurrency = await getDefaultCurrency();
-      const defaultTimezone = await getDefaultTimezone();
-
-      if (!defaultCurrency || !defaultTimezone) {
-        return NextResponse.json(
-          { success: false, message: "Default preferences not found" },
-          { status: 500 }
-        );
-      }
-
-      userSettings = await upsertUserSettings({
-        userId: session.user.id,
-        currencyId: defaultCurrency.id,
-        timezoneId: defaultTimezone.id,
-      });
-    }
+    const userSettings = await getUserSettings(session.user.id);
 
     return NextResponse.json(userSettings);
   } catch (error) {

@@ -81,7 +81,7 @@ export function AccountSettings() {
             <div>
               <h4 className="font-medium">Password</h4>
               <p className="text-sm text-muted-foreground">
-                Change your password to keep your account secure"
+                Change your password to keep your account secure
               </p>
             </div>
             <div className="flex items-center gap-2">

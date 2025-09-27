@@ -2,7 +2,6 @@
 
 import {
   BadgeCheck,
-  Bell,
   EllipsisVertical,
   CreditCard,
   LogOut,
@@ -64,7 +63,6 @@ export function NavUser({
   const userName = user?.name || "User";
   const userEmail = user?.email || "";
   const userInitials = getUserInitials(userName);
-  const hasUserInfo = user?.name || user?.email;
 
   return (
     <SidebarMenu>

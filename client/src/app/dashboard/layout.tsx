@@ -7,6 +7,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useRedirectIfSignedOut } from "@/hooks/useRedirectIfSignedOut";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { OnboardingPreferencesDialog } from "@/components/onboarding/OnboardingPreferencesDialog";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   useRedirectIfSignedOut();
+  const { needsOnboarding } = useOnboardingStatus();
 
   return (
     <SidebarProvider>
@@ -26,6 +29,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </header>
         <div>{children}</div>
       </SidebarInset>
+
+      {/* Onboarding Dialog - Shows only if user needs onboarding */}
+      <OnboardingPreferencesDialog
+        isOpen={needsOnboarding}
+        onComplete={() => {}}
+      />
     </SidebarProvider>
   );
 };
