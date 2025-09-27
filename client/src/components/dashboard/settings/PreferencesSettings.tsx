@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -30,42 +29,36 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Settings } from "lucide-react";
 import {
-  useUserSettings,
-  useCurrencies,
-  useTimezones,
   useUpdateUserSettings,
 } from "@/hooks/queries/usePreferencesQueries";
 import {
   UserSettingsFormInput,
   userSettingsFormSchema,
+  UserSettingsResponse,
+  Currency,
+  Timezone,
 } from "@/lib/validations/userSettings";
 
-export function PreferencesSettings() {
-  const { data: userSettings, error: userSettingsError } = useUserSettings();
+interface PreferencesSettingsProps {
+  userSettings: UserSettingsResponse;
+  currencies: Currency[];
+  timezones: Timezone[];
+}
 
-  const { data: currencies = [], error: currenciesError } = useCurrencies();
-
-  const { data: timezones = [], error: timezonesError } = useTimezones();
-
+export function PreferencesSettings({
+  userSettings,
+  currencies,
+  timezones,
+}: PreferencesSettingsProps) {
   const updateMutation = useUpdateUserSettings();
 
   const form = useForm<UserSettingsFormInput>({
     resolver: zodResolver(userSettingsFormSchema),
     defaultValues: {
-      currencyId: "",
-      timezoneId: "",
+      currencyId: userSettings.currencyId,
+      timezoneId: userSettings.timezoneId,
     },
   });
-
-  // Update form when user settings are loaded
-  useEffect(() => {
-    if (userSettings) {
-      form.reset({
-        currencyId: userSettings.currencyId,
-        timezoneId: userSettings.timezoneId,
-      });
-    }
-  }, [userSettings, form]);
 
   const onSubmit = async (data: UserSettingsFormInput) => {
     updateMutation.mutate({
@@ -84,26 +77,6 @@ export function PreferencesSettings() {
   };
 
   const isSubmitting = updateMutation.isPending;
-
-  const hasError = userSettingsError || currenciesError || timezonesError;
-
-  if (hasError) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Preferences
-            </CardTitle>
-            <CardDescription>
-              Failed to load preferences. Please refresh the page and try again.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -134,7 +107,7 @@ export function PreferencesSettings() {
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        defaultValue={field.value}
                         disabled={isSubmitting}
                       >
                         <FormControl>

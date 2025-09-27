@@ -60,7 +60,7 @@ export function NavUser({
     router.push("/dashboard/settings?tab=billing", { scroll: false });
   };
 
-  const userName = user?.name || "User";
+  const userName = user?.name || "";
   const userEmail = user?.email || "";
   const userInitials = getUserInitials(userName);
 

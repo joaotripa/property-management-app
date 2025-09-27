@@ -10,11 +10,18 @@ import {
 } from "@/lib/validations/userSettings";
 import { toast } from "sonner";
 
+export interface AccountInfo {
+  hasGoogleAccount: boolean;
+  hasPassword: boolean;
+  canChangePassword: boolean;
+}
+
 // Query Keys
 export const QUERY_KEYS = {
   userSettings: ['userSettings'] as const,
   currencies: ['currencies'] as const,
   timezones: ['timezones'] as const,
+  accountInfo: ['accountInfo'] as const,
 } as const;
 
 // Fetch functions
@@ -32,6 +39,14 @@ async function fetchTimezones(): Promise<Timezone[]> {
 
 async function updateUserSettings(data: UserSettingsInput): Promise<UpdateUserSettingsResponse> {
   return UserSettingsService.updateUserSettings(data);
+}
+
+async function fetchAccountInfo(): Promise<AccountInfo> {
+  const response = await fetch("/api/user/accounts");
+  if (!response.ok) {
+    throw new Error("Failed to fetch account info");
+  }
+  return response.json();
 }
 
 // Query Hooks
@@ -62,6 +77,16 @@ export function useTimezones() {
     queryFn: fetchTimezones,
     staleTime: 10 * 60 * 1000, // 10 minutes (timezones rarely change)
     gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+export function useAccountInfo() {
+  return useQuery({
+    queryKey: QUERY_KEYS.accountInfo,
+    queryFn: fetchAccountInfo,
+    staleTime: 5 * 60 * 1000, // 5 minutes (account info changes occasionally)
     refetchOnWindowFocus: false,
     retry: 1,
   });
@@ -148,9 +173,18 @@ export function usePrefetchPreferences() {
     });
   };
 
+  const prefetchAccountInfo = () => {
+    queryClient.prefetchQuery({
+      queryKey: QUERY_KEYS.accountInfo,
+      queryFn: fetchAccountInfo,
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
   return {
     prefetchUserSettings,
     prefetchCurrencies,
     prefetchTimezones,
+    prefetchAccountInfo,
   };
 }

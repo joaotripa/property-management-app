@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,36 +19,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AccountInfo } from "@/hooks/queries/usePreferencesQueries";
 
-interface UserAccountInfo {
-  hasGoogleAccount: boolean;
-  hasPassword: boolean;
-  canChangePassword: boolean;
+interface AccountSettingsProps {
+  accountInfo: AccountInfo;
 }
 
-export function AccountSettings() {
+export function AccountSettings({ accountInfo }: AccountSettingsProps) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [accountInfo, setAccountInfo] = useState<UserAccountInfo | null>(null);
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
-
-  useEffect(() => {
-    const fetchAccountInfo = async () => {
-      try {
-        const response = await fetch("/api/user/accounts");
-        if (response.ok) {
-          const data = await response.json();
-          setAccountInfo(data);
-        }
-      } catch (error) {
-        console.error("Error fetching account info:", error);
-      } finally {
-        setIsLoadingAccounts(false);
-      }
-    };
-
-    fetchAccountInfo();
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -95,7 +74,7 @@ export function AccountSettings() {
               </Tooltip>
               <Button
                 variant="outline"
-                disabled={isLoadingAccounts || accountInfo?.hasGoogleAccount}
+                disabled={accountInfo.hasGoogleAccount}
                 onClick={() => setIsPasswordDialogOpen(true)}
               >
                 Change Password
