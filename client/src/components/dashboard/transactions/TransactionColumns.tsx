@@ -1,7 +1,6 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { Edit, Trash2, MoreVertical, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,19 @@ import {
 import { Transaction, TransactionType } from "@/types/transactions";
 import { cn } from "@/lib/utils/index";
 import { formatCurrency } from "@/lib/utils/formatting";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
+
+function TransactionDateCell({ date }: { date: Date }) {
+  const { data: userTimezone } = useUserTimezone();
+  const timezone = userTimezone || getSystemTimezone();
+
+  return (
+    <span>
+      {formatDateForUser(new Date(date), timezone, 'medium')}
+    </span>
+  );
+}
 
 interface TransactionActionsProps {
   transaction: Transaction;
@@ -198,7 +210,7 @@ export function getTransactionColumns({
       ),
       cell: ({ row }) => {
         const date = row.getValue("transactionDate") as Date;
-        return format(new Date(date), "MMM dd, yyyy");
+        return <TransactionDateCell date={date} />;
       },
       enableSorting: true,
       sortingFn: "datetime",

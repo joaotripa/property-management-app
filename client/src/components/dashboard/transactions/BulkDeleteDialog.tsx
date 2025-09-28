@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Transaction, TransactionType } from "@/types/transactions";
 import { formatCurrency } from "@/lib/utils/formatting";
 import { cn } from "@/lib/utils";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
 
 interface BulkDeleteDialogProps {
   isOpen: boolean;
@@ -34,6 +35,8 @@ export function BulkDeleteDialog({
   loading = false,
 }: BulkDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { data: userTimezone } = useUserTimezone();
+  const timezone = userTimezone || getSystemTimezone();
 
   const handleConfirm = async () => {
     try {
@@ -124,7 +127,7 @@ export function BulkDeleteDialog({
                     <div className="text-sm text-muted-foreground mt-1">
                       {transaction.property?.name} • {transaction.category?.name || "Uncategorized"}
                       {" • "}
-                      {format(new Date(transaction.transactionDate), "MMM dd, yyyy")}
+                      {formatDateForUser(new Date(transaction.transactionDate), timezone, 'medium')}
                     </div>
                   </div>
 

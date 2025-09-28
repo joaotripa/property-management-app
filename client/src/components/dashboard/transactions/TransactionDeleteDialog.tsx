@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { format } from "date-fns";
 import { Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,8 @@ import { formatCurrency } from "@/lib/utils/formatting";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/services/client/transactionsService";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
 
 interface TransactionDeleteDialogProps {
   transaction: Transaction | null;
@@ -33,6 +34,8 @@ export function TransactionDeleteDialog({
   onTransactionDeleted,
 }: TransactionDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { data: userTimezone } = useUserTimezone();
+  const timezone = userTimezone || getSystemTimezone();
 
   const handleConfirm = useCallback(async () => {
     if (!transaction) return;
@@ -103,7 +106,7 @@ export function TransactionDeleteDialog({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Date:</span>
             <span className="font-medium">
-              {format(new Date(transaction.transactionDate), "MMM dd, yyyy")}
+              {formatDateForUser(new Date(transaction.transactionDate), timezone, 'medium')}
             </span>
           </div>
 

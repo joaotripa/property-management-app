@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getTransactionsForExport } from "@/lib/db/transactions/queries";
 import { generateTransactionCSV } from "@/lib/utils/csv";
+import { formatDateForInput } from "@/lib/utils/timezone";
 
 function generateFileName(filters: {
   type?: string;
@@ -31,14 +32,14 @@ function generateFileName(filters: {
   }
 
   if (filters.dateFrom && filters.dateTo) {
-    const fromDate = filters.dateFrom.toISOString().split('T')[0].replace(/-/g, '');
-    const toDate = filters.dateTo.toISOString().split('T')[0].replace(/-/g, '');
+    const fromDate = formatDateForInput(filters.dateFrom).replace(/-/g, '');
+    const toDate = formatDateForInput(filters.dateTo).replace(/-/g, '');
     parts.push(`${fromDate}-${toDate}`);
   } else if (filters.dateFrom) {
-    const fromDate = filters.dateFrom.toISOString().split('T')[0].replace(/-/g, '');
+    const fromDate = formatDateForInput(filters.dateFrom).replace(/-/g, '');
     parts.push(`from-${fromDate}`);
   } else if (filters.dateTo) {
-    const toDate = filters.dateTo.toISOString().split('T')[0].replace(/-/g, '');
+    const toDate = formatDateForInput(filters.dateTo).replace(/-/g, '');
     parts.push(`until-${toDate}`);
   }
 

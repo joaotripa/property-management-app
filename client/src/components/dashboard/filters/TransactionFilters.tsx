@@ -26,6 +26,7 @@ import { TransactionType } from "@/types/transactions";
 import { toCamelCase } from "@/lib/utils/index";
 import { Separator } from "@/components/ui/separator";
 import { DateRangePicker, DateRange } from "@/components/ui/date-range-picker";
+import { formatDateForInput } from "@/lib/utils/timezone";
 
 interface TransactionFiltersProps {
   availableCategories: CategoryOption[];
@@ -132,8 +133,8 @@ export function TransactionFilters({
     if (!range || (range.from && range.to)) {
       setPendingFilters({
         ...pendingFilters,
-        dateFrom: range?.from ? range.from.toISOString().split("T")[0] : "",
-        dateTo: range?.to ? range.to.toISOString().split("T")[0] : "",
+        dateFrom: range?.from ? formatDateForInput(range.from) : "",
+        dateTo: range?.to ? formatDateForInput(range.to) : "",
       });
       setHasChanges(true);
     }

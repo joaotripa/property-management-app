@@ -1,3 +1,5 @@
+import { formatDateForInput } from "@/lib/utils/timezone";
+
 interface TransactionExportData {
   transactionDate: Date;
   amount: number;
@@ -50,7 +52,7 @@ export function generateTransactionCSV(transactions: TransactionExportData[]): s
 
   const rows = transactions.map(transaction => {
     const date = new Date(transaction.transactionDate);
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = formatDateForInput(date);
     const formattedAmount = transaction.amount.toFixed(2);
 
     return [

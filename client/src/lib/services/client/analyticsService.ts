@@ -11,6 +11,7 @@ import {
   transformApiChartsResponse,
   DataTransformationError
 } from "@/lib/utils/dataTransform";
+import { formatDateForInput } from "@/lib/utils/timezone";
 
 class AnalyticsServiceError extends Error {
   constructor(public message: string, public status?: number, public details?: unknown) {
@@ -61,7 +62,7 @@ function buildQueryString(params: Record<string, unknown>): string {
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       if (value instanceof Date) {
-        searchParams.set(key, value.toISOString().split('T')[0]); // YYYY-MM-DD format
+        searchParams.set(key, formatDateForInput(value)); // YYYY-MM-DD format, timezone-safe
       } else {
         searchParams.set(key, String(value));
       }
