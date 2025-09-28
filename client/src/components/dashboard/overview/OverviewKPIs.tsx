@@ -16,12 +16,14 @@ interface OverviewKPIsProps {
     cashFlow: number;
     transactionCount: number;
   } | null;
+  currencyCode: string;
 }
 
 export function OverviewKPIs({
   previousKpis,
   properties,
   monthlyStats,
+  currencyCode,
 }: OverviewKPIsProps) {
   const occupiedCount = properties.filter(
     (p) => p.occupancy === "OCCUPIED"
@@ -44,7 +46,7 @@ export function OverviewKPIs({
   const overviewKPIConfigs: KPICardConfig[] = [
     {
       title: "Monthly Income",
-      value: formatCompactCurrency(currentIncome),
+      value: formatCompactCurrency(currentIncome, currencyCode),
       trend: incomeTrend.trend,
       trendValue: incomeTrend.trendValue
         ? `${incomeTrend.trendValue}`
@@ -52,7 +54,7 @@ export function OverviewKPIs({
     },
     {
       title: "Monthly Expenses",
-      value: formatCompactCurrency(currentExpenses),
+      value: formatCompactCurrency(currentExpenses, currencyCode),
       trend: expensesTrend.trend,
       trendValue: expensesTrend.trendValue
         ? `${expensesTrend.trendValue}`
@@ -61,7 +63,7 @@ export function OverviewKPIs({
     },
     {
       title: "Monthly Cash Flow",
-      value: formatCompactCurrency(currentCashFlow),
+      value: formatCompactCurrency(currentCashFlow, currencyCode),
       trend: cashFlowTrend.trend,
       trendValue: cashFlowTrend.trendValue
         ? `${cashFlowTrend.trendValue}`

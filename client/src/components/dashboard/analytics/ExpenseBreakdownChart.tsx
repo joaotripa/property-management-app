@@ -23,6 +23,7 @@ import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface ExpenseBreakdownChartProps {
   initialData?: ExpenseBreakdownData[];
+  currencyCode: string;
 }
 
 const COLORS = [
@@ -42,6 +43,7 @@ const COLORS = [
 
 export function ExpenseBreakdownChart({
   initialData = [],
+  currencyCode,
 }: ExpenseBreakdownChartProps) {
   const chartConfig = initialData.reduce(
     (config, item, index) => {
@@ -64,6 +66,9 @@ export function ExpenseBreakdownChart({
     0
   );
 
+  // Create bound formatter function with currency code
+  const currencyFormatter = (value: number) => formatCurrency(value, currencyCode);
+
   return (
     <Card className="min-h-0">
       <CardHeader className="pb-3 sm:pb-4 md:pb-5">
@@ -71,7 +76,7 @@ export function ExpenseBreakdownChart({
           Expense Breakdown
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
-          Breakdown of {formatCurrency(totalExpenses)} total expenses by
+          Breakdown of {formatCurrency(totalExpenses, currencyCode)} total expenses by
           category.
         </CardDescription>
       </CardHeader>
@@ -119,7 +124,7 @@ export function ExpenseBreakdownChart({
                                   y={viewBox.cy}
                                   className="text-muted-foreground text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold"
                                 >
-                                  {formatCompactCurrency(totalExpenses)}
+                                  {formatCompactCurrency(totalExpenses, currencyCode)}
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}
@@ -139,7 +144,7 @@ export function ExpenseBreakdownChart({
                       content={
                         <ChartTooltipContent
                           formatter={createChartTooltipFormatter(
-                            formatCurrency,
+                            currencyFormatter,
                             chartConfig
                           )}
                         />
@@ -178,7 +183,7 @@ export function ExpenseBreakdownChart({
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="font-semibold text-sm">
-                        {formatCurrency(item.amount)}
+                        {formatCurrency(item.amount, currencyCode)}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">
                         {formatPercentage(item.percentage)}

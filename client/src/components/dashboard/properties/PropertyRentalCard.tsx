@@ -1,14 +1,19 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Property } from "@/types/properties";
 import { OccupancyStatus } from "@prisma/client";
 import { formatCurrency } from "@/lib/utils/formatting";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 
 interface PropertyRentalCardProps {
   property: Property;
 }
 
 export function PropertyRentalCard({ property }: PropertyRentalCardProps) {
+  const { data: userCurrency } = useUserCurrency();
+  const currency = userCurrency || getDefaultCurrency();
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
@@ -21,7 +26,7 @@ export function PropertyRentalCard({ property }: PropertyRentalCardProps) {
               Expected Monthly Rent
             </p>
             <p className="text-3xl font-semibold">
-              {formatCurrency(property.rent)}
+              {formatCurrency(property.rent, currency.code)}
             </p>
           </div>
 

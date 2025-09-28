@@ -33,7 +33,7 @@ function escapeCSV(value: string | number | undefined | null): string {
   return stringValue;
 }
 
-export function generateTransactionCSV(transactions: TransactionExportData[]): string {
+export function generateTransactionCSV(transactions: TransactionExportData[], currencyCode: string = 'EUR'): string {
   const headers = [
     'Date',
     'Amount',
@@ -58,7 +58,7 @@ export function generateTransactionCSV(transactions: TransactionExportData[]): s
     return [
       escapeCSV(formattedDate),
       escapeCSV(formattedAmount),
-      escapeCSV('EUR'),
+      escapeCSV(currencyCode),
       escapeCSV(transaction.type),
       escapeCSV(transaction.category.name),
       escapeCSV(transaction.category.type),

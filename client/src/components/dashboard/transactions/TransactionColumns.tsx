@@ -15,6 +15,7 @@ import { Transaction, TransactionType } from "@/types/transactions";
 import { cn } from "@/lib/utils/index";
 import { formatCurrency } from "@/lib/utils/formatting";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
 
 function TransactionDateCell({ date }: { date: Date }) {
@@ -24,6 +25,25 @@ function TransactionDateCell({ date }: { date: Date }) {
   return (
     <span>
       {formatDateForUser(new Date(date), timezone, 'medium')}
+    </span>
+  );
+}
+
+function TransactionAmountCell({ amount, type }: { amount: number, type: TransactionType }) {
+  const { data: userCurrency } = useUserCurrency();
+  const currency = userCurrency || getDefaultCurrency();
+
+  return (
+    <span
+      className={cn(
+        "font-medium tabular-nums",
+        type === TransactionType.INCOME
+          ? "text-green-600"
+          : "text-red-600"
+      )}
+    >
+      {type === TransactionType.INCOME ? "+" : "-"}
+      {formatCurrency(Math.abs(amount), currency.code)}
     </span>
   );
 }
@@ -130,20 +150,7 @@ export function getTransactionColumns({
       cell: ({ row }) => {
         const amount = row.getValue("amount") as number;
         const type = row.getValue("type") as TransactionType;
-
-        return (
-          <span
-            className={cn(
-              "font-medium",
-              type === TransactionType.INCOME
-                ? "text-green-600"
-                : "text-red-600"
-            )}
-          >
-            {type === TransactionType.INCOME ? "+" : "-"}
-            {formatCurrency(Math.abs(amount))}
-          </span>
-        );
+        return <TransactionAmountCell amount={amount} type={type} />;
       },
       enableSorting: true,
       sortingFn: "alphanumeric",

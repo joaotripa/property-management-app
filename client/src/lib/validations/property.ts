@@ -26,13 +26,13 @@ export const basePropertySchema = z.object({
   rent: z
     .number({ message: "Monthly rent must be a number" })
     .positive("Monthly rent must be greater than 0")
-    .max(50000, "Monthly rent cannot exceed €50,000")
+    .max(50000, "Monthly rent cannot exceed 50,000")
     .transform((val) => Math.round(val * 100) / 100), // Round to 2 decimal places
     
   purchasePrice: z
     .number({ message: "Purchase price must be a number" })
     .positive("Purchase price must be greater than 0")
-    .max(10000000, "Purchase price cannot exceed €10,000,000")
+    .max(10000000, "Purchase price cannot exceed 10,000,000")
     .transform((val) => Math.round(val * 100) / 100) // Round to 2 decimal places
     .optional(),
     
@@ -71,7 +71,7 @@ export const createPropertySchema = z.object({
     .min(1, "Monthly rent is required")
     .transform((val) => parseFloat(val))
     .refine((val) => !isNaN(val) && val > 0, "Monthly rent must be a valid number greater than 0")
-    .refine((val) => val <= 50000, "Monthly rent cannot exceed €50,000")
+    .refine((val) => val <= 50000, "Monthly rent cannot exceed 50,000")
     .transform((val) => Math.round(val * 100) / 100),
     
   purchasePrice: z
@@ -79,7 +79,7 @@ export const createPropertySchema = z.object({
     .optional()
     .transform((val) => val ? parseFloat(val) : undefined)
     .refine((val) => val === undefined || (!isNaN(val) && val > 0), "Purchase price must be a valid number greater than 0")
-    .refine((val) => val === undefined || val <= 10000000, "Purchase price cannot exceed €10,000,000")
+    .refine((val) => val === undefined || val <= 10000000, "Purchase price cannot exceed 10,000,000")
     .transform((val) => val ? Math.round(val * 100) / 100 : undefined),
     
   tenants: z
@@ -120,7 +120,7 @@ export const propertyFormSchema = z.object({
       message: "Monthly rent must be a valid number greater than 0",
     })
     .refine((val) => parseFloat(val) <= 50000, {
-      message: "Monthly rent cannot exceed €50,000",
+      message: "Monthly rent cannot exceed 50,000",
     }),
   purchasePrice: z
     .string()
@@ -129,7 +129,7 @@ export const propertyFormSchema = z.object({
       message: "Purchase price must be a valid number greater than 0",
     })
     .refine((val) => !val || parseFloat(val) <= 10000000, {
-      message: "Purchase price cannot exceed €10,000,000",
+      message: "Purchase price cannot exceed 10,000,000",
     }),
   tenants: z
     .string()

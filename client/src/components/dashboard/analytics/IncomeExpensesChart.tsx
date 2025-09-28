@@ -15,6 +15,7 @@ import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface IncomeExpensesChartProps {
   initialData?: AnyTimeSeriesData[];
+  currencyCode: string;
 }
 
 type ChartDataItem = AnyTimeSeriesData & {
@@ -34,7 +35,9 @@ const chartConfig = {
 
 export function IncomeExpensesChart({
   initialData = [],
+  currencyCode,
 }: IncomeExpensesChartProps) {
+
   const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -79,7 +82,7 @@ export function IncomeExpensesChart({
 
               <YAxis
                 className="text-xs fill-muted-foreground"
-                tickFormatter={formatCompactCurrency}
+                tickFormatter={(value) => formatCompactCurrency(value, currencyCode)}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, dx: -5 }}
@@ -90,7 +93,7 @@ export function IncomeExpensesChart({
                 content={
                   <ChartTooltipContent
                     formatter={createChartTooltipFormatter(
-                      formatCurrency,
+                      (value) => formatCurrency(value, currencyCode),
                       chartConfig
                     )}
                   />

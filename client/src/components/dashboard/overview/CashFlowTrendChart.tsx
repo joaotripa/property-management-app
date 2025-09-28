@@ -15,6 +15,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import { CashFlowTrendData } from "@/lib/db/analytics/queries";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 const chartConfig = {
@@ -59,6 +60,9 @@ interface CashFlowTrendChartProps {
 }
 
 export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
+  const { data: userCurrency } = useUserCurrency();
+  const currency = userCurrency || getDefaultCurrency();
+
   const chartData =
     initialData.length > 0
       ? initialData.map((item) => ({
@@ -96,7 +100,7 @@ export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={formatCompactCurrency}
+              tickFormatter={(value) => formatCompactCurrency(value, currency.code)}
             />
 
             <ChartTooltip

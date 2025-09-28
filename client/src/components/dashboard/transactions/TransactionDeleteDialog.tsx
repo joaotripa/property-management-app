@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/services/client/transactionsService";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
 
 interface TransactionDeleteDialogProps {
@@ -35,7 +36,9 @@ export function TransactionDeleteDialog({
 }: TransactionDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const { data: userTimezone } = useUserTimezone();
+  const { data: userCurrency } = useUserCurrency();
   const timezone = userTimezone || getSystemTimezone();
+  const currency = userCurrency || getDefaultCurrency();
 
   const handleConfirm = useCallback(async () => {
     if (!transaction) return;
@@ -85,7 +88,7 @@ export function TransactionDeleteDialog({
               )}
             >
               {transaction.type === TransactionType.INCOME ? "+" : "-"}
-              {formatCurrency(Math.abs(transaction.amount))}
+              {formatCurrency(Math.abs(transaction.amount), currency.code)}
             </span>
           </div>
 

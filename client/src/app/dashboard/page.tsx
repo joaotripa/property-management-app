@@ -4,6 +4,7 @@ import { OverviewKPIs } from "@/components/dashboard/overview/OverviewKPIs";
 import { CashFlowTrendChart } from "@/components/dashboard/overview/CashFlowTrendChart";
 import { TopPropertiesCard } from "@/components/dashboard/overview/TopPropertiesCard";
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
+import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
@@ -13,15 +14,21 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const {
-    previousKpis,
-    properties,
-    monthlyStats,
-    cashFlowTrend,
-    topProperties,
-    previousTopProperties,
-    recentActivities,
-  } = await getOverviewPageData(session.user.id);
+  const [
+    {
+      previousKpis,
+      properties,
+      monthlyStats,
+      cashFlowTrend,
+      topProperties,
+      previousTopProperties,
+      recentActivities,
+    },
+    userCurrencyCode
+  ] = await Promise.all([
+    getOverviewPageData(session.user.id),
+    UserSettingsService.getUserCurrency(session.user.id)
+  ]);
   return (
     <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
       {/* Welcome Section */}
@@ -38,6 +45,7 @@ export default async function DashboardPage() {
           previousKpis={previousKpis}
           properties={properties}
           monthlyStats={monthlyStats}
+          currencyCode={userCurrencyCode}
         />
       </section>
 
@@ -47,6 +55,7 @@ export default async function DashboardPage() {
         <TopPropertiesCard
           topProperties={topProperties}
           previousTopProperties={previousTopProperties}
+          currencyCode={userCurrencyCode}
         />
       </section>
 

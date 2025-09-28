@@ -13,11 +13,13 @@ import { PropertyRankingData } from "@/lib/db/analytics/queries";
 interface TopPropertiesCardProps {
   topProperties: PropertyRankingData[];
   previousTopProperties: PropertyRankingData[];
+  currencyCode: string;
 }
 
 export function TopPropertiesCard({
   topProperties,
   previousTopProperties,
+  currencyCode,
 }: TopPropertiesCardProps) {
   return (
     <Card>
@@ -76,7 +78,7 @@ export function TopPropertiesCard({
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">
-                      {formatCompactCurrency(property.cashFlow)}
+                      {formatCompactCurrency(property.cashFlow, currencyCode)}
                     </div>
                     <div className="flex items-center justify-end gap-1 text-sm">
                       {trendData.trendValue ? (

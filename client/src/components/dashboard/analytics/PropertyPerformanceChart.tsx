@@ -25,6 +25,7 @@ import { useState, useEffect, useCallback } from "react";
 interface PropertyPerformanceChartProps {
   data?: PropertyRankingData[];
   timeRange?: string;
+  currencyCode: string;
 }
 
 type TabType = "income" | "cashflow" | "roi";
@@ -65,7 +66,9 @@ function truncatePropertyName(name: string, maxLength: number = 12): string {
 export function PropertyPerformanceChart({
   data = [],
   timeRange = "semester",
+  currencyCode,
 }: PropertyPerformanceChartProps) {
+
   const [activeTab, setActiveTab] = useState<TabType>("income");
   const [chartData, setChartData] = useState<
     Record<
@@ -175,6 +178,9 @@ export function PropertyPerformanceChart({
     }
   };
 
+  // Create bound formatter functions with currency code
+  const currencyFormatter = (value: number) => formatCurrency(value, currencyCode);
+
   const renderChart = (
     tab: TabType,
     dataKey: string,
@@ -274,7 +280,7 @@ export function PropertyPerformanceChart({
               "income",
               "totalIncome",
               chartConfigs.income,
-              formatCurrency
+              currencyFormatter
             )}
           </TabsContent>
 
@@ -283,7 +289,7 @@ export function PropertyPerformanceChart({
               "cashflow",
               "cashFlow",
               chartConfigs.cashflow,
-              formatCurrency
+              currencyFormatter
             )}
           </TabsContent>
 

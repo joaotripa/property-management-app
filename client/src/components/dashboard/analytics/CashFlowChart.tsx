@@ -15,6 +15,7 @@ import { createChartTooltipFormatter } from "@/lib/utils/analytics";
 
 interface CashFlowChartProps {
   initialData?: AnyTimeSeriesData[];
+  currencyCode: string;
 }
 
 type ChartDataItem = AnyTimeSeriesData & {
@@ -32,7 +33,11 @@ const chartConfig = {
   },
 } as const;
 
-export function CashFlowChart({ initialData = [] }: CashFlowChartProps) {
+export function CashFlowChart({
+  initialData = [],
+  currencyCode
+}: CashFlowChartProps) {
+
   const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -77,7 +82,7 @@ export function CashFlowChart({ initialData = [] }: CashFlowChartProps) {
 
               <YAxis
                 className="text-xs fill-muted-foreground"
-                tickFormatter={formatCompactCurrency}
+                tickFormatter={(value) => formatCompactCurrency(value, currencyCode)}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, dx: -5 }}
@@ -88,7 +93,7 @@ export function CashFlowChart({ initialData = [] }: CashFlowChartProps) {
                 content={
                   <ChartTooltipContent
                     formatter={createChartTooltipFormatter(
-                      formatCurrency,
+                      (value) => formatCurrency(value, currencyCode),
                       chartConfig
                     )}
                   />

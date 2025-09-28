@@ -12,6 +12,21 @@ import {
 import { UserSettingsInput } from "@/lib/validations/userSettings";
 
 export class UserSettingsService {
+  /**
+   * Get user's currency for server-side formatting
+   * Returns the currency code (e.g., 'EUR', 'USD') or default currency if not found
+   */
+  static async getUserCurrency(userId: string): Promise<string> {
+    try {
+      const userSettings = await this.getUserSettings(userId);
+      return userSettings.currency.code;
+    } catch (error) {
+      console.error("Error fetching user currency:", error);
+      // Fallback to default currency
+      const defaultCurrency = await getDefaultCurrency();
+      return defaultCurrency?.code || 'EUR';
+    }
+  }
   static async getUserSettings(userId: string) {
     try {
       let userSettings = await getUserSettings(userId);

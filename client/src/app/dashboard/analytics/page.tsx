@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { getAnalyticsPageData } from "@/lib/services/server/analyticsService";
+import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
 import { TimeRangeSelector } from "@/components/dashboard/analytics/TimeRangeSelector";
 import {
@@ -36,20 +37,26 @@ export default async function AnalyticsPage({
   const propertyId =
     typeof params.propertyId === "string" ? params.propertyId : undefined;
 
-  const {
-    kpis,
-    previousKpis,
-    cashFlowTrend,
-    expenseBreakdown,
-    propertyRanking,
-    properties,
-  } = await getAnalyticsPageData(session.user.id, timeRange, propertyId);
+  const [
+    {
+      kpis,
+      previousKpis,
+      cashFlowTrend,
+      expenseBreakdown,
+      propertyRanking,
+      properties,
+    },
+    userCurrencyCode
+  ] = await Promise.all([
+    getAnalyticsPageData(session.user.id, timeRange, propertyId),
+    UserSettingsService.getUserCurrency(session.user.id)
+  ]);
 
   const getAnalyticsKPIConfigs = (): KPICardConfig[] => {
     return [
       {
         title: "Capital Invested",
-        value: formatCompactCurrency(kpis.totalInvestment || 0),
+        value: formatCompactCurrency(kpis.totalInvestment || 0, userCurrencyCode),
         ...getTrendData(
           kpis.totalInvestment || 0,
           previousKpis.totalInvestment
@@ -57,17 +64,17 @@ export default async function AnalyticsPage({
       },
       {
         title: "Income",
-        value: formatCompactCurrency(kpis.totalIncome || 0),
+        value: formatCompactCurrency(kpis.totalIncome || 0, userCurrencyCode),
         ...getTrendData(kpis.totalIncome || 0, previousKpis.totalIncome),
       },
       {
         title: "Expenses",
-        value: formatCompactCurrency(kpis.totalExpenses || 0),
+        value: formatCompactCurrency(kpis.totalExpenses || 0, userCurrencyCode),
         ...getTrendData(kpis.totalExpenses || 0, previousKpis.totalExpenses),
       },
       {
         title: "Cash Flow",
-        value: formatCompactCurrency(kpis.cashFlow || 0),
+        value: formatCompactCurrency(kpis.cashFlow || 0, userCurrencyCode),
         ...getTrendData(kpis.cashFlow || 0, previousKpis.cashFlow),
       },
       {
@@ -116,14 +123,14 @@ export default async function AnalyticsPage({
         <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-0">
             <div className="min-h-0">
-              <IncomeExpensesChart initialData={cashFlowTrend} />
+              <IncomeExpensesChart initialData={cashFlowTrend} currencyCode={userCurrencyCode} />
             </div>
             <div className="min-h-0">
-              <CashFlowChart initialData={cashFlowTrend} />
+              <CashFlowChart initialData={cashFlowTrend} currencyCode={userCurrencyCode} />
             </div>
           </div>
           <div className="min-h-0">
-            <ExpenseBreakdownChart initialData={expenseBreakdown} />
+            <ExpenseBreakdownChart initialData={expenseBreakdown} currencyCode={userCurrencyCode} />
           </div>
         </div>
       </section>
@@ -134,6 +141,7 @@ export default async function AnalyticsPage({
           <PropertyPerformanceChart
             data={propertyRanking}
             timeRange={timeRange}
+            currencyCode={userCurrencyCode}
           />
         </div>
       </section>

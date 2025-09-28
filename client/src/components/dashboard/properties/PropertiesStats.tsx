@@ -17,9 +17,10 @@ interface PropertyStats {
 
 interface PropertiesStatsProps {
   stats: PropertyStats;
+  currencyCode: string;
 }
 
-const PropertiesStats = ({ stats }: PropertiesStatsProps) => {
+const PropertiesStats = ({ stats, currencyCode }: PropertiesStatsProps) => {
   const kpiConfigs: KPICardConfig[] = [
     {
       title: "Total Properties",
@@ -38,7 +39,7 @@ const PropertiesStats = ({ stats }: PropertiesStatsProps) => {
     },
     {
       title: "Average Rent",
-      value: formatCompactCurrency(stats.averageRent),
+      value: formatCompactCurrency(stats.averageRent, currencyCode),
     },
     {
       title: "Portfolio ROI %",

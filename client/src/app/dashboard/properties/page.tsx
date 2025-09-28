@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getPropertiesData } from "@/lib/services/server/propertiesService";
 import { PropertiesClient } from "@/components/dashboard/properties/PropertiesClient";
 import PropertiesStats from "@/components/dashboard/properties/PropertiesStats";
+import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
 
 export default async function PropertiesPage() {
@@ -12,7 +13,13 @@ export default async function PropertiesPage() {
   }
 
   // Fetch all data server-side
-  const { properties, stats } = await getPropertiesData(session.user.id);
+  const [
+    { properties, stats },
+    userCurrencyCode
+  ] = await Promise.all([
+    getPropertiesData(session.user.id),
+    UserSettingsService.getUserCurrency(session.user.id)
+  ]);
 
   return (
     <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
@@ -24,7 +31,7 @@ export default async function PropertiesPage() {
         </p>
       </div>
 
-      <PropertiesStats stats={stats} />
+      <PropertiesStats stats={stats} currencyCode={userCurrencyCode} />
 
       <PropertiesClient properties={properties} />
     </div>

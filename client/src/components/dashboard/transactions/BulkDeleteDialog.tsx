@@ -17,6 +17,7 @@ import { Transaction, TransactionType } from "@/types/transactions";
 import { formatCurrency } from "@/lib/utils/formatting";
 import { cn } from "@/lib/utils";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
 
 interface BulkDeleteDialogProps {
@@ -36,7 +37,9 @@ export function BulkDeleteDialog({
 }: BulkDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const { data: userTimezone } = useUserTimezone();
+  const { data: userCurrency } = useUserCurrency();
   const timezone = userTimezone || getSystemTimezone();
+  const currency = userCurrency || getDefaultCurrency();
 
   const handleConfirm = async () => {
     try {
@@ -84,7 +87,7 @@ export function BulkDeleteDialog({
               "font-semibold",
               totalAmount >= 0 ? "text-green-600" : "text-red-600"
             )}>
-              {totalAmount >= 0 ? "+" : ""}{formatCurrency(totalAmount)}
+              {totalAmount >= 0 ? "+" : ""}{formatCurrency(totalAmount, currency.code)}
             </span>
           </div>
 
@@ -137,7 +140,7 @@ export function BulkDeleteDialog({
                       transaction.type === TransactionType.INCOME ? "text-green-600" : "text-red-600"
                     )}>
                       {transaction.type === TransactionType.INCOME ? "+" : "-"}
-                      {formatCurrency(Math.abs(transaction.amount))}
+                      {formatCurrency(Math.abs(transaction.amount), currency.code)}
                     </span>
                   </div>
                 </div>

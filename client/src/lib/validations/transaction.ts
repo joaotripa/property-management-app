@@ -6,7 +6,7 @@ export const baseTransactionSchema = z.object({
   amount: z
     .number({ message: "Amount must be a number" })
     .positive("Amount must be greater than 0")
-    .max(1000000, "Amount cannot exceed €1,000,000")
+    .max(1000000, "Amount cannot exceed 1,000,000")
     .transform((val) => Math.round(val * 100) / 100),
 
   type: z.enum(TRANSACTION_TYPES, {
@@ -44,7 +44,7 @@ export const transactionFormSchema = z.object({
       message: "Amount must be a valid number greater than 0",
     })
     .refine((val) => parseFloat(val) <= 1000000, {
-      message: "Amount cannot exceed €1,000,000",
+      message: "Amount cannot exceed 1,000,000",
     }),
 
   type: z.enum(TRANSACTION_TYPES, {

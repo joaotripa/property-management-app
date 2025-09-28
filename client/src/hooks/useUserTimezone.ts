@@ -22,8 +22,8 @@ export function useUserTimezone() {
         return getSystemTimezone();
       }
     },
-    staleTime: 1000 * 60 * 30, // 30 minutes cache - timezone rarely changes
-    gcTime: 1000 * 60 * 60, // 1 hour (was cacheTime in older versions)
+    staleTime: Infinity, // Cache forever - user preferences rarely change
+    gcTime: Infinity,    // Never garbage collect - keep in memory
     retry: 1, // Minimal retry for settings
     refetchOnWindowFocus: false, // Timezone doesn't change on focus
   });
