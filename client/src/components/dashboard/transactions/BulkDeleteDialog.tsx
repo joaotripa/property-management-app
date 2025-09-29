@@ -55,11 +55,20 @@ export function BulkDeleteDialog({
   };
 
   const totalAmount = transactions.reduce((sum, transaction) => {
-    return sum + (transaction.type === TransactionType.INCOME ? transaction.amount : -transaction.amount);
+    return (
+      sum +
+      (transaction.type === TransactionType.INCOME
+        ? transaction.amount
+        : -transaction.amount)
+    );
   }, 0);
 
-  const incomeCount = transactions.filter(t => t.type === TransactionType.INCOME).length;
-  const expenseCount = transactions.filter(t => t.type === TransactionType.EXPENSE).length;
+  const incomeCount = transactions.filter(
+    (t) => t.type === TransactionType.INCOME
+  ).length;
+  const expenseCount = transactions.filter(
+    (t) => t.type === TransactionType.EXPENSE
+  ).length;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -67,10 +76,12 @@ export function BulkDeleteDialog({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Delete {transactions.length} Transaction{transactions.length !== 1 ? 's' : ''}
+            Delete {transactions.length} Transaction
+            {transactions.length !== 1 ? "s" : ""}
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. The selected transactions will be permanently removed.
+            This action cannot be undone. The selected transactions will be
+            permanently removed.
           </DialogDescription>
         </DialogHeader>
 
@@ -83,11 +94,14 @@ export function BulkDeleteDialog({
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Net amount impact:</span>
-            <span className={cn(
-              "font-semibold",
-              totalAmount >= 0 ? "text-green-600" : "text-red-600"
-            )}>
-              {totalAmount >= 0 ? "+" : ""}{formatCurrency(totalAmount, currency.code)}
+            <span
+              className={cn(
+                "font-semibold",
+                totalAmount >= 0 ? "text-green-600" : "text-red-600"
+              )}
+            >
+              {totalAmount >= 0 ? "+" : ""}
+              {formatCurrency(totalAmount, currency.code)}
             </span>
           </div>
 
@@ -108,7 +122,7 @@ export function BulkDeleteDialog({
         {/* Transaction List */}
         <div className="flex-1 min-h-0">
           <h4 className="font-medium mb-2">Transactions to be deleted:</h4>
-          <ScrollArea className="h-full border rounded-md">
+          <ScrollArea className="h-[300px] border rounded-md">
             <div className="p-4 space-y-2">
               {transactions.map((transaction) => (
                 <div
@@ -118,7 +132,11 @@ export function BulkDeleteDialog({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant={transaction.type === TransactionType.INCOME ? "default" : "destructive"}
+                        variant={
+                          transaction.type === TransactionType.INCOME
+                            ? "default"
+                            : "destructive"
+                        }
                         className="text-xs"
                       >
                         {transaction.type}
@@ -128,19 +146,31 @@ export function BulkDeleteDialog({
                       </span>
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {transaction.property?.name} • {transaction.category?.name || "Uncategorized"}
+                      {transaction.property?.name} •{" "}
+                      {transaction.category?.name || "Uncategorized"}
                       {" • "}
-                      {formatDateForUser(new Date(transaction.transactionDate), timezone, 'medium')}
+                      {formatDateForUser(
+                        new Date(transaction.transactionDate),
+                        timezone,
+                        "medium"
+                      )}
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className={cn(
-                      "font-semibold",
-                      transaction.type === TransactionType.INCOME ? "text-green-600" : "text-red-600"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        transaction.type === TransactionType.INCOME
+                          ? "text-green-600"
+                          : "text-red-600"
+                      )}
+                    >
                       {transaction.type === TransactionType.INCOME ? "+" : "-"}
-                      {formatCurrency(Math.abs(transaction.amount), currency.code)}
+                      {formatCurrency(
+                        Math.abs(transaction.amount),
+                        currency.code
+                      )}
                     </span>
                   </div>
                 </div>
@@ -171,7 +201,8 @@ export function BulkDeleteDialog({
             ) : (
               <>
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete {transactions.length} Transaction{transactions.length !== 1 ? 's' : ''}
+                Delete {transactions.length} Transaction
+                {transactions.length !== 1 ? "s" : ""}
               </>
             )}
           </Button>
