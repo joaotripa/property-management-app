@@ -9,9 +9,7 @@ interface ContactFormData {
     const { name, email, subject, message } = data;
     const timestamp = new Date().toLocaleString();
     const htmlMessage = message.replace(/(?:\r\n|\r|\n)/g, "<br>");
-    const logoUrl = process.env.NODE_ENV === 'production'
-      ? 'https://domari.app/Domari-Logo-Icon.png'
-      : 'http://localhost:3000/Domari-Logo-Icon.png';
+    const logoUrl = 'https://domari.app/Domari-Logo-Icon.png';
 
     return `
     <!DOCTYPE html>
@@ -30,9 +28,15 @@ interface ContactFormData {
               <!-- Header -->
               <tr>
                 <td style="background: #2F6DF2; color: #ffffff; padding: 40px 32px; text-align: center;">
-                  <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: block; margin: 0 auto 16px auto;">
-                  <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Domari</h1>
-                  <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">New Contact Form Submission</p>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="text-align: center;">
+                        <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; display: inline-block; vertical-align: middle;">Domari</h1>
+                      </td>
+                    </tr>
+                  </table>
+                  <p style="margin: 16px 0 0 0; font-size: 16px; opacity: 0.9;">New Contact Form Submission</p>
                 </td>
               </tr>
 
@@ -73,9 +77,13 @@ interface ContactFormData {
 
               <!-- Footer -->
               <tr>
-                <td style="background-color: #1E293B; text-align: center; padding: 24px; font-size: 13px; color: #94A3B8;">
-                  This message was sent from the contact form at
-                  <a href="https://domari.app" style="color: #2F6DF2; text-decoration: none;">domari.app</a>
+                <td style="background-color: #1E293B; text-align: center; padding: 30px 32px; font-size: 14px; color: #94A3B8;">
+                  <p style="margin: 0 0 10px 0;">
+                    © ${new Date().getFullYear()} Domari. All rights reserved.
+                  </p>
+                  <p style="color: #64748B; font-size: 12px; margin: 0;">
+                    Making property finances simple and efficient.
+                  </p>
                 </td>
               </tr>
 
