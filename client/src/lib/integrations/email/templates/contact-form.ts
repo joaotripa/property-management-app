@@ -9,7 +9,7 @@ interface ContactFormData {
     const { name, email, subject, message } = data;
     const timestamp = new Date().toLocaleString();
     const htmlMessage = message.replace(/(?:\r\n|\r|\n)/g, "<br>");
-    const logoUrl = 'https://domari.app/Domari-Logo-Icon.png';
+    const logoUrl = 'https://domari.app/domari-logo-icon.png';
 
     return `
     <!DOCTYPE html>

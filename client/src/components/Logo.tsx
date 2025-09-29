@@ -12,7 +12,7 @@ const Logo = ({ size = "32px", className = "" }: LogoProps) => {
       <div className="relative" style={{ width: size, height: size }}>
         <Image
           alt="domari-logo"
-          src="/Domari-Logo-Icon.png"
+          src="/domari-logo-icon.png"
           fill
           sizes="(max-width: 640px) 120px, (max-width: 768px) 140px, 168px"
           priority
