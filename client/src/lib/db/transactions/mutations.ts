@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/config/database";
 import { TransactionType } from "@prisma/client";
 import { Transaction } from "@/types/transactions";
+import {
+  getAffectedMonths,
+  updateMonthlyMetricsForMonths,
+  recalculatePropertyMetrics
+} from "@/lib/services/monthlyMetricsService";
 
 /**
  * Soft delete all transactions for a specific property
@@ -35,6 +40,16 @@ export async function softDeletePropertyTransactions(
         updatedAt: new Date(),
       },
     });
+
+    // Recalculate all monthly metrics for this property
+    if (result.count > 0) {
+      try {
+        await recalculatePropertyMetrics(userId, propertyId);
+      } catch (metricsError) {
+        console.error('Error updating monthly metrics after deleting property transactions:', metricsError);
+        // Don't fail the transaction deletion if metrics update fails
+      }
+    }
 
     return { count: result.count };
   } catch (error) {
@@ -78,6 +93,16 @@ export async function restorePropertyTransactions(
       },
     });
 
+    // Recalculate all monthly metrics for this property
+    if (result.count > 0) {
+      try {
+        await recalculatePropertyMetrics(userId, propertyId);
+      } catch (metricsError) {
+        console.error('Error updating monthly metrics after restoring property transactions:', metricsError);
+        // Don't fail the transaction restoration if metrics update fails
+      }
+    }
+
     return { count: result.count };
   } catch (error) {
     console.error('Error restoring property transactions:', error);
@@ -115,6 +140,20 @@ export async function softDeleteTransaction(
         updatedAt: new Date(),
       },
     });
+
+    // Update monthly metrics for the affected month
+    try {
+      const affectedMonths = getAffectedMonths(existingTransaction.transactionDate);
+      const updates = affectedMonths.map(month => ({
+        propertyId: existingTransaction.propertyId,
+        year: month.year,
+        month: month.month,
+      }));
+      await updateMonthlyMetricsForMonths(userId, updates);
+    } catch (metricsError) {
+      console.error('Error updating monthly metrics after deleting transaction:', metricsError);
+      // Don't fail the transaction deletion if metrics update fails
+    }
   } catch (error) {
     console.error('Error soft deleting transaction:', error);
     throw new Error('Failed to delete transaction');
@@ -133,14 +172,18 @@ export async function bulkSoftDeleteTransactions(
   failedIds: string[];
 }> {
   try {
-    // Validate that all transactions exist and belong to the user
+    // Validate that all transactions exist and belong to the user, get transaction details for metrics
     const existingTransactions = await prisma.transaction.findMany({
       where: {
         id: { in: transactionIds },
         userId,
         deletedAt: null,
       },
-      select: { id: true },
+      select: {
+        id: true,
+        propertyId: true,
+        transactionDate: true
+      },
     });
 
     const foundIds = existingTransactions.map(t => t.id);
@@ -162,6 +205,34 @@ export async function bulkSoftDeleteTransactions(
         updatedAt: new Date(),
       },
     });
+
+    // Update monthly metrics for all affected months and properties
+    if (result.count > 0) {
+      try {
+        const affectedMonthsSet = new Set<string>();
+
+        existingTransactions.forEach(transaction => {
+          const months = getAffectedMonths(transaction.transactionDate);
+          months.forEach(month => {
+            affectedMonthsSet.add(`${transaction.propertyId}:${month.year}:${month.month}`);
+          });
+        });
+
+        const updates = Array.from(affectedMonthsSet).map(key => {
+          const [propertyId, year, month] = key.split(':');
+          return {
+            propertyId,
+            year: parseInt(year, 10),
+            month: parseInt(month, 10),
+          };
+        });
+
+        await updateMonthlyMetricsForMonths(userId, updates);
+      } catch (metricsError) {
+        console.error('Error updating monthly metrics after bulk deleting transactions:', metricsError);
+        // Don't fail the transaction deletion if metrics update fails
+      }
+    }
 
     return {
       deletedCount: result.count,
@@ -223,6 +294,20 @@ export async function restoreTransaction(
         },
       },
     });
+
+    // Update monthly metrics for the affected month
+    try {
+      const affectedMonths = getAffectedMonths(existingTransaction.transactionDate);
+      const updates = affectedMonths.map(month => ({
+        propertyId: existingTransaction.propertyId,
+        year: month.year,
+        month: month.month,
+      }));
+      await updateMonthlyMetricsForMonths(userId, updates);
+    } catch (metricsError) {
+      console.error('Error updating monthly metrics after restoring transaction:', metricsError);
+      // Don't fail the transaction restoration if metrics update fails
+    }
 
     // Transform Decimal amounts to numbers for frontend
     return {
@@ -348,6 +433,20 @@ export async function createTransaction(
       },
     });
 
+    // Update monthly metrics for the affected month
+    try {
+      const affectedMonths = getAffectedMonths(transactionData.transactionDate);
+      const updates = affectedMonths.map(month => ({
+        propertyId: transactionData.propertyId,
+        year: month.year,
+        month: month.month,
+      }));
+      await updateMonthlyMetricsForMonths(userId, updates);
+    } catch (metricsError) {
+      console.error('Error updating monthly metrics after creating transaction:', metricsError);
+      // Don't fail the transaction creation if metrics update fails
+    }
+
     // Transform Decimal amounts to numbers for frontend
     return {
       ...transaction,
@@ -448,6 +547,42 @@ export async function updateTransaction(
         },
       },
     });
+
+    // Update monthly metrics for affected months
+    try {
+      const currentDate = updateData.transactionDate || existingTransaction.transactionDate;
+      const previousDate = updateData.transactionDate ? existingTransaction.transactionDate : undefined;
+      const currentPropertyId = updateData.propertyId || existingTransaction.propertyId;
+      const previousPropertyId = updateData.propertyId ? existingTransaction.propertyId : undefined;
+
+      const affectedMonths = getAffectedMonths(currentDate, previousDate);
+
+      // Handle updates for current property
+      const currentUpdates = affectedMonths.map(month => ({
+        propertyId: currentPropertyId,
+        year: month.year,
+        month: month.month,
+      }));
+
+      // Handle updates for previous property if it changed
+      let previousUpdates: Array<{ propertyId: string; year: number; month: number }> = [];
+      if (previousPropertyId && previousPropertyId !== currentPropertyId) {
+        const previousMonths = getAffectedMonths(existingTransaction.transactionDate);
+        previousUpdates = previousMonths.map(month => ({
+          propertyId: previousPropertyId,
+          year: month.year,
+          month: month.month,
+        }));
+      }
+
+      const allUpdates = [...currentUpdates, ...previousUpdates];
+      if (allUpdates.length > 0) {
+        await updateMonthlyMetricsForMonths(userId, allUpdates);
+      }
+    } catch (metricsError) {
+      console.error('Error updating monthly metrics after updating transaction:', metricsError);
+      // Don't fail the transaction update if metrics update fails
+    }
 
     // Transform Decimal amounts to numbers for frontend
     return {
