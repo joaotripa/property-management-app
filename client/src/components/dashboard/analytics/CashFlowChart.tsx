@@ -35,9 +35,8 @@ const chartConfig = {
 
 export function CashFlowChart({
   initialData = [],
-  currencyCode
+  currencyCode,
 }: CashFlowChartProps) {
-
   const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -82,7 +81,9 @@ export function CashFlowChart({
 
               <YAxis
                 className="text-xs fill-muted-foreground"
-                tickFormatter={(value) => formatCompactCurrency(value, currencyCode)}
+                tickFormatter={(value) =>
+                  formatCompactCurrency(value, currencyCode)
+                }
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, dx: -5 }}
@@ -103,7 +104,7 @@ export function CashFlowChart({
               <ChartLegend content={<ChartLegendContent />} />
 
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="cashFlow"
                 stroke={chartConfig.cashFlow.color}
                 strokeWidth={2}
@@ -111,7 +112,7 @@ export function CashFlowChart({
               />
 
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="cumulativeCashFlow"
                 stroke={chartConfig.cumulativeCashFlow.color}
                 strokeWidth={2}

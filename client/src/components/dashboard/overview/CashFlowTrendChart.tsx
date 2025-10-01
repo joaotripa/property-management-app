@@ -100,7 +100,9 @@ export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => formatCompactCurrency(value, currency.code)}
+              tickFormatter={(value) =>
+                formatCompactCurrency(value, currency.code)
+              }
             />
 
             <ChartTooltip
@@ -132,7 +134,7 @@ export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
             </defs>
 
             <Area
-              type="natural"
+              type="linear"
               dataKey="cashFlow"
               stroke="var(--color-primary)"
               fill="url(#fillCashFlow)"

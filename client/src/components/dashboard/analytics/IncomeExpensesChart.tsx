@@ -37,7 +37,6 @@ export function IncomeExpensesChart({
   initialData = [],
   currencyCode,
 }: IncomeExpensesChartProps) {
-
   const chartData: ChartDataItem[] = initialData.map((item) => ({
     ...item,
     label: formatDataLabel(item),
@@ -82,7 +81,9 @@ export function IncomeExpensesChart({
 
               <YAxis
                 className="text-xs fill-muted-foreground"
-                tickFormatter={(value) => formatCompactCurrency(value, currencyCode)}
+                tickFormatter={(value) =>
+                  formatCompactCurrency(value, currencyCode)
+                }
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, dx: -5 }}
@@ -103,7 +104,7 @@ export function IncomeExpensesChart({
               <ChartLegend content={<ChartLegendContent />} />
 
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="income"
                 stroke={chartConfig.income.color}
                 strokeWidth={2}
@@ -111,7 +112,7 @@ export function IncomeExpensesChart({
               />
 
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="expenses"
                 stroke={chartConfig.expenses.color}
                 strokeWidth={2}
