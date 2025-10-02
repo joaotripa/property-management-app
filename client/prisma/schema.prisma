@@ -25,6 +25,7 @@ model User {
   transactions  Transaction[]
   monthlyMetrics MonthlyMetrics[]
   userSettings  UserSettings?
+  subscription  Subscription?
 
   @@index([deletedAt])
   @@map("users")
@@ -227,6 +228,29 @@ model UserSettings {
   @@map("user_settings")
 }
 
+model Subscription {
+  id                    String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String             @unique @map("user_id") @db.Uuid
+  stripeCustomerId      String?            @map("stripe_customer_id")
+  stripeSubscriptionId  String?            @map("stripe_subscription_id")
+  status                SubscriptionStatus @default(TRIAL)
+  plan                  SubscriptionPlan   @default(BUSINESS)
+  propertyLimit         Int                @default(999) @map("property_limit")
+  trialEndsAt           DateTime?          @map("trial_ends_at") @db.Timestamptz(6)
+  currentPeriodStart    DateTime?          @map("current_period_start") @db.Timestamptz(6)
+  currentPeriodEnd      DateTime?          @map("current_period_end") @db.Timestamptz(6)
+  cancelAtPeriodEnd     Boolean            @default(false) @map("cancel_at_period_end")
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
 enum TransactionType {
   INCOME
   EXPENSE
@@ -249,4 +273,18 @@ enum PropertyType {
 enum OccupancyStatus {
   AVAILABLE
   OCCUPIED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum SubscriptionPlan {
+  STARTER
+  PRO
+  BUSINESS
 }

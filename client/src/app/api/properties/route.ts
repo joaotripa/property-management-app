@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { 
-  createProperty, 
+import {
+  createProperty,
   getUserProperties,
   createPropertyRequestSchema,
   createPropertyResponseSchema,
@@ -9,6 +9,7 @@ import {
   propertyFiltersSchema
 } from "@/lib/db/properties";
 import { ZodError } from "zod";
+import { withResourceLimit } from "@/lib/stripe/middleware/resourceLimit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,9 +87,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-        
+
     const validatedData = createPropertyRequestSchema.parse(body);
-        
+
+    const limitError = await withResourceLimit(session.user.id, 'properties');
+    if (limitError) return limitError;
+
     const property = await createProperty(session.user.id, validatedData);
 
     const response = createPropertyResponseSchema.parse({
@@ -122,7 +126,7 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-      
+
       return NextResponse.json(
         errorResponseSchema.parse({
           success: false,

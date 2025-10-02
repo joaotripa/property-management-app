@@ -7,17 +7,11 @@ import { Check, Star } from "lucide-react";
 import { Plan, PRICING_PLANS } from "./types";
 
 interface PricingCardsProps {
-  /** Array of plans to display. Defaults to PRICING_PLANS */
   plans?: Plan[];
-  /** Custom className for the container */
   className?: string;
-  /** Whether to show the yearly/monthly toggle */
   showToggle?: boolean;
-  /** Custom button handler. If not provided, uses default href behavior */
   onPlanSelect?: (plan: Plan, isYearly: boolean) => void;
-  /** Default href for plan buttons when onPlanSelect is not provided */
   defaultHref?: string;
-  /** Whether to show the bottom disclaimer and features */
   showDisclaimer?: boolean;
 }
 
