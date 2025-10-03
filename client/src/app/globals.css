@@ -210,6 +210,10 @@
   [data-slot="sidebar-menu-button"] {
     @apply hover:cursor-pointer;
   }
+
+  button {
+    @apply cursor-pointer;
+  }
 }
 
 .hover-scale {
