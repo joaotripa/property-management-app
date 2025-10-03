@@ -271,6 +271,79 @@ All API operations use dedicated service functions:
 - Ensure error logging and monitoring are in place
 - Never over-engineer - favor clarity and readability
 
+  ## Anti-Over-Engineering Principles
+
+  **CRITICAL**: Do not over-engineer any implementation. Follow these strict guidelines:
+
+  ### Architecture
+
+  - **Keep it flat**: Avoid unnecessary abstraction layers (core/, services/, config/, utils/)
+  - **Colocation**: Keep related code together in the same file when it makes sense for small features
+  - **Single file solutions**: If a feature can be implemented in 1 file instead of 5, use 1 file
+  - **No premature abstraction**: Only abstract when you have 3+ concrete use cases
+  - **Question every layer**: Before adding a new layer/directory/pattern, ask "Is this truly necessary?"
+  - **Accept necessary complexity**: When domain complexity is inherent (e.g., payment flows, multi-step workflows), structure appropriately with clear separation of concerns
+
+  ### Code Structure
+
+  - **Direct over indirect**: Use Stripe SDK directly, don't wrap it in custom classes unless you need to abstract multiple payment providers
+  - **Standard over custom**: Prefer built-in types over custom error classes
+  - **Minimal files**: Aim for fewer, well-organized files rather than many small ones
+  - **Inline simple logic**: Don't extract 3-line functions into separate utilities
+  - **No factory patterns**: Unless absolutely required for dependency injection or testing
+  - **Modularity when it matters**: For larger features (5+ operations), organize into logical modules for maintainability and testability
+
+  ### Type System
+
+  - **Use library types**: Don't recreate types that already exist (e.g., Stripe types)
+  - **Extend, don't replace**: If you need custom types, extend existing ones with `interface` or type intersection
+  - **No custom error hierarchies**: Use standard Error class with descriptive messages
+  - **Type inference**: Let TypeScript infer types when obvious; don't over-specify
+  - **Domain modeling**: Use TypeScript's type system to model complex domain logic when it prevents runtime errors
+
+  ### Logic
+
+  - **Straightforward flow**: Avoid complex state machines unless truly necessary
+  - **Direct database access**: Don't abstract Prisma queries behind repositories unless you have multiple data sources
+  - **Simple validation**: Zod schemas are enough; don't add validation layers
+  - **No excessive middleware**: Only add middleware when you need to reuse logic across 5+ routes
+  - **Complex domains require structure**: When business logic is inherently complex, organize it clearly rather than cramming everything into one file
+
+  ### Practical Guidelines
+
+  - **File count**: If a feature needs >5 files, reconsider the architecture (but accept it if domain complexity requires it)
+  - **Line count**: 200-300 lines in a single file is OK if it's cohesive; split when a file does multiple unrelated things
+  - **Dependencies**: Before adding a package, check if the standard library can do it
+  - **Patterns**: Only use design patterns when the problem clearly demands them
+  - **Refactoring**: Refactor when it significantly improves clarity, maintainability, or testability—not just for aesthetics
+
+  ### Red Flags (Signs of Over-Engineering)
+
+  - ❌ Creating interfaces for single implementations
+  - ❌ Building custom error hierarchies with multiple error classes
+  - ❌ Adding "Manager", "Handler", "Service", "Provider" suffixes everywhere
+  - ❌ Wrapping third-party SDKs in custom classes without clear benefit
+  - ❌ Creating config objects for values used in one place
+  - ❌ Building plugin systems that have 1 plugin
+  - ❌ Implementing event buses for simple function calls
+  - ❌ Using dependency injection containers for simple imports
+
+  ### Examples of Good Simplicity
+
+  - ✅ Stripe integration: 4-5 files, direct SDK usage, ~500 lines total
+  - ✅ API routes: Directly call Prisma, validate with Zod, return JSON
+  - ✅ Components: Colocate state, handlers, and JSX in same file
+  - ✅ Types: Import from `@prisma/client` and `stripe`, extend only when needed
+
+  ### When Complexity Is Justified
+
+  - ✅ Multi-step workflows with state transitions (e.g., onboarding, checkout flows)
+  - ✅ Domain logic that requires clear separation (e.g., pricing calculations, tax rules)
+  - ✅ Features that need comprehensive testing (organize for testability)
+  - ✅ Abstractions that prevent widespread breaking changes (e.g., wrapping external APIs you don't control)
+
+  **Golden Rule**: Prefer simplicity, but never sacrifice correctness, scalability, or clarity when complexity is truly required by the problem domain. Complexity is a liability when avoidable, but a necessity when the domain demands it.
+
 ## Quality Checklist
 
 When working on this codebase:
