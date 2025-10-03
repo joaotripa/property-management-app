@@ -9,7 +9,7 @@ const Solution = () => {
       subheadline: "Every dollar, perfectly organized",
       description:
         "Log rent, expenses, maintenance costs, repairs, and more in seconds. Built-in categories mean no more guessing where that repair bill should go.",
-      color: "from-green-500 to-emerald-600",
+      color: "from-primary/80 to-primary",
     },
     {
       icon: Building2,
@@ -17,7 +17,7 @@ const Solution = () => {
       subheadline: "All your properties in one place",
       description:
         "Add your properties and see performance at a glance. Switch between properties instantly and track what matters most.",
-      color: "from-green-500 to-emerald-600",
+      color: "from-primary/80 to-primary",
     },
     {
       icon: BarChart3,
@@ -25,7 +25,7 @@ const Solution = () => {
       subheadline: "Tax-ready reports in one click",
       description:
         "Generate profit & loss statements, export everything for your accountant, and see exactly which properties make you money.",
-      color: "from-green-500 to-emerald-600",
+      color: "from-primary/80 to-primary",
     },
     {
       icon: TrendingUp,
@@ -33,7 +33,7 @@ const Solution = () => {
       subheadline: "Know your numbers instantly",
       description:
         "See total income, expenses, and profit across your entire portfolio. Monthly, yearly, or property-by-property views.",
-      color: "from-green-500 to-emerald-600",
+      color: "from-primary/80 to-primary",
     },
   ];
 
@@ -59,7 +59,7 @@ const Solution = () => {
           {features.map((feature, index) => (
             <Card
               key={index}
-              className={`rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group animate-fade-in`}
+              className={`rounded-3xl transition-all duration-300 hover:-translate-y-2 group animate-fade-in`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardHeader className="px-8 py-4 flex flex-row items-center gap-4">

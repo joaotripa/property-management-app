@@ -7,10 +7,9 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const navItems = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Why Domari", href: "#why-domari" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "/#solution" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 const Navbar = () => {
