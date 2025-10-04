@@ -256,7 +256,7 @@ const TermsOfService = () => {
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Each plan includes a specific property limit. Exceeding your
-                  plan's property limit requires upgrading to a higher tier. We
+                  plan&apos;s property limit requires upgrading to a higher tier. We
                   will notify you when approaching your limit.
                 </p>
 
@@ -265,7 +265,7 @@ const TermsOfService = () => {
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   We reserve the right to change subscription prices with 30
-                  days' advance notice. Price changes will not affect your
+                  days&apos; advance notice. Price changes will not affect your
                   current billing cycle.
                 </p>
               </section>
@@ -544,7 +544,7 @@ const TermsOfService = () => {
                   Service Disclaimer
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Domari is provided "as is" and "as available" without
+                  Domari is provided &quot;as is&quot; and &quot;as available&quot; without
                   warranties of any kind, either express or implied, including
                   but not limited to warranties of merchantability, fitness for
                   a particular purpose, or non-infringement.
@@ -596,13 +596,13 @@ const TermsOfService = () => {
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
                   <li>
-                    Update the "Last updated" date at the top of this page
+                    Update the &quot;Last updated&quot; date at the top of this page
                   </li>
                   <li>
                     Send you an email notification (for significant changes)
                   </li>
                   <li>
-                    Provide at least 30 days' notice for changes affecting
+                    Provide at least 30 days&apos; notice for changes affecting
                     pricing or core functionality
                   </li>
                 </ul>

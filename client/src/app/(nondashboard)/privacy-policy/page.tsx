@@ -12,7 +12,7 @@ const sections = [
   { id: "third-party", title: "5. Third-Party Services" },
   { id: "your-rights", title: "6. Your Rights & Choices" },
   { id: "data-retention", title: "7. Data Retention" },
-  { id: "children", title: "8. Children's Privacy" },
+  { id: "children", title: "8. Children&apos;s Privacy" },
   { id: "changes", title: "9. Changes to This Policy" },
   { id: "contact", title: "10. Contact Us" },
 ];
@@ -325,7 +325,7 @@ const PrivacyPolicy = () => {
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Payment processing and subscription management. We do not
-                  store credit card information. View Stripe's privacy policy at{" "}
+                  store credit card information. View Stripe&apos;s privacy policy at{" "}
                   <a
                     href="https://stripe.com/privacy"
                     target="_blank"
@@ -340,7 +340,7 @@ const PrivacyPolicy = () => {
                   Google OAuth
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Optional authentication provider. View Google's privacy policy
+                  Optional authentication provider. View Google&apos;s privacy policy
                   at{" "}
                   <a
                     href="https://policies.google.com/privacy"
@@ -431,7 +431,7 @@ const PrivacyPolicy = () => {
 
               <section id="children" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-foreground mb-4">
-                  8. Children's Privacy
+                  8. Children&apos;s Privacy
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Domari is not intended for use by individuals under the age of
@@ -454,8 +454,8 @@ const PrivacyPolicy = () => {
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
                   <li>
-                    Posting the updated policy on this page with a new "Last
-                    updated" date
+                    Posting the updated policy on this page with a new &quot;Last
+                    updated&quot; date
                   </li>
                   <li>
                     Sending you an email notification (for significant changes)
