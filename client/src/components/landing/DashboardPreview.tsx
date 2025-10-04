@@ -1,7 +1,5 @@
 import React from "react";
 
-import { TrendingUp } from "lucide-react";
-
 const DashboardPreview = () => {
   return (
     <section
@@ -29,75 +27,77 @@ const DashboardPreview = () => {
               </div>
             </div>
             <div className="p-6 md:p-8 lg:p-12">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    Welcome back,
-                  </h3>
-                  <p className="text-dark mt-1">
-                    Here&apos;s what&apos;s happening with your properties today
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="px-4 py-2 bg-success/10 text-success text-sm rounded-full font-medium">
-                    +12.5% this month
-                  </div>
-                  <div className="px-4 py-2 bg-primary/10 text-primary text-sm rounded-full font-medium">
-                    8 Properties Active
-                  </div>
-                </div>
+              <div className="flex flex-col gap-2 mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Welcome back,
+                </h3>
+                <p className="text-dark mt-1">
+                  Here&apos;s what&apos;s happening with your properties today
+                </p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-                <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 md:p-6 rounded-xl border border-primary/20">
-                  <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
-                    $24,850
-                  </div>
-                  <div className="text-sm font-medium text-dark">
-                    Monthly Revenue
-                  </div>
-                  <div className="text-xs text-success mt-2 flex items-center">
-                    <TrendingUp className="h-3 w-3 mr-1" />↑ 8.2% vs last month
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-4 md:p-6 rounded-xl border border-accent/20">
-                  <div className="text-2xl md:text-3xl font-bold text-accent mb-2">
-                    94%
-                  </div>
-                  <div className="text-sm font-medium text-dark">
-                    Occupancy Rate
-                  </div>
-                  <div className="text-xs text-success mt-2 flex items-center">
-                    <TrendingUp className="h-3 w-3 mr-1" />↑ 2.1% vs last month
+                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-base text-muted-foreground">
+                      Monthly Income
+                    </p>
+                    <div className="flex items-end justify-between gap-3">
+                      <p className="text-3xl font-semibold">$8,450</p>
+                      <span className="text-xs font-medium text-success bg-success/10 rounded-full px-2 py-1">
+                        +12.3%
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-success/10 to-success/5 p-4 md:p-6 rounded-xl border border-success/20">
-                  <div className="text-2xl md:text-3xl font-bold text-success mb-2">
-                    24
+                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-base text-muted-foreground">
+                      Monthly Expenses
+                    </p>
+                    <div className="flex items-end justify-between gap-3">
+                      <p className="text-3xl font-semibold">$2,180</p>
+                      <span className="text-xs font-medium text-success bg-success/10 rounded-full px-2 py-1">
+                        -5.2%
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-dark">
-                    Active Bookings
-                  </div>
-                  <div className="text-xs text-success mt-2">+3 this week</div>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 md:p-6 rounded-xl border border-purple-500/20">
-                  <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-2">
-                    4.8
+                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-base text-muted-foreground">
+                      Monthly Cash Flow
+                    </p>
+                    <div className="flex items-end justify-between gap-3">
+                      <p className="text-3xl font-semibold">$6,270</p>
+                      <span className="text-xs font-medium text-success bg-success/10 rounded-full px-2 py-1">
+                        +18.5%
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-dark">
-                    Avg Rating
+                </div>
+                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-base text-muted-foreground">
+                      Occupied Properties
+                    </p>
+                    <p className="text-3xl font-semibold">
+                      6
+                      <span className="text-xl font-medium text-muted-foreground">
+                        /8
+                      </span>
+                    </p>
                   </div>
-                  <div className="text-xs text-success mt-2">156 reviews</div>
                 </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
                 <div className="bg-white border border-border rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-foreground">
-                      Revenue Trend
+                      Cash Flow Trend
                     </h4>
                     <div className="text-sm text-dark">Last 6 months</div>
                   </div>
-                  <div className="h-48 md:h-56 bg-gradient-to-r from-primary/5 via-accent/5 to-success/5 rounded-lg relative overflow-hidden">
+                  <div className="h-48 md:h-56 bg-gradient-to-r from-primary/5 to-primary/0 rounded-lg relative overflow-hidden">
                     <svg
                       className="w-full h-full"
                       viewBox="0 0 320 160"
@@ -105,7 +105,7 @@ const DashboardPreview = () => {
                     >
                       <defs>
                         <linearGradient
-                          id="revenueGradient"
+                          id="cashFlowGradient"
                           x1="0%"
                           y1="0%"
                           x2="0%"
@@ -122,24 +122,6 @@ const DashboardPreview = () => {
                             stopOpacity="0"
                           />
                         </linearGradient>
-                        <linearGradient
-                          id="expenseGradient"
-                          x1="0%"
-                          y1="0%"
-                          x2="0%"
-                          y2="100%"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="#0EA5E9"
-                            stopOpacity="0.3"
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="#0EA5E9"
-                            stopOpacity="0"
-                          />
-                        </linearGradient>
                       </defs>
 
                       {/* Grid lines */}
@@ -150,13 +132,13 @@ const DashboardPreview = () => {
                         <line x1="0" y1="120" x2="320" y2="120" />
                       </g>
 
-                      {/* Revenue area */}
+                      {/* Cash Flow area */}
                       <polygon
-                        points="20,130 70,110 120,80 170,60 220,70 270,45 310,35 320,40 320,150 20,150"
-                        fill="url(#revenueGradient)"
+                        points="20,120 70,105 120,85 170,75 220,65 270,50 310,40 320,35 320,150 20,150"
+                        fill="url(#cashFlowGradient)"
                       />
                       <polyline
-                        points="20,130 70,110 120,80 170,60 220,70 270,45 310,35 320,40"
+                        points="20,120 70,105 120,85 170,75 220,65 270,50 310,40 320,35"
                         stroke="#6366F1"
                         strokeWidth="3"
                         fill="none"
@@ -164,37 +146,16 @@ const DashboardPreview = () => {
                         strokeLinejoin="round"
                       />
 
-                      {/* Expense area */}
-                      <polygon
-                        points="20,140 70,125 120,95 170,85 220,90 270,70 310,60 320,65 320,150 20,150"
-                        fill="url(#expenseGradient)"
-                      />
-                      <polyline
-                        points="20,140 70,125 120,95 170,85 220,90 270,70 310,60 320,65"
-                        stroke="#0EA5E9"
-                        strokeWidth="2"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
                       {/* Data points */}
-                      <circle cx="170" cy="60" r="4" fill="#6366F1" />
-                      <circle cx="270" cy="45" r="4" fill="#6366F1" />
-                      <circle cx="310" cy="35" r="4" fill="#6366F1" />
-                      <circle cx="170" cy="85" r="3" fill="#0EA5E9" />
-                      <circle cx="270" cy="70" r="3" fill="#0EA5E9" />
-                      <circle cx="310" cy="60" r="3" fill="#0EA5E9" />
+                      <circle cx="120" cy="85" r="4" fill="#6366F1" />
+                      <circle cx="220" cy="65" r="4" fill="#6366F1" />
+                      <circle cx="310" cy="40" r="4" fill="#6366F1" />
                     </svg>
                   </div>
-                  <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
+                  <div className="flex items-center justify-center mt-4 text-sm">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-                      <span className="text-dark">Revenue</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-highlights rounded-full mr-2"></div>
-                      <span className="text-dark">Expenses</span>
+                      <span className="text-dark">Cash Flow</span>
                     </div>
                   </div>
                 </div>
@@ -214,35 +175,35 @@ const DashboardPreview = () => {
                         </div>
                         <div>
                           <div className="font-medium text-foreground">
-                            Sunset Villa
+                            Sunset Apartments
                           </div>
-                          <div className="text-sm text-dark">Miami Beach</div>
+                          <div className="text-sm text-dark">Rank #1</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-foreground">
-                          $4,200
+                          $2,850
                         </div>
-                        <div className="text-sm text-success">+12%</div>
+                        <div className="text-sm text-success">+18%</div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-highlights/10 rounded-lg flex items-center justify-center">
-                          <div className="w-4 h-4 bg-highlights rounded"></div>
+                        <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center">
+                          <div className="w-4 h-4 bg-cyan-500 rounded"></div>
                         </div>
                         <div>
                           <div className="font-medium text-foreground">
-                            Ocean View Apt
+                            Downtown Loft
                           </div>
-                          <div className="text-sm text-dark">Santa Monica</div>
+                          <div className="text-sm text-dark">Rank #2</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-foreground">
-                          $3,800
+                          $1,920
                         </div>
-                        <div className="text-sm text-success">+8%</div>
+                        <div className="text-sm text-success">+12%</div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
@@ -252,16 +213,16 @@ const DashboardPreview = () => {
                         </div>
                         <div>
                           <div className="font-medium text-foreground">
-                            Downtown Loft
+                            Harbor View Studio
                           </div>
-                          <div className="text-sm text-dark">Los Angeles</div>
+                          <div className="text-sm text-dark">Rank #3</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-foreground">
-                          $3,200
+                          $1,500
                         </div>
-                        <div className="text-sm text-success">+15%</div>
+                        <div className="text-sm text-success">+8%</div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
@@ -271,16 +232,16 @@ const DashboardPreview = () => {
                         </div>
                         <div>
                           <div className="font-medium text-foreground">
-                            Garden Studio
+                            Garden Terrace
                           </div>
-                          <div className="text-sm text-dark">Portland</div>
+                          <div className="text-sm text-dark">Rank #4</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-foreground">
-                          $2,800
+                          $1,180
                         </div>
-                        <div className="text-sm text-success">+6%</div>
+                        <div className="text-sm text-success">+5%</div>
                       </div>
                     </div>
                   </div>
@@ -298,46 +259,46 @@ const DashboardPreview = () => {
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-success/10 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-success rounded-full"></div>
+                    <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium text-foreground">
-                        New booking confirmed
+                        Income transaction added
                       </div>
                       <div className="text-xs text-dark">
-                        Sunset Villa - Check-in March 15
+                        Sunset Apartments - Rent Payment - $1,800
                       </div>
                     </div>
-                    <div className="text-xs text-dark">2 min ago</div>
+                    <div className="text-xs text-dark">2h ago</div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-highlights/10 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-highlights rounded-full"></div>
+                    <div className="w-8 h-8 bg-purple-500/10 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium text-foreground">
-                        Payment received
+                        New property added
                       </div>
                       <div className="text-xs text-dark">
-                        Ocean View Apt - $3,800
+                        Harbor View Studio - San Francisco, CA
                       </div>
                     </div>
-                    <div className="text-xs text-dark">1 hour ago</div>
+                    <div className="text-xs text-dark">5h ago</div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium text-foreground">
-                        Maintenance completed
+                        Expense transaction updated
                       </div>
                       <div className="text-xs text-dark">
-                        Downtown Loft - AC repair
+                        Downtown Loft - Maintenance - $350
                       </div>
                     </div>
-                    <div className="text-xs text-dark">3 hours ago</div>
+                    <div className="text-xs text-dark">1d ago</div>
                   </div>
                 </div>
               </div>

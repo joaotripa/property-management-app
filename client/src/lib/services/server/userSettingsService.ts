@@ -1,7 +1,6 @@
 import {
   getUserSettings,
   upsertUserSettings,
-  createUserSettings,
 } from "@/lib/db/userSettings";
 import {
   getDefaultCurrency,
@@ -42,7 +41,7 @@ export class UserSettingsService {
           throw new Error("Default preferences not found");
         }
 
-        userSettings = await createUserSettings({
+        userSettings = await upsertUserSettings({
           userId,
           currencyId: defaultCurrency.id,
           timezoneId: defaultTimezone.id,
@@ -99,7 +98,7 @@ export class UserSettingsService {
           throw new Error("Default preferences not found");
         }
 
-        userSettings = await createUserSettings({
+        userSettings = await upsertUserSettings({
           userId,
           currencyId: defaultCurrency.id,
           timezoneId: defaultTimezone.id,

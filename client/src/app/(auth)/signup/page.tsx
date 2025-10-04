@@ -13,41 +13,44 @@ import { signIn } from "next-auth/react";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  signupSchema,
+  SignupInput,
+  getPasswordStrength,
+} from "@/lib/validations/auth";
 
 const SignupPage = () => {
   const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setError,
+  } = useForm<SignupInput>({
+    resolver: zodResolver(signupSchema),
+    mode: "onBlur",
+  });
+
+  const password = watch("password", "");
+  const passwordStrength = password ? getPasswordStrength(password) : null;
+
   if (isRedirectLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Spinner className="size-8" />
-      </div>
-    );
+    return <Loading />;
   }
 
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: SignupInput) => {
     setLoading(true);
-    setError("");
-
-    if (password !== confirmPassword) {
-      const msg = "The passwords you entered do not match. Please try again.";
-      setError(msg);
-      toast.error(msg);
-      setLoading(false);
-      return;
-    }
 
     try {
       const response = await fetch("/api/auth/signup", {
@@ -55,22 +58,26 @@ const SignupPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          confirmPassword: data.confirmPassword,
+        }),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create account");
+        throw new Error(responseData.error || "Failed to create account");
       }
 
       toast.success(
         "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
       );
-      router.push(`/verify-code?email=${encodeURIComponent(email)}`);
+      router.push(`/verify-code?email=${encodeURIComponent(data.email)}`);
     } catch (err: unknown) {
       const msg = getAuthErrorMessage(err);
-      setError(msg);
+      setError("root", { message: msg });
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -89,13 +96,7 @@ const SignupPage = () => {
   };
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Spinner className="size-8" />
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading />}>
       <div className="flex flex-col gap-6">
         <Card className="rounded-2xl">
           <CardHeader className="text-center mt-6">
@@ -105,10 +106,14 @@ const SignupPage = () => {
           </CardHeader>
           <CardContent className="mb-4">
             <div className="grid gap-4">
-              {error && (
-                <ErrorMessage type="error" message={error} className="mb-4" />
+              {errors.root && (
+                <ErrorMessage
+                  type="error"
+                  message={errors.root.message || "An error occurred"}
+                  className="mb-4"
+                />
               )}
-              <form onSubmit={handleSignup}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-6">
                   <div className="grid gap-3">
                     <Label htmlFor="email">Email</Label>
@@ -117,11 +122,14 @@ const SignupPage = () => {
                       type="email"
                       placeholder="you@example.com"
                       autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
                       className="rounded-2xl"
+                      {...register("email")}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-3">
                     <Label htmlFor="password">Password</Label>
@@ -130,10 +138,8 @@ const SignupPage = () => {
                         id="password"
                         type={showPassword ? "text" : "password"}
                         autoComplete="new-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
                         className="rounded-2xl"
+                        {...register("password")}
                       />
                       <button
                         type="button"
@@ -151,6 +157,36 @@ const SignupPage = () => {
                         )}
                       </button>
                     </div>
+                    {passwordStrength && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              passwordStrength.score <= 2
+                                ? "bg-destructive"
+                                : passwordStrength.score <= 4
+                                  ? "bg-orange-500"
+                                  : passwordStrength.score <= 5
+                                    ? "bg-yellow-500"
+                                    : "bg-success"
+                            }`}
+                            style={{
+                              width: `${(passwordStrength.score / 6) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <span
+                          className={`text-xs font-medium ${passwordStrength.color}`}
+                        >
+                          {passwordStrength.label}
+                        </span>
+                      </div>
+                    )}
+                    {errors.password && (
+                      <p className="text-sm text-destructive">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-3">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
@@ -159,10 +195,8 @@ const SignupPage = () => {
                         id="confirm-password"
                         type={showConfirmPassword ? "text" : "password"}
                         autoComplete="new-password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
                         className="rounded-2xl"
+                        {...register("confirmPassword")}
                       />
                       <button
                         type="button"
@@ -182,6 +216,11 @@ const SignupPage = () => {
                         )}
                       </button>
                     </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-destructive">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-center">
@@ -222,13 +261,7 @@ const SignupPage = () => {
                   </div>
                   <Button
                     type="submit"
-                    disabled={
-                      loading ||
-                      !acceptedTerms ||
-                      !email ||
-                      !password ||
-                      !confirmPassword
-                    }
+                    disabled={loading || !acceptedTerms}
                     className="w-full rounded-2xl bg-primary/80 hover:bg-primary transition-colors"
                   >
                     {loading ? "Signing Up..." : "Sign Up"}

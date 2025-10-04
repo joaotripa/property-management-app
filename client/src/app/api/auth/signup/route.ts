@@ -4,18 +4,24 @@ import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendVerificationEmail } from "@/lib/services/server/emailService"
 import { createSubscription } from "@/lib/stripe/init"
+import { signupSchema } from "@/lib/validations/auth"
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const body = await request.json()
 
-    if (!email || !password) {
-      AuthLogger.signUpFailure(email || 'unknown', 'Missing email or password')
+    const validation = signupSchema.safeParse(body)
+
+    if (!validation.success) {
+      const firstError = validation.error.issues[0]
+      AuthLogger.signUpFailure(body.email || 'unknown', `Validation error: ${firstError.message}`)
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { error: firstError.message },
         { status: 400 }
       )
     }
+
+    const { email, password } = validation.data
 
     AuthLogger.signUpAttempt(email)
 

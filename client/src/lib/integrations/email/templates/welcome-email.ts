@@ -8,7 +8,7 @@ export function getWelcomeEmailTemplate(): string {
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Welcome to Domari - Your Free Trial Has Started</title>
+      <title>Welcome to Domari</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #F1F5F9; font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; color: #1E293B;">
       <table width="100%" cellpadding="0" cellspacing="0" style="padding: 24px;">
@@ -23,7 +23,6 @@ export function getWelcomeEmailTemplate(): string {
                     <tr>
                       <td style="text-align: center;">
                         <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; display: inline-block; vertical-align: middle;">Domari</h1>
                       </td>
                     </tr>
                   </table>
@@ -34,25 +33,19 @@ export function getWelcomeEmailTemplate(): string {
               <tr>
                 <td style="padding: 40px 32px;">
                   <div style="text-align: center; margin-bottom: 30px;">
-                    <h2 style="color: #1E293B; font-size: 24px; margin: 0 0 10px 0; font-weight: 600;">Welcome to Domari! 👋</h2>
-                    <p style="color: #64748B; font-size: 16px; margin: 0; line-height: 1.5;">
-                      Your free 14-day trial starts now
-                    </p>
+                    <h2 style="color: #1E293B; font-size: 24px; margin: 0 0 10px 0; font-weight: 600;">Welcome to Domari! </h2>
                   </div>
 
-                  <!-- Personal Message -->
+                  <!-- Welcome Message -->
                   <div style="margin: 30px 0;">
                     <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
-                      Hey there,
-                    </p>
-                    <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
-                      I'm João Tripa, founder of Domari. I wanted to personally welcome you and say thanks for giving us a shot!
-                    </p>
-                    <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
-                      I built Domari because I was tired of the spreadsheet chaos that comes with managing rental properties. Late-night Excel sessions, lost receipts, and that sinking feeling when tax season rolls around — I've been there. So I created something better.
+                      We're excited to have you on board.
                     </p>
                     <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
                       Your <strong>14-day free trial has officially started</strong>, giving you full access to all Business plan features. No credit card required — just dive in and see how Domari can simplify your property finances.
+                    </p>
+                    <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
+                      Domari helps you eliminate spreadsheet chaos by providing an intuitive platform to manage your portfolio, track rental income, expenses, and generate tax-ready reports — all in one place.
                     </p>
                   </div>
 
@@ -69,12 +62,11 @@ export function getWelcomeEmailTemplate(): string {
 
                   <div style="margin: 30px 0;">
                     <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0 0 15px 0;">
-                      If you run into any questions or just want to chat about the product, hit reply — I read every email and love hearing from our users.
+                      If you have any questions or need assistance, feel free to reach out. We're here to help you succeed.
                     </p>
                     <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0;">
                       Let's make property management simple,<br/>
-                      <strong>João Tripa</strong><br/>
-                      <span style="color: #64748B; font-size: 14px;">Founder, Domari</span>
+                      <strong>The Domari Team</strong>
                     </p>
                   </div>
 

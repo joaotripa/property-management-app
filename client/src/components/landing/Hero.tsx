@@ -1,6 +1,5 @@
 "use client";
 
-import { Dot } from "lucide-react";
 import CTAButton from "./CTAButton";
 
 const Hero = () => {
