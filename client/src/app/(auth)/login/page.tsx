@@ -13,12 +13,11 @@ import { signIn } from "next-auth/react";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { Suspense } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { Loading } from "@/components/ui/loading";
 import {
   ErrorMessage,
   getErrorMessageConfig,
 } from "@/components/auth/ErrorMessage";
-import { Loading } from "@/components/ui/loading";
 
 function LoginContent() {
   const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
@@ -236,7 +235,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Spinner className="size-8" />
+          <Loading />
         </div>
       }
     >
