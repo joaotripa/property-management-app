@@ -108,25 +108,25 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
+              <DropdownMenuItem onClick={handleBillingClick}>
+                <Sparkles className="hover:text-white" />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={handleAccountClick}>
-                <BadgeCheck />
+                <BadgeCheck className="hover:text-white" />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleBillingClick}>
-                <CreditCard />
+                <CreditCard className="hover:text-white" />
                 Billing
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
+              <LogOut className="hover:text-white" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

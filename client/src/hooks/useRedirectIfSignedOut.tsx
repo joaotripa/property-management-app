@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 export function useRedirectIfSignedOut() {
   const { status } = useSession();
@@ -9,7 +10,8 @@ export function useRedirectIfSignedOut() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/login");
+      toast.warning("Your session has expired. Please sign in again.");
+      router.replace("/login?message=session_expired");
     }
   }, [status, router]);
 }

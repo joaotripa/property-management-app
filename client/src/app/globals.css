@@ -8,8 +8,6 @@
   --background: oklch(0.98 0.0034 247.86);
   --foreground: oklch(0.3138 0.0217 220.36); 
 
-  --dashboard-background: oklch(0.99 0 0); 
-
   --card: oklch(1 0 none);
   --card-foreground: var(--foreground);
 
@@ -59,12 +57,10 @@
   --sidebar: oklch(0.955 0.003 247.86);
 }*/
 
-/* CLEAN MODERN BLUE THEME - Inspired by PromptWatch */
+/* CLEAN MODERN BLUE THEME */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.1889 0.0145 253.19);
-
-  --dashboard-background: oklch(0.995 0.002 262.8);
 
   --card: oklch(1 0 none);
   --card-foreground: var(--foreground);
@@ -117,7 +113,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-dashboard-background: var(--dashboard-background);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);

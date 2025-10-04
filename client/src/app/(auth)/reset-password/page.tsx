@@ -13,10 +13,10 @@ import { getAuthErrorMessage } from "@/lib/utils/index";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { Suspense } from "react";
-import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { Loading } from "@/components/ui/loading";
 
 function ResetPasswordContent() {
-  useRedirectIfSignedIn();
+  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,6 +27,14 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+
+  if (isRedirectLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   if (!email) {
     return (
@@ -209,7 +217,13 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<AuthPageSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loading />
+        </div>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );

@@ -6,13 +6,21 @@ import { CodeVerification } from "@/components/auth/CodeVerification";
 import { toast } from "sonner";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
-import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { Loading } from "@/components/ui/loading";
 
 function VerifyCodeContent() {
-  useRedirectIfSignedIn();
+  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+
+  if (isRedirectLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   const handleResendCode = async () => {
     try {
@@ -71,7 +79,13 @@ function VerifyCodeContent() {
 
 export default function VerifyCodePage() {
   return (
-    <Suspense fallback={<AuthPageSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loading />
+        </div>
+      }
+    >
       <VerifyCodeContent />
     </Suspense>
   );

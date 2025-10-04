@@ -13,11 +13,11 @@ import { signIn } from "next-auth/react";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
-import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
 const SignupPage = () => {
-  useRedirectIfSignedIn();
+  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,6 +27,14 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  if (isRedirectLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Spinner className="size-8" />
+      </div>
+    );
+  }
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,7 +89,13 @@ const SignupPage = () => {
   };
 
   return (
-    <Suspense fallback={<AuthPageSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Spinner className="size-8" />
+        </div>
+      }
+    >
       <div className="flex flex-col gap-6">
         <Card className="rounded-2xl">
           <CardHeader className="text-center mt-6">

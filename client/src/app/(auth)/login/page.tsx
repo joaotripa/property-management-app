@@ -13,14 +13,15 @@ import { signIn } from "next-auth/react";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { Suspense } from "react";
-import AuthPageSkeleton from "@/components/auth/AuthPageSkeleton";
+import { Spinner } from "@/components/ui/spinner";
 import {
   ErrorMessage,
   getErrorMessageConfig,
 } from "@/components/auth/ErrorMessage";
+import { Loading } from "@/components/ui/loading";
 
 function LoginContent() {
-  useRedirectIfSignedIn();
+  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,14 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
+
+  if (isRedirectLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   function renderAlertMessage(message: string | null) {
     const config = getErrorMessageConfig(message);
@@ -224,7 +233,13 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<AuthPageSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Spinner className="size-8" />
+        </div>
+      }
+    >
       <LoginContent />
     </Suspense>
   );

@@ -101,6 +101,12 @@ export function getErrorMessageConfig(message: string | null) {
         message:
           "The verification link is invalid or has expired. Please request a new one.",
       };
+    case "session_expired":
+      return {
+        type: "info" as const,
+        message:
+          "Your session has expired. Please sign in again to continue.",
+      };
     default:
       return {
         type: "info" as const,
