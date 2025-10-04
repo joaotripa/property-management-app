@@ -77,6 +77,9 @@ Core entities:
 - **Property**: Real estate properties with soft delete support
 - **Transaction**: Income/expense tracking linked to properties
 - **Category**: Transaction categorization system
+- **Subscription**: Stripe subscription management with property limits
+- **MonthlyMetrics**: Aggregated financial data per property/month
+- **UserSettings**: Currency and timezone preferences
 - **Account/Session**: NextAuth.js authentication tables
 
 Key relationships:
@@ -84,6 +87,7 @@ Key relationships:
 - Users own multiple Properties (1:N)
 - Properties have multiple Transactions (1:N)
 - Transactions belong to Categories (N:1)
+- Users have one Subscription (1:1)
 - Soft delete implemented via `deletedAt` timestamps
 
 ### Authentication Flow
@@ -106,6 +110,13 @@ All API operations use dedicated service functions:
 - `analyticsService.ts`: Analytics operations
 - `imageService.ts`: Image operations
 - `activityService.ts`: Activities operations
+
+#### Stripe Integration
+
+- Direct SDK usage (no custom wrappers)
+- Files in `/lib/stripe/`: client.ts, plans.ts, subscription.ts, webhooks.ts, init.ts
+- Webhook handling at `/api/billing/webhooks`
+- Subscription management at `/api/billing/checkout` and `/api/billing/portal`
 
 #### Validation Layer
 
@@ -156,6 +167,16 @@ All API operations use dedicated service functions:
 - Supabase Storage for image uploads
 - Supabase AWS S3 integration via `/lib/supabase/s3-client.ts`
 - Property image management with CRUD operations
+
+### Subscription & Billing System
+
+- **Payment Provider**: Stripe for subscription management
+- **Plans**: STARTER (10 properties), PRO (50 properties), BUSINESS (999 properties)
+- **Trial**: 14-day free trial with Business plan features
+- **Implementation**: Direct Stripe SDK usage in `/lib/stripe/` (client, plans, subscription, webhooks, init)
+- **Webhooks**: Handles subscription lifecycle events (created, updated, deleted)
+- **Property Limits**: Enforced based on subscription plan
+- **Contact Email**: `support@domari.app` for all inquiries (billing, privacy, general support)
 
 ### Backend Rules & Patterns
 
@@ -247,7 +268,10 @@ All API operations use dedicated service functions:
 - `/client/src/lib/db/`: Database operation layers
 - `/client/src/lib/services/`: API service layers
 - `/client/src/lib/validations/`: Zod validation schemas
+- `/client/src/lib/stripe/`: Stripe subscription and billing logic
 - `/client/prisma/seed.ts`: Database seeding with property categories
+- `/client/src/app/(nondashboard)/privacy-policy/page.tsx`: Privacy Policy (GDPR/CCPA compliant)
+- `/client/src/app/(nondashboard)/terms-of-service/page.tsx`: Terms of Service with refund policy
 
 ### Migration Workflow
 
@@ -262,6 +286,19 @@ All API operations use dedicated service functions:
 - **Hosting Platform**: Vercel (production deployment)
 - **Database**: Supabase (PostgreSQL)
 - **File Storage**: Supabase Storage + AWS S3
+- **Payment Processing**: Stripe
+- **Analytics**: Umami (privacy-focused, cookie-free)
+- **Domain**: domari.app
+- **Support Email**: support@domari.app
+
+## Compliance & Legal
+
+- **Privacy Policy**: Located at `/privacy-policy` - GDPR and CCPA compliant
+- **Terms of Service**: Located at `/terms-of-service` - includes 14-day trial and refund policy
+- **Cookie Policy**: Not needed - uses cookie-free Umami analytics, only session cookies (strictly necessary)
+- **Refund Policy**: 14-day trial for exploration, no refunds after purchase except for billing errors
+- **Data Ownership**: Users retain full ownership of their data
+- **Contact**: All legal/privacy/billing inquiries go to `support@domari.app`
 
 ## Production Readiness Guidelines
 

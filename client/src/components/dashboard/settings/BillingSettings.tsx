@@ -69,10 +69,10 @@ export function BillingSettings() {
         const data = await response.json();
         window.location.href = data.url;
       } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to create checkout session');
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to create checkout session');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -90,10 +90,10 @@ export function BillingSettings() {
         const data = await response.json();
         window.location.href = data.url;
       } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to open billing portal');
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to open billing portal');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);

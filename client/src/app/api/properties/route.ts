@@ -9,7 +9,7 @@ import {
   propertyFiltersSchema
 } from "@/lib/db/properties";
 import { ZodError } from "zod";
-import { withResourceLimit } from "@/lib/stripe/middleware/resourceLimit";
+import { checkLimit, canMutate } from "@/lib/stripe/subscription";
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         errorResponseSchema.parse({
@@ -86,12 +86,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        errorResponseSchema.parse({
+          success: false,
+          message: "Subscription required to create properties",
+        }),
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
     const validatedData = createPropertyRequestSchema.parse(body);
 
-    const limitError = await withResourceLimit(session.user.id, 'properties');
-    if (limitError) return limitError;
+    const limitCheck = await checkLimit(session.user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        errorResponseSchema.parse({
+          success: false,
+          message: limitCheck.reason || "Property limit reached",
+        }),
+        { status: 403 }
+      );
+    }
 
     const property = await createProperty(session.user.id, validatedData);
 

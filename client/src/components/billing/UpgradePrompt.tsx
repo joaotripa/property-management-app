@@ -30,10 +30,8 @@ export function UpgradePrompt({
   showAsDialog = true,
 }: UpgradePromptProps) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handlePlanSelect = async (plan: Plan, isYearly: boolean) => {
-    setLoading(true);
     try {
       const response = await fetch('/api/billing/checkout', {
         method: 'POST',
@@ -50,13 +48,11 @@ export function UpgradePrompt({
         const data = await response.json();
         window.location.href = data.url;
       } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to create checkout session');
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to create checkout session');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 

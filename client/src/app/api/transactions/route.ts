@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getTransactions } from "@/lib/db/transactions/queries";
 import { createTransaction } from "@/lib/db/transactions/mutations";
 import { TransactionType } from "@/types/transactions";
+import { canMutate } from "@/lib/stripe/subscription";
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,6 +70,14 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        { error: "Subscription required to create transactions" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

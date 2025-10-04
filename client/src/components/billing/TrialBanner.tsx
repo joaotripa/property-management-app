@@ -17,20 +17,12 @@ interface SubscriptionStatus {
   currentPeriodEnd?: string;
 }
 
-interface Usage {
-  propertyCount: number;
-  propertyLimit: number;
-  canCreateProperties: boolean;
-  isAtLimit: boolean;
-}
-
 type BannerType = 'trial-info' | 'trial-warning' | 'trial-expired' | 'limit-reached' | 'limit-warning';
 
 const DISMISSAL_KEY = 'trial-banner-dismissed';
 
 export function TrialBanner() {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
   const router = useRouter();
@@ -50,7 +42,6 @@ export function TrialBanner() {
       if (response.ok) {
         const data = await response.json();
         setSubscription(data.subscription);
-        setUsage(data.usage);
       }
     } catch (error) {
       console.error('Error fetching billing status:', error);
@@ -83,9 +74,6 @@ export function TrialBanner() {
     actionLabel: string;
   } | null => {
     const trialDays = subscription.trialDaysRemaining ?? 0;
-    const usagePercentage = usage
-      ? (usage.propertyCount / usage.propertyLimit) * 100
-      : 0;
 
     if (subscription.status === 'TRIAL') {
       if (trialDays === 0) {
@@ -96,7 +84,7 @@ export function TrialBanner() {
           title: 'Your free trial expires today!',
           description: `Upgrade now to continue using all ${subscription.plan} plan features.`,
           badge: `${subscription.plan} Plan`,
-          canDismiss: false,
+          canDismiss: true,
           actionLabel: 'Upgrade Now',
         };
       } else if (trialDays <= 3) {
@@ -107,47 +95,10 @@ export function TrialBanner() {
           title: `${trialDays} ${trialDays === 1 ? 'day' : 'days'} left in your free trial`,
           description: 'Upgrade to continue accessing all premium features after your trial ends.',
           badge: `${subscription.plan} Plan`,
-          canDismiss: false,
+          canDismiss: true,
           actionLabel: 'Upgrade Now',
         };
-      } else if (trialDays <= 7) {
-        return {
-          type: 'trial-info',
-          variant: 'default',
-          icon: <Clock className="h-4 w-4" />,
-          title: `${trialDays} days left in your free trial`,
-          description: `You're currently enjoying all ${subscription.plan} plan features. Upgrade anytime to continue after your trial.`,
-          badge: `${subscription.plan} Plan`,
-          canDismiss: true,
-          actionLabel: 'View Plans',
-        };
       }
-    }
-
-    if (usage?.isAtLimit) {
-      return {
-        type: 'limit-reached',
-        variant: 'destructive',
-        icon: <AlertTriangle className="h-4 w-4" />,
-        title: `You've reached your property limit of ${usage.propertyLimit}`,
-        description: 'Upgrade your plan to add more properties and continue growing your portfolio.',
-        badge: `${subscription.plan} Plan`,
-        canDismiss: false,
-        actionLabel: 'Upgrade Plan',
-      };
-    }
-
-    if (usage && usagePercentage >= 80) {
-      return {
-        type: 'limit-warning',
-        variant: 'default',
-        icon: <CreditCard className="h-4 w-4" />,
-        title: `You're using ${usage.propertyCount} of ${usage.propertyLimit} properties`,
-        description: 'Consider upgrading your plan to ensure you have capacity for future growth.',
-        badge: `${subscription.plan} Plan`,
-        canDismiss: true,
-        actionLabel: 'View Plans',
-      };
     }
 
     return null;

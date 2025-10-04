@@ -37,6 +37,7 @@ interface PropertyDetailsDialogProps {
   onClose: () => void;
   onSave: () => void;
   onDelete?: () => void | Promise<void>;
+  canMutate?: boolean;
 }
 
 export function PropertyDetailsDialog({
@@ -45,6 +46,7 @@ export function PropertyDetailsDialog({
   onClose,
   onSave,
   onDelete,
+  canMutate = true,
 }: PropertyDetailsDialogProps) {
   const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
@@ -302,6 +304,7 @@ export function PropertyDetailsDialog({
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDeleteDialog(true)}
+                    disabled={!canMutate}
                     className="hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -311,6 +314,7 @@ export function PropertyDetailsDialog({
                     variant="outline"
                     size="sm"
                     onClick={handleEdit}
+                    disabled={!canMutate}
                     className="hover:bg-primary"
                   >
                     <Edit className="w-4 h-4 mr-2" />

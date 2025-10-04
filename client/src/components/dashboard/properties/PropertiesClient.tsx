@@ -16,12 +16,19 @@ import { PropertyImage } from "@/components/dashboard/properties/PropertyImage";
 import { EmptyPropertiesState } from "@/components/dashboard/properties/EmptyPropertiesState";
 import { Property, OccupancyStatus } from "@/types/properties";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface PropertiesClientProps {
   properties: Property[];
+  canMutate?: boolean;
+  isAtLimit?: boolean;
 }
 
-export function PropertiesClient({ properties }: PropertiesClientProps) {
+export function PropertiesClient({
+  properties,
+  canMutate = true,
+  isAtLimit = false,
+}: PropertiesClientProps) {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -48,6 +55,20 @@ export function PropertiesClient({ properties }: PropertiesClientProps) {
   };
 
   const openAddDialog = () => {
+    if (!canMutate) {
+      toast.error("Upgrade your subscription to create properties.", {
+        description: "Read-only mode",
+      });
+      return;
+    }
+
+    if (isAtLimit) {
+      toast.error("Upgrade your plan to add more properties.", {
+        description: "Property limit reached",
+      });
+      return;
+    }
+
     setIsAddDialogOpen(true);
   };
 
@@ -55,8 +76,15 @@ export function PropertiesClient({ properties }: PropertiesClientProps) {
     setIsAddDialogOpen(false);
   };
 
+  const isAddDisabled = !canMutate || isAtLimit;
+
   if (properties.length === 0) {
-    return <EmptyPropertiesState onAddProperty={openAddDialog} />;
+    return (
+      <EmptyPropertiesState
+        onAddProperty={openAddDialog}
+        disabled={isAddDisabled}
+      />
+    );
   }
 
   return (
@@ -128,7 +156,8 @@ export function PropertiesClient({ properties }: PropertiesClientProps) {
       <Button
         size="lg"
         onClick={openAddDialog}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
+        disabled={isAddDisabled}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Plus className="h-6 w-6" />
       </Button>
@@ -143,6 +172,7 @@ export function PropertiesClient({ properties }: PropertiesClientProps) {
         }}
         onSave={handleSaveProperty}
         onDelete={handleDeleteProperty}
+        canMutate={canMutate}
       />
 
       {/* Property Add Dialog */}

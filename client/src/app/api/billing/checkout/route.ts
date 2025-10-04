@@ -1,56 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { SubscriptionPlan } from '@prisma/client';
-import { createCheckoutSession } from '@/lib/stripe/services/checkout.service';
-import { handleSubscriptionError, isSubscriptionError, InvalidPlanError } from '@/lib/stripe/core/errors';
+import { createCheckoutSession } from '@/lib/stripe/subscription';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { plan, isYearly } = body;
+    const { plan, isYearly } = await request.json();
 
     if (!plan || !['STARTER', 'PRO', 'BUSINESS'].includes(plan)) {
-      throw new InvalidPlanError(plan);
+      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    const checkoutSession = await createCheckoutSession({
+    const checkout = await createCheckoutSession({
       userId: session.user.id,
+      userEmail: session.user.email,
       plan: plan as SubscriptionPlan,
       isYearly: Boolean(isYearly),
       successUrl: `${process.env.NEXTAUTH_URL}/dashboard?success=true`,
       cancelUrl: `${process.env.NEXTAUTH_URL}/dashboard/settings?canceled=true`,
     });
 
-    return NextResponse.json({
-      success: true,
-      url: checkoutSession.url,
-      sessionId: checkoutSession.id,
-    });
+    return NextResponse.json({ url: checkout.url });
   } catch (error) {
-    if (error instanceof Error && isSubscriptionError(error)) {
-      const errorResponse = handleSubscriptionError(error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: errorResponse.message,
-          code: errorResponse.code,
-        },
-        { status: errorResponse.statusCode }
-      );
-    }
-
+    console.error('Checkout error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        code: 'INTERNAL_ERROR',
-      },
+      { error: 'Failed to create checkout session' },
       { status: 500 }
     );
   }

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { 
+import {
   getTransactionById,
   updateTransaction,
-  softDeleteTransaction 
+  softDeleteTransaction
 } from "@/lib/db/transactions/mutations";
 import { TransactionType } from "@prisma/client";
+import { canMutate } from "@/lib/stripe/subscription";
 
 interface RouteParams {
   params: Promise<{
@@ -53,6 +54,14 @@ export async function PUT(
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        { error: "Subscription required to update transactions" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;
@@ -149,6 +158,14 @@ export async function DELETE(
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        { error: "Subscription required to delete transactions" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/config/database"
 import { Resend } from "resend"
 import { AuthLogger } from "@/lib/utils/auth"
 import { getVerificationEmailTemplate } from "@/lib/integrations/email/templates/verification-email"
-import { createStripeCustomer } from "@/lib/stripe/subscriptions"
+import { createSubscription } from "@/lib/stripe/init"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -49,20 +49,17 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Create Stripe customer and subscription with 14-day trial
+    // Create subscription with trial for new user
     try {
-      await createStripeCustomer({
-        userId: user.id,
-        email: user.email,
-      });
-      AuthLogger.info({ action: 'stripe_customer_created', email: user.email });
+      await createSubscription(user.id);
+      AuthLogger.info({ action: 'subscription_created', email: user.email });
     } catch (stripeError) {
       AuthLogger.error({
-        action: 'stripe_customer_creation_failed',
+        action: 'subscription_creation_failed',
         email: user.email,
         error: stripeError instanceof Error ? stripeError.message : 'Unknown Stripe error'
       });
-      // Don't fail the signup if Stripe customer creation fails
+      // Don't fail the signup if subscription creation fails
     }
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()

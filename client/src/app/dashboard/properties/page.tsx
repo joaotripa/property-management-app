@@ -3,6 +3,8 @@ import { getPropertiesData } from "@/lib/services/server/propertiesService";
 import { PropertiesClient } from "@/components/dashboard/properties/PropertiesClient";
 import PropertiesStats from "@/components/dashboard/properties/PropertiesStats";
 import { UserSettingsService } from "@/lib/services/server/userSettingsService";
+import { PropertyLimitBanner } from "@/components/billing/PropertyLimitBanner";
+import { getSubscriptionInfo, checkLimit, canMutate } from "@/lib/stripe/subscription";
 import { redirect } from "next/navigation";
 
 export default async function PropertiesPage() {
@@ -15,10 +17,16 @@ export default async function PropertiesPage() {
   // Fetch all data server-side
   const [
     { properties, stats },
-    userCurrencyCode
+    userCurrencyCode,
+    subscription,
+    propertyLimits,
+    accessControl
   ] = await Promise.all([
     getPropertiesData(session.user.id),
-    UserSettingsService.getUserCurrency(session.user.id)
+    UserSettingsService.getUserCurrency(session.user.id),
+    getSubscriptionInfo(session.user.id),
+    checkLimit(session.user.id),
+    canMutate(session.user.id)
   ]);
 
   return (
@@ -31,9 +39,22 @@ export default async function PropertiesPage() {
         </p>
       </div>
 
+      {subscription && (
+        <PropertyLimitBanner
+          propertyCount={propertyLimits.current}
+          propertyLimit={propertyLimits.limit}
+          isAtLimit={!propertyLimits.allowed}
+          plan={subscription.plan}
+        />
+      )}
+
       <PropertiesStats stats={stats} currencyCode={userCurrencyCode} />
 
-      <PropertiesClient properties={properties} />
+      <PropertiesClient
+        properties={properties}
+        canMutate={accessControl}
+        isAtLimit={!propertyLimits.allowed}
+      />
     </div>
   );
 }

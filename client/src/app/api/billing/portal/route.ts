@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createPortalSession } from '@/lib/stripe/services/portal.service';
-import { handleSubscriptionError, isSubscriptionError } from '@/lib/stripe/core/errors';
+import { createPortalSession } from '@/lib/stripe/subscription';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await auth();
 
@@ -11,34 +10,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const portalSession = await createPortalSession({
+    const portal = await createPortalSession({
       userId: session.user.id,
       returnUrl: `${process.env.NEXTAUTH_URL}/dashboard/settings`,
     });
 
-    return NextResponse.json({
-      success: true,
-      url: portalSession.url,
-    });
+    return NextResponse.json({ url: portal.url });
   } catch (error) {
-    if (error instanceof Error && isSubscriptionError(error)) {
-      const errorResponse = handleSubscriptionError(error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: errorResponse.message,
-          code: errorResponse.code,
-        },
-        { status: errorResponse.statusCode }
-      );
-    }
-
+    console.error('Portal error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        code: 'INTERNAL_ERROR',
-      },
+      { error: 'Failed to create portal session' },
       { status: 500 }
     );
   }

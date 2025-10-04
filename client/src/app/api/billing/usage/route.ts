@@ -1,11 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getSubscriptionStatus } from '@/lib/stripe/services/subscription.service';
-import { checkResourceLimit, getAllResourceUsage } from '@/lib/stripe/services/limits.service';
-import { getDaysRemainingInTrial } from '@/lib/stripe/config/trial.config';
-import { handleSubscriptionError, isSubscriptionError } from '@/lib/stripe/core/errors';
+import { getSubscriptionInfo, checkLimit } from '@/lib/stripe/subscription';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 
@@ -13,61 +10,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const subscription = await getSubscriptionStatus(session.user.id);
+    const subscription = await getSubscriptionInfo(session.user.id);
 
     if (!subscription) {
-      return NextResponse.json(
-        { error: 'No subscription found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'No subscription found' }, { status: 404 });
     }
 
-    const propertyLimits = await checkResourceLimit(session.user.id, 'properties');
-    const trialDaysRemaining =
-      subscription.status === 'TRIAL'
-        ? getDaysRemainingInTrial(subscription.trialEndsAt)
-        : null;
-
-    const allResourceUsage = await getAllResourceUsage(session.user.id);
+    const limitCheck = await checkLimit(session.user.id);
 
     return NextResponse.json({
-      success: true,
       subscription: {
         status: subscription.status,
         plan: subscription.plan,
         propertyLimit: subscription.propertyLimit,
         trialEndsAt: subscription.trialEndsAt,
-        trialDaysRemaining,
+        trialDaysRemaining: subscription.trialDaysRemaining,
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
         currentPeriodEnd: subscription.currentPeriodEnd,
       },
       usage: {
-        propertyCount: propertyLimits.currentUsage,
-        propertyLimit: propertyLimits.limit,
-        canCreateProperties: propertyLimits.allowed,
-        isAtLimit: propertyLimits.isAtLimit,
+        propertyCount: limitCheck.current,
+        propertyLimit: limitCheck.limit,
+        canCreateProperties: limitCheck.allowed,
+        isAtLimit: !limitCheck.allowed,
       },
-      resourceUsage: allResourceUsage,
     });
   } catch (error) {
-    if (error instanceof Error && isSubscriptionError(error)) {
-      const errorResponse = handleSubscriptionError(error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: errorResponse.message,
-          code: errorResponse.code,
-        },
-        { status: errorResponse.statusCode }
-      );
-    }
-
+    console.error('Usage error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        code: 'INTERNAL_ERROR',
-      },
+      { error: 'Failed to fetch usage' },
       { status: 500 }
     );
   }

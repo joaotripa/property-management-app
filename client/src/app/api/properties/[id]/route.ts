@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { 
-  deleteProperty, 
+import {
+  deleteProperty,
   getPropertyById,
   updateProperty,
-  errorResponseSchema 
+  errorResponseSchema
 } from "@/lib/db/properties";
 import { updatePropertySchema } from "@/lib/validations/property";
 import { ZodError } from "zod";
+import { canMutate } from "@/lib/stripe/subscription";
 
 interface RouteParams {
   params: Promise<{
@@ -70,7 +71,7 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         errorResponseSchema.parse({
@@ -78,6 +79,17 @@ export async function PUT(
           message: "Authentication required",
         }),
         { status: 401 }
+      );
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        errorResponseSchema.parse({
+          success: false,
+          message: "Subscription required to update properties",
+        }),
+        { status: 403 }
       );
     }
 
@@ -146,7 +158,7 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         errorResponseSchema.parse({
@@ -154,6 +166,17 @@ export async function DELETE(
           message: "Authentication required",
         }),
         { status: 401 }
+      );
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        errorResponseSchema.parse({
+          success: false,
+          message: "Subscription required to delete properties",
+        }),
+        { status: 403 }
       );
     }
 
