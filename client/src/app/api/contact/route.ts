@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
-import { createContactEmailTemplate, createPlainContactEmail } from "@/lib/integrations/email/templates/contact-form";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendContactEmail } from "@/lib/services/server/emailService";
 
 interface ContactFormData {
   name: string;
@@ -11,25 +8,6 @@ interface ContactFormData {
   message: string;
 }
 
-interface ResendError {
-  message: string;
-  statusCode: number;
-  name: string;
-}
-
-function validateEnvironment(): { isValid: boolean; error?: NextResponse } {
-  if (!process.env.RESEND_API_KEY) {
-    console.error("Missing RESEND_API_KEY environment variable");
-    return {
-      isValid: false,
-      error: NextResponse.json(
-        { success: false, message: "Email service is not configured. Please try again later." },
-        { status: 500 }
-      )
-    };
-  }
-  return { isValid: true };
-}
 
 function validateFormData(data: ContactFormData): { isValid: boolean; error?: NextResponse } {
   const { name, email, subject, message } = data;
@@ -77,69 +55,38 @@ function validateFormData(data: ContactFormData): { isValid: boolean; error?: Ne
   return { isValid: true };
 }
 
-function getErrorMessage(error: ResendError): string {
-  switch (error.statusCode) {
-    case 400:
-      return "Invalid email address. Please check and try again.";
-    case 401:
-      return "Email service authentication failed. Please try again later.";
-    case 403:
-      return "Email service access denied. Please try again later.";
-    case 429:
-      return "Too many requests. Please wait a moment and try again.";
-    case 500:
-      return "Email service is temporarily unavailable. Please try again later.";
-    default:
-      return "Unable to send email. Please try again later.";
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {
-    const envValidation = validateEnvironment();
-    if (!envValidation.isValid) {
-      return envValidation.error!;
-    }
-
     const formData: ContactFormData = await req.json();
     const formValidation = validateFormData(formData);
     if (!formValidation.isValid) {
       return formValidation.error!;
     }
 
-    console.log("Processing contact form submission:", { 
-      name: formData.name,  
-      email: formData.email, 
-      subject: formData.subject 
+    console.log("Processing contact form submission:", {
+      name: formData.name,
+      email: formData.email,
+      subject: formData.subject
     });
 
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_EMAIL_FROM!,
-      to: [process.env.RESEND_EMAIL_TO!],
-      subject: `New Message from ${formData.name} - ${formData.subject}`,
-      html: createContactEmailTemplate(formData),
-      text: createPlainContactEmail(formData),
-      replyTo: formData.email,
-    });
+    const result = await sendContactEmail(formData);
 
-    if (error) {
-      console.error("Resend API error:", error);
-      const userMessage = getErrorMessage(error as ResendError);
+    if (!result.success) {
       return NextResponse.json(
-        { success: false, message: userMessage },
+        { success: false, message: "Unable to send email. Please try again later." },
         { status: 500 }
       );
     }
 
-    console.log("Email sent successfully:", { id: data?.id });
-    return NextResponse.json({ 
-      success: true, 
-      message: "Thank you for your message! We'll get back to you soon." 
+    return NextResponse.json({
+      success: true,
+      message: "Thank you for your message! We'll get back to you soon."
     });
 
   } catch (error) {
     console.error("Contact form error:", error);
-      
+
     if (error instanceof Error) {
       if (error.message.includes("JSON")) {
         return NextResponse.json(
@@ -148,7 +95,7 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    
+
     return NextResponse.json(
       { success: false, message: "Something went wrong. Please try again later." },
       { status: 500 }

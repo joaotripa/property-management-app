@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
-import { Resend } from "resend"
 import { AuthLogger } from "@/lib/utils/auth"
-import { getVerificationEmailTemplate } from "@/lib/integrations/email/templates/verification-email"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { sendVerificationEmail } from "@/lib/services/server/emailService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    
+
     await prisma.verificationToken.deleteMany({
       where: {
         identifier: email
@@ -46,23 +43,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    try {
-      await resend.emails.send({
-        from: process.env.RESEND_EMAIL_FROM || 'noreply@email.domari.app',
-        to: email,
-        subject: `${verificationCode} is your verification code`,
-        html: getVerificationEmailTemplate({ verificationCode })
-      })
-
-      AuthLogger.info({ action: 'resend_verification_email_sent', email })
-    } catch (emailError) {
-      AuthLogger.error({ 
-        action: 'resend_verification_email_failed', 
-        email, 
-        error: emailError instanceof Error ? emailError.message : 'Unknown email error' 
-      })
-      // Don't fail the request if email fails
-    }
+    await sendVerificationEmail(email, verificationCode)
 
     return NextResponse.json(
       { message: "If an account with this email exists, a new verification code has been sent." },

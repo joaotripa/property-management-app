@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
-import { Resend } from "resend"
-import { getPasswordResetEmailTemplate } from "@/lib/integrations/email/templates/password-reset-email"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { sendPasswordResetEmail } from "@/lib/services/server/emailService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString()
-    
+
     await prisma.verificationToken.deleteMany({
       where: {
         identifier: email
@@ -43,18 +40,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    try {
-      await resend.emails.send({
-        from: process.env.RESEND_EMAIL_FROM || 'noreply@email.domari.app',
-        to: email,
-        subject: `${resetCode} is your reset password code`,
-        html: getPasswordResetEmailTemplate({ resetCode })
-      })
-
-      console.log(`Password reset email sent to ${email}`)
-    } catch (emailError) {
-      console.error('Failed to send password reset email:', emailError)
-    }
+    await sendPasswordResetEmail(email, resetCode)
 
     return NextResponse.json(
       { message: "If an account with this email exists, you will receive a password reset code." },

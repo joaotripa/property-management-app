@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/config/database"
-import { Resend } from "resend"
 import { AuthLogger } from "@/lib/utils/auth"
-import { getVerificationEmailTemplate } from "@/lib/integrations/email/templates/verification-email"
+import { sendVerificationEmail } from "@/lib/services/server/emailService"
 import { createSubscription } from "@/lib/stripe/init"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    
+
     await prisma.verificationToken.create({
       data: {
         identifier: email,
@@ -72,23 +69,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    try {
-      await resend.emails.send({
-        from: process.env.RESEND_EMAIL_FROM || 'noreply@email.domari.app',
-        to: email,
-        subject: `${verificationCode} is your verification code`,
-        html: getVerificationEmailTemplate({ verificationCode })
-      })
-
-      AuthLogger.info({ action: 'verification_email_sent', email })
-    } catch (emailError) {
-      AuthLogger.error({ 
-        action: 'verification_email_failed', 
-        email, 
-        error: emailError instanceof Error ? emailError.message : 'Unknown email error' 
-      })
-      // Don't fail the signup if email fails
-    }
+    await sendVerificationEmail(email, verificationCode)
 
     AuthLogger.signUpSuccess(email)
     return NextResponse.json(

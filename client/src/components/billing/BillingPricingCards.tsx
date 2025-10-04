@@ -120,10 +120,6 @@ export function BillingPricingCards({
         {PRICING_PLANS.map((plan) => {
           const buttonConfig = getButtonConfig(plan.name);
           const isCurrentPlan = plan.name.toUpperCase() === currentPlan;
-          const isPlanIndex = PLAN_ORDER.indexOf(
-            plan.name.toUpperCase() as SubscriptionPlan
-          );
-          const currentIndex = getCurrentPlanIndex();
 
           return (
             <Card

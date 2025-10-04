@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
+import { sendWelcomeEmail } from "@/lib/services/server/emailService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     })
 
     await prisma.verificationToken.delete({
-      where: { 
+      where: {
         identifier_token: {
           identifier: email,
           token: code
@@ -51,6 +52,8 @@ export async function POST(request: NextRequest) {
     })
 
     AuthLogger.emailVerificationSuccess(email)
+
+    await sendWelcomeEmail(email)
 
     return NextResponse.json(
       { message: "Email verified successfully" },
