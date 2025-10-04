@@ -13,6 +13,7 @@ import {
   useTimezones,
   useAccountInfo,
 } from "@/hooks/queries/usePreferencesQueries";
+import { useBillingData } from "@/hooks/queries/useBillingQueries";
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -24,12 +25,13 @@ export default function SettingsPage() {
   const { data: currencies = [], isLoading: currenciesLoading, error: currenciesError } = useCurrencies();
   const { data: timezones = [], isLoading: timezonesLoading, error: timezonesError } = useTimezones();
   const { data: accountInfo, isLoading: accountLoading, error: accountError } = useAccountInfo();
+  const { data: billingData, isLoading: billingLoading, error: billingError } = useBillingData();
 
   // Check if any data is still loading
-  const isAnyLoading = userLoading || currenciesLoading || timezonesLoading || accountLoading;
+  const isAnyLoading = userLoading || currenciesLoading || timezonesLoading || accountLoading || billingLoading;
 
   // Check if there are any errors
-  const hasError = userError || currenciesError || timezonesError || accountError;
+  const hasError = userError || currenciesError || timezonesError || accountError || billingError;
 
   useEffect(() => {
     if (tabParam === "billing" || tabParam === "account" || tabParam === "preferences") {
@@ -47,7 +49,7 @@ export default function SettingsPage() {
   }
 
   // Show error state if any data failed to load
-  if (hasError || !userSettings || !accountInfo) {
+  if (hasError || !userSettings || !accountInfo || !billingData) {
     return (
       <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
         <div className="flex flex-col gap-2">
@@ -93,7 +95,10 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">
-          <BillingSettings />
+          <BillingSettings
+            subscription={billingData.subscription}
+            usage={billingData.usage}
+          />
         </TabsContent>
       </Tabs>
     </div>

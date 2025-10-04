@@ -1,57 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PricingCards } from "@/components/pricing/PricingCards";
-import { Plan } from "@/components/pricing/types";
+import { BillingPricingCards } from "@/components/billing/BillingPricingCards";
 import { toast } from "sonner";
 import { Loader2, CreditCard, Calendar, Users } from "lucide-react";
+import { SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
+import { SubscriptionData, Usage } from "@/hooks/queries/useBillingQueries";
 
-interface SubscriptionStatus {
-  status: string;
-  plan: string;
-  propertyLimit: number;
-  trialEndsAt?: string;
-  trialDaysRemaining?: number;
-  cancelAtPeriodEnd: boolean;
-  currentPeriodEnd?: string;
+interface BillingSettingsProps {
+  subscription: SubscriptionData;
+  usage: Usage;
 }
 
-interface Usage {
-  propertyCount: number;
-  propertyLimit: number;
-  canCreateProperties: boolean;
-  isAtLimit: boolean;
-}
-
-export function BillingSettings() {
+export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
   const [loading, setLoading] = useState(false);
-  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const [usage, setUsage] = useState<Usage | null>(null);
-  const [loadingStatus, setLoadingStatus] = useState(true);
 
-  useEffect(() => {
-    fetchBillingStatus();
-  }, []);
-
-  const fetchBillingStatus = async () => {
-    try {
-      const response = await fetch('/api/billing/usage');
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data.subscription);
-        setUsage(data.usage);
-      }
-    } catch (error) {
-      console.error('Error fetching billing status:', error);
-    } finally {
-      setLoadingStatus(false);
-    }
-  };
-
-  const handlePlanSelect = async (plan: Plan, isYearly: boolean) => {
+  const handlePlanSelect = async (plan: SubscriptionPlan, isYearly: boolean) => {
     setLoading(true);
     try {
       const response = await fetch('/api/billing/checkout', {
@@ -60,7 +27,7 @@ export function BillingSettings() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          plan: plan.name.toUpperCase(),
+          plan,
           isYearly,
         }),
       });
@@ -100,7 +67,7 @@ export function BillingSettings() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: SubscriptionStatus) => {
     switch (status) {
       case 'TRIAL':
         return <Badge variant="secondary">Free Trial</Badge>;
@@ -114,14 +81,6 @@ export function BillingSettings() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-
-  if (loadingStatus) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -143,7 +102,7 @@ export function BillingSettings() {
                 <div>
                   <p className="text-sm font-medium">{subscription.plan} Plan</p>
                   <p className="text-xs text-muted-foreground">
-                    {usage?.propertyCount || 0} of {subscription.propertyLimit} properties
+                    {usage.propertyCount} of {subscription.propertyLimit} properties
                   </p>
                 </div>
               </div>
@@ -206,11 +165,10 @@ export function BillingSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PricingCards
-            showToggle={true}
-            showDisclaimer={false}
+          <BillingPricingCards
+            currentPlan={subscription.plan}
+            currentStatus={subscription.status}
             onPlanSelect={handlePlanSelect}
-            className="max-w-6xl mx-auto"
           />
         </CardContent>
       </Card>
