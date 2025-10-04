@@ -67,7 +67,7 @@ export function PricingCards({
         {plans.map((plan, index) => (
           <Card
             key={index}
-            className={`relative hover:shadow-xl ${
+            className={`relative hover:shadow-xl flex flex-col ${
               plan.popular
                 ? "border-2 border-primary shadow-lg"
                 : "border border-border"
@@ -104,8 +104,8 @@ export function PricingCards({
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-6">
-              <ul className="space-y-3">
+            <CardContent className="flex flex-col flex-1 space-y-6">
+              <ul className="space-y-3 flex-1">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start">
                     <Check className="h-5 w-5 text-success mr-3 mt-0.5 flex-shrink-0" />
@@ -150,20 +150,6 @@ export function PricingCards({
           <p className="mb-4">
             All plans include a 14-day free trial. No credit card required.
           </p>
-          <div className="flex flex-row justify-center items-center gap-8 text-sm">
-            <div className="flex items-center">
-              <Check className="h-4 w-4 text-success mr-2" />
-              Cancel anytime
-            </div>
-            <div className="flex items-center">
-              <Check className="h-4 w-4 text-success mr-2" />
-              No setup fees
-            </div>
-            <div className="flex items-center">
-              <Check className="h-4 w-4 text-success mr-2" />
-              24/7 support
-            </div>
-          </div>
         </div>
       )}
     </div>

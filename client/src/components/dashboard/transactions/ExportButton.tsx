@@ -24,7 +24,9 @@ export function ExportButton({ searchParams }: ExportButtonProps) {
         }
       });
 
-      const response = await fetch(`/api/transactions/export?${params.toString()}`);
+      const response = await fetch(
+        `/api/transactions/export?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to export transactions");
@@ -32,7 +34,9 @@ export function ExportButton({ searchParams }: ExportButtonProps) {
 
       const contentDisposition = response.headers.get("Content-Disposition");
       const fileNameMatch = contentDisposition?.match(/filename="(.+)"/);
-      const fileName = fileNameMatch ? fileNameMatch[1] : `tax-report_${new Date().toISOString().replace(/[-:]/g, '').replace('T', '').split('.')[0]}.csv`;
+      const fileName = fileNameMatch
+        ? fileNameMatch[1]
+        : `tax-report_${new Date().toISOString().replace(/[-:]/g, "").replace("T", "").split(".")[0]}.csv`;
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

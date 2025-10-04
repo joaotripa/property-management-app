@@ -49,7 +49,7 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="bg-slate-50 flex-grow">
+    <div className="bg-background flex-grow">
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -89,7 +89,7 @@ const PrivacyPolicy = () => {
                   <li key={section.id}>
                     <button
                       onClick={() => scrollToSection(section.id)}
-                      className={`w-full text-left px-4 py-2.5 rounded-lg transition-all flex items-center justify-between group ${
+                      className={`w-full text-left px-4 py-2.5 rounded-full transition-all flex items-center justify-between group ${
                         activeSection === section.id
                           ? "bg-primary/10 text-primary font-medium"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -325,7 +325,8 @@ const PrivacyPolicy = () => {
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Payment processing and subscription management. We do not
-                  store credit card information. View Stripe&apos;s privacy policy at{" "}
+                  store credit card information. View Stripe&apos;s privacy
+                  policy at{" "}
                   <a
                     href="https://stripe.com/privacy"
                     target="_blank"
@@ -340,8 +341,8 @@ const PrivacyPolicy = () => {
                   Google OAuth
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Optional authentication provider. View Google&apos;s privacy policy
-                  at{" "}
+                  Optional authentication provider. View Google&apos;s privacy
+                  policy at{" "}
                   <a
                     href="https://policies.google.com/privacy"
                     target="_blank"
@@ -454,8 +455,8 @@ const PrivacyPolicy = () => {
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
                   <li>
-                    Posting the updated policy on this page with a new &quot;Last
-                    updated&quot; date
+                    Posting the updated policy on this page with a new
+                    &quot;Last updated&quot; date
                   </li>
                   <li>
                     Sending you an email notification (for significant changes)

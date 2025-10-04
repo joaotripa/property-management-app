@@ -11,42 +11,22 @@ const FAQ = () => {
     {
       question: "How does the 14-day free trial work?",
       answer:
-        "You can start using Domari immediately with full access to all features. No credit card required. After 14 days, you can choose to continue with a paid plan or downgrade to our free tier.",
-    },
-    {
-      question: "Can I switch between plans at any time?",
-      answer:
-        "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing adjustments on your next invoice.",
+        "Start using Domari immediately with full access to all Business plan features. No credit card required. After 14 days, choose a paid plan that fits your portfolio size, or your account will be automatically downgraded.",
     },
     {
       question: "What happens if I exceed my property limit?",
       answer:
-        "We'll notify you when you're approaching your limit. You can easily upgrade to the next tier to accommodate more properties, or remove unused properties from your account.",
+        "We'll notify you when you're approaching your plan's property limit. You can easily upgrade to the next tier (Starter: 10 properties, Pro: 50 properties, Business: unlimited) or remove unused properties from your account.",
     },
     {
-      question: "Is my financial data secure?",
+      question: "Can I switch plans or cancel anytime?",
       answer:
-        "Absolutely. We use bank-level encryption (AES-256) and follow SOC 2 compliance standards. Your data is stored securely and never shared with third parties without your explicit consent.",
+        "Yes! Upgrade or downgrade your subscription anytime through your billing settings. Changes take effect immediately with prorated adjustments. You can cancel your subscription at any time with no penalties.",
     },
     {
-      question: "Can I import data from other property management tools?",
+      question: "How is my financial data stored and secured?",
       answer:
-        "Yes! We support imports from Excel/CSV files and have direct integrations with popular property management platforms. Our team can also help with custom data migrations.",
-    },
-    {
-      question: "Do you offer customer support?",
-      answer:
-        "Yes! All plans include email support. Standard and Pro plans get priority support, and Pro users have access to a dedicated account manager and 24/7 phone support.",
-    },
-    {
-      question: "Can I use Domari on mobile devices?",
-      answer:
-        "Definitely! Domari is fully responsive and works great on all devices. We also have native mobile apps for iOS and Android with offline capabilities.",
-    },
-    {
-      question: "What integrations do you support?",
-      answer:
-        "We integrate with popular accounting software (QuickBooks, Xero), payment processors (Stripe, PayPal), and banking institutions. Pro users get access to our API for custom integrations.",
+        "Your data is securely stored in encrypted PostgreSQL databases with enterprise-grade security. You retain full ownership of your data and can export it anytime. We never share your information with third parties.",
     },
   ];
 

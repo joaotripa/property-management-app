@@ -48,8 +48,8 @@ const Navbar = () => {
               </Button>
             </Link>
             <Link href="/signup" passHref>
-              <Button className="bg-primary text-md hover:bg-primary/90 text-md text-primary-foreground !px-8 !py-4  rounded-full group">
-                Sign Up
+              <Button className="bg-primary hover:bg-primary/90 text-md text-primary-foreground !px-8 !py-4  rounded-full group">
+                Start 14-day free trial
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
             </Link>
@@ -99,7 +99,7 @@ const Navbar = () => {
                 className="w-1/2"
               >
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                  Sign Up
+                  Start 14-day free trial
                 </Button>
               </Link>
             </div>

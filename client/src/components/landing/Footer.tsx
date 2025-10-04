@@ -64,7 +64,6 @@ const Footer = () => {
               {[
                 { label: "Terms of Service", href: "/terms-of-service" },
                 { label: "Privacy Policy", href: "/privacy-policy" },
-                { label: "Cookie Policy", href: "/cookies" },
               ].map((link) => (
                 <Link
                   key={link.label}

@@ -52,7 +52,7 @@ const TermsOfService = () => {
   };
 
   return (
-    <div className="bg-slate-50 flex-grow">
+    <div className="bg-background flex-grow">
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -92,7 +92,7 @@ const TermsOfService = () => {
                   <li key={section.id}>
                     <button
                       onClick={() => scrollToSection(section.id)}
-                      className={`w-full text-left px-4 py-2.5 rounded-lg transition-all flex items-center justify-between group ${
+                      className={`w-full text-left px-4 py-2.5 rounded-full transition-all flex items-center justify-between group ${
                         activeSection === section.id
                           ? "bg-primary/10 text-primary font-medium"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -256,8 +256,8 @@ const TermsOfService = () => {
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Each plan includes a specific property limit. Exceeding your
-                  plan&apos;s property limit requires upgrading to a higher tier. We
-                  will notify you when approaching your limit.
+                  plan&apos;s property limit requires upgrading to a higher
+                  tier. We will notify you when approaching your limit.
                 </p>
 
                 <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
@@ -544,10 +544,11 @@ const TermsOfService = () => {
                   Service Disclaimer
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Domari is provided &quot;as is&quot; and &quot;as available&quot; without
-                  warranties of any kind, either express or implied, including
-                  but not limited to warranties of merchantability, fitness for
-                  a particular purpose, or non-infringement.
+                  Domari is provided &quot;as is&quot; and &quot;as
+                  available&quot; without warranties of any kind, either express
+                  or implied, including but not limited to warranties of
+                  merchantability, fitness for a particular purpose, or
+                  non-infringement.
                 </p>
 
                 <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
@@ -596,7 +597,8 @@ const TermsOfService = () => {
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
                   <li>
-                    Update the &quot;Last updated&quot; date at the top of this page
+                    Update the &quot;Last updated&quot; date at the top of this
+                    page
                   </li>
                   <li>
                     Send you an email notification (for significant changes)

@@ -242,7 +242,7 @@ export function TransactionFilters({
             <Button
               size="sm"
               onClick={applyFilters}
-              className="h-8 px-2"
+              className="h-8 px-4"
               disabled={isPending}
             >
               <Search className="h-4 w-4" />
