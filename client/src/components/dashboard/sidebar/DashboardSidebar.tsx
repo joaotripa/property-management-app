@@ -11,7 +11,6 @@ import {
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/dashboard/sidebar/NavMain";
-import { NavInsights } from "./NavInsights";
 import { NavUser } from "@/components/dashboard/sidebar/NavUser";
 import { DashboardLogo } from "@/components/dashboard/sidebar/DashboardLogo";
 import {
@@ -38,8 +37,6 @@ const data = {
       url: "/dashboard/transactions",
       icon: CreditCard,
     },
-  ],
-  navInsights: [
     {
       title: "Analytics",
       url: "/dashboard/analytics",
@@ -70,7 +67,6 @@ export function DashboardSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavInsights items={data.navInsights} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={session?.user} />

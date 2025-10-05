@@ -25,7 +25,6 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Management</SidebarGroupLabel>
       <SidebarMenu className="gap-2">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

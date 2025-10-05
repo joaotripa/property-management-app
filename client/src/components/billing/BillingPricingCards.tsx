@@ -88,10 +88,10 @@ export function BillingPricingCards({
     <div>
       {/* Billing Period Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="inline-flex items-center bg-card p-1 rounded-full border border-border">
+        <div className="inline-flex items-center bg-card p-1 rounded-xl border border-border">
           <button
             onClick={() => setIsYearly(false)}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
               !isYearly
                 ? "bg-primary text-white shadow-sm"
                 : "hover:text-primary"
@@ -101,7 +101,7 @@ export function BillingPricingCards({
           </button>
           <button
             onClick={() => setIsYearly(true)}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
               isYearly
                 ? "bg-primary text-white shadow-sm"
                 : "hover:text-primary"
@@ -109,7 +109,7 @@ export function BillingPricingCards({
           >
             Yearly
             <span className="ml-2 px-2 py-1 bg-success text-white text-xs rounded-full">
-              Save 17%
+              2 months off
             </span>
           </button>
         </div>
@@ -125,27 +125,15 @@ export function BillingPricingCards({
             <Card
               key={plan.name}
               className={`relative hover:shadow-xl transition-shadow flex flex-col ${
-                isCurrentPlan
+                plan.popular && !isCurrentPlan
                   ? "border-2 border-primary shadow-lg"
-                  : plan.popular && !isCurrentPlan
-                    ? "border-2 border-primary shadow-lg"
-                    : "border border-border"
+                  : "border border-border"
               }`}
             >
-              {/* Current Plan Badge */}
-              {isCurrentPlan && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-primary text-white px-4 py-2">
-                    Your Plan
-                  </Badge>
-                </div>
-              )}
-
               {/* Popular Badge (only for Pro if not current plan) */}
               {plan.popular && !isCurrentPlan && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium flex items-center">
-                    <Star className="h-4 w-4 mr-1" />
+                  <div className="bg-primary text-white px-4 py-1 rounded-lg text-sm font-medium flex items-center">
                     Most Popular
                   </div>
                 </div>
@@ -185,25 +173,25 @@ export function BillingPricingCards({
                 </ul>
 
                 <div className="space-y-2">
-                <Button
-                  onClick={() => handlePlanClick(plan.name)}
-                  disabled={buttonConfig.disabled}
-                  className={`w-full py-3 font-semibold rounded-full ${
-                    buttonConfig.variant === "default"
-                      ? "bg-primary hover:bg-primary/90 text-white"
-                      : "border border-primary text-primary hover:bg-primary hover:text-white"
-                  } ${buttonConfig.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                  variant={buttonConfig.variant}
-                >
-                  {buttonConfig.text}
-                </Button>
+                  <Button
+                    onClick={() => handlePlanClick(plan.name)}
+                    disabled={buttonConfig.disabled}
+                    className={`w-full py-3 font-semibold rounded-xl ${
+                      buttonConfig.variant === "default"
+                        ? "bg-primary hover:bg-primary/90 text-white"
+                        : "border border-primary text-primary hover:bg-primary hover:text-white"
+                    } ${buttonConfig.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                    variant={buttonConfig.variant}
+                  >
+                    {buttonConfig.text}
+                  </Button>
 
-                {/* Helper text for downgrades */}
-                {buttonConfig.action === "downgrade" && (
-                  <p className="text-xs text-center text-muted-foreground">
-                    Changes apply at end of billing period
-                  </p>
-                )}
+                  {/* Helper text for downgrades */}
+                  {buttonConfig.action === "downgrade" && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      Changes apply at end of billing period
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

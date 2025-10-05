@@ -206,6 +206,14 @@
     @apply hover:cursor-pointer;
   }
 
+  [data-slot="dropdown-menu-item"],
+  [data-slot="select-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"] {
+    cursor: pointer !important;
+  }
+
   button {
     @apply cursor-pointer;
   }

@@ -126,7 +126,9 @@ export function SubscriptionInfoBanner({
           <div className="flex items-center gap-2 flex-wrap">
             You're currently on plan:{" "}
             <span className="font-medium">{config.title}</span>
-            <Badge variant={config.badge.variant}>{config.badge.label}</Badge>
+            {status === "TRIAL" && (
+              <Badge variant={config.badge.variant}>{config.badge.label}</Badge>
+            )}
             <span className="text-muted-foreground text-sm hidden sm:inline">
               •
             </span>
