@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SubscriptionPlan } from "@prisma/client";
 import { SubscriptionData, Usage } from "@/hooks/queries/useBillingQueries";
 import { getPaymentLink } from "@/lib/stripe/config";
+import { useSession } from "next-auth/react";
 
 interface BillingSettingsProps {
   subscription: SubscriptionData;
@@ -14,9 +15,12 @@ interface BillingSettingsProps {
 }
 
 export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
+  const { data: session } = useSession();
+
   const handlePlanSelect = (plan: SubscriptionPlan, isYearly: boolean) => {
     try {
-      const paymentLink = getPaymentLink(plan, isYearly);
+      const customerEmail = session?.user?.email || undefined;
+      const paymentLink = getPaymentLink(plan, isYearly, customerEmail);
       window.location.href = paymentLink;
     } catch (error) {
       console.error('Error getting payment link:', error);

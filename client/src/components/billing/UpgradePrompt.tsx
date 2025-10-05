@@ -16,6 +16,7 @@ import { Plan } from "@/components/pricing/types";
 import { toast } from "sonner";
 import { CreditCard, Zap } from "lucide-react";
 import { getPaymentLink } from "@/lib/stripe/config";
+import { useSession } from "next-auth/react";
 
 interface UpgradePromptProps {
   children?: React.ReactNode;
@@ -31,11 +32,13 @@ export function UpgradePrompt({
   showAsDialog = true,
 }: UpgradePromptProps) {
   const [open, setOpen] = useState(false);
+  const { data: session } = useSession();
 
   const handlePlanSelect = (plan: Plan, isYearly: boolean) => {
     try {
       const planName = plan.name.toUpperCase() as 'STARTER' | 'PRO' | 'BUSINESS';
-      const paymentLink = getPaymentLink(planName, isYearly);
+      const customerEmail = session?.user?.email || undefined;
+      const paymentLink = getPaymentLink(planName, isYearly, customerEmail);
       window.location.href = paymentLink;
     } catch (error) {
       console.error('Error getting payment link:', error);

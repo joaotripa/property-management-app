@@ -88,10 +88,10 @@ export function BillingPricingCards({
     <div>
       {/* Billing Period Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="inline-flex items-center bg-card p-1 rounded-xl border border-border">
+        <div className="inline-flex items-center bg-card p-1 rounded-full border border-border">
           <button
             onClick={() => setIsYearly(false)}
-            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               !isYearly
                 ? "bg-primary text-white shadow-sm"
                 : "hover:text-primary"
@@ -101,7 +101,7 @@ export function BillingPricingCards({
           </button>
           <button
             onClick={() => setIsYearly(true)}
-            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               isYearly
                 ? "bg-primary text-white shadow-sm"
                 : "hover:text-primary"
@@ -133,7 +133,7 @@ export function BillingPricingCards({
               {/* Popular Badge (only for Pro if not current plan) */}
               {plan.popular && !isCurrentPlan && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-white px-4 py-1 rounded-lg text-sm font-medium flex items-center">
+                  <div className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium flex items-center">
                     Most Popular
                   </div>
                 </div>

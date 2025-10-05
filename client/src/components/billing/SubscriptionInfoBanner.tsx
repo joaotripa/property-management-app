@@ -120,8 +120,8 @@ export function SubscriptionInfoBanner({
 
   return (
     <Alert variant={config.variant} className="mb-6">
-      {config.icon}
       <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="text-primary">{config.icon}</div>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             You're currently on plan:{" "}

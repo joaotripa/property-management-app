@@ -12,7 +12,7 @@ export async function POST() {
 
     const portal = await createPortalSession({
       userId: session.user.id,
-      returnUrl: `${process.env.NEXTAUTH_URL}/dashboard/settings`,
+      returnUrl: `${process.env.NEXTAUTH_URL}/dashboard/settings?tab=billing`,
     });
 
     return NextResponse.json({ url: portal.url });

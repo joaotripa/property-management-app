@@ -55,10 +55,16 @@ export async function createPortalSession(params: {
     throw new Error('No Stripe customer found');
   }
 
-  const session = await stripe.billingPortal.sessions.create({
+  const createParams: Stripe.BillingPortal.SessionCreateParams = {
     customer: subscription.stripeCustomerId,
     return_url: params.returnUrl,
-  });
+  };
+
+  if (stripeConfig.billingPortalConfigId) {
+    createParams.configuration = stripeConfig.billingPortalConfigId;
+  }
+
+  const session = await stripe.billingPortal.sessions.create(createParams);
 
   return { url: session.url };
 }
@@ -116,14 +122,46 @@ export async function canMutate(userId: string): Promise<boolean> {
   );
 }
 
-export async function syncSubscription(stripeSubscriptionId: string) {
-  const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+export async function syncSubscription(
+  stripeSubscriptionId: string,
+  customerEmail?: string,
+  priceId?: string
+) {
+  const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId, {
+    expand: ['customer'],
+  });
 
-  const userId = sub.metadata.userId;
-  const plan = sub.metadata.plan as SubscriptionPlan;
+  // Try to get userId from metadata first (for programmatic subscriptions)
+  let userId = sub.metadata.userId;
 
-  if (!userId || !plan) {
-    throw new Error('Missing userId or plan in subscription metadata');
+  // If no userId in metadata, find user by customer email
+  if (!userId) {
+    const email = customerEmail || (sub.customer as Stripe.Customer)?.email;
+    if (!email) {
+      throw new Error('No customer email found');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new Error(`No user found with email: ${email}`);
+    }
+
+    userId = user.id;
+  }
+
+  // Try to get plan from metadata first, then from priceId
+  let plan = sub.metadata.plan as SubscriptionPlan | undefined;
+
+  if (!plan) {
+    const subscriptionPriceId = priceId || sub.items.data[0]?.price?.id;
+    if (!subscriptionPriceId) {
+      throw new Error('No price ID found');
+    }
+
+    plan = getPlanFromPriceId(subscriptionPriceId);
   }
 
   const status = mapStatus(sub.status);
@@ -133,11 +171,16 @@ export async function syncSubscription(stripeSubscriptionId: string) {
   const currentPeriodEnd = (sub as { current_period_end?: number }).current_period_end;
   const cancelAtPeriodEnd = (sub as { cancel_at_period_end?: boolean }).cancel_at_period_end;
 
+  // Get customer ID (could be string or expanded object)
+  const customerId = typeof sub.customer === 'string'
+    ? sub.customer
+    : sub.customer.id;
+
   await prisma.subscription.upsert({
     where: { userId },
     create: {
       userId,
-      stripeCustomerId: sub.customer as string,
+      stripeCustomerId: customerId,
       stripeSubscriptionId: sub.id,
       status,
       plan,
@@ -151,6 +194,8 @@ export async function syncSubscription(stripeSubscriptionId: string) {
       status,
       plan,
       propertyLimit: limit,
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: sub.id,
       currentPeriodStart: currentPeriodStart ? new Date(currentPeriodStart * 1000) : null,
       currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
       cancelAtPeriodEnd: cancelAtPeriodEnd || false,
@@ -195,6 +240,24 @@ function mapStatus(stripeStatus: string): SubscriptionStatus {
     case 'incomplete_expired': return 'UNPAID';
     default: return 'ACTIVE';
   }
+}
+
+function getPlanFromPriceId(priceId: string): SubscriptionPlan {
+  const priceMappings: Record<string, SubscriptionPlan> = {
+    [process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || '']: 'STARTER',
+    [process.env.STRIPE_STARTER_YEARLY_PRICE_ID || '']: 'STARTER',
+    [process.env.STRIPE_PRO_MONTHLY_PRICE_ID || '']: 'PRO',
+    [process.env.STRIPE_PRO_YEARLY_PRICE_ID || '']: 'PRO',
+    [process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID || '']: 'BUSINESS',
+    [process.env.STRIPE_BUSINESS_YEARLY_PRICE_ID || '']: 'BUSINESS',
+  };
+
+  const plan = priceMappings[priceId];
+  if (!plan) {
+    throw new Error(`Unknown price ID: ${priceId}`);
+  }
+
+  return plan;
 }
 
 // ============================================================================
@@ -261,43 +324,74 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata.userId;
-  if (userId) {
-    await prisma.subscription.update({
-      where: { userId },
-      data: { status: 'CANCELED', cancelAtPeriodEnd: false },
+  // Try to get userId from metadata first
+  let userId = subscription.metadata.userId;
+
+  // If no metadata, get customer email and find user
+  if (!userId) {
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const customerEmail = (customer as Stripe.Customer).email;
+
+    if (!customerEmail) {
+      console.log('No customer email found for deleted subscription');
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: customerEmail },
     });
+
+    if (!user) {
+      console.log(`No user found with email: ${customerEmail}`);
+      return;
+    }
+
+    userId = user.id;
   }
+
+  await prisma.subscription.update({
+    where: { userId },
+    data: { status: 'CANCELED', cancelAtPeriodEnd: false },
+  });
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const inv = invoice as { subscription?: string | { id: string } };
-  const subscriptionId =
-    typeof inv.subscription === 'string'
-      ? inv.subscription
-      : inv.subscription?.id;
+  const subscriptionId = invoice.parent?.subscription_details?.subscription as string;
 
-  if (subscriptionId) {
-    await syncSubscription(subscriptionId);
+  if (!subscriptionId) {
+    console.log('No subscription ID in invoice');
+    return;
   }
+
+  const customerEmail = invoice.customer_email || undefined;
+  const priceId = invoice.lines?.data?.[0]?.pricing?.price_details?.price || undefined;
+
+  await syncSubscription(subscriptionId, customerEmail, priceId);
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const inv = invoice as { subscription?: string | { id: string } };
-  const subscriptionId =
-    typeof inv.subscription === 'string'
-      ? inv.subscription
-      : inv.subscription?.id;
+  const subscriptionId = invoice.parent?.subscription_details?.subscription as string;
 
-  if (subscriptionId) {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const userId = subscription.metadata.userId;
+  if (!subscriptionId) {
+    console.log('No subscription ID in invoice');
+    return;
+  }
 
-    if (userId) {
-      await prisma.subscription.update({
-        where: { userId },
-        data: { status: 'PAST_DUE' },
-      });
-    }
+  const customerEmail = invoice.customer_email;
+
+  if (!customerEmail) {
+    console.log('No customer email in invoice');
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: customerEmail },
+  });
+
+  if (user) {
+    await prisma.subscription.update({
+      where: { userId: user.id },
+      data: { status: 'PAST_DUE' },
+    });
   }
 }
