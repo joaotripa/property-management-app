@@ -19,6 +19,9 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CategoryOption, PropertyOption } from "@/types/transactions";
@@ -305,16 +308,46 @@ export function TransactionFilters({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                {availableCategories.map((category) => (
-                  <DropdownMenuCheckboxItem
-                    key={category.id}
-                    className="capitalize"
-                    checked={pendingFilters.categoryIds.includes(category.id)}
-                    onCheckedChange={() => toggleCategory(category.id)}
-                  >
-                    {category.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Income</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {availableCategories
+                      .filter((c) => c.type === TransactionType.INCOME)
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((category) => (
+                        <DropdownMenuCheckboxItem
+                          key={category.id}
+                          className="capitalize"
+                          checked={pendingFilters.categoryIds.includes(
+                            category.id
+                          )}
+                          onCheckedChange={() => toggleCategory(category.id)}
+                        >
+                          {category.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Expense</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {availableCategories
+                      .filter((c) => c.type === TransactionType.EXPENSE)
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((category) => (
+                        <DropdownMenuCheckboxItem
+                          key={category.id}
+                          className="capitalize"
+                          checked={pendingFilters.categoryIds.includes(
+                            category.id
+                          )}
+                          onCheckedChange={() => toggleCategory(category.id)}
+                        >
+                          {category.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuContent>
             </DropdownMenu>
           )}

@@ -10,6 +10,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 import {
   Form,
@@ -253,16 +255,28 @@ export function TransactionForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              <div className="flex justify-start items-center gap-2">
-                                <span>{category.name}</span>
-                                <span className="text-xs">
-                                  ({category.type.toLowerCase()})
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
+                          <SelectGroup>
+                            <SelectLabel>Income</SelectLabel>
+                            {categories
+                              .filter((c) => c.type === TransactionType.INCOME)
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel>Expense</SelectLabel>
+                            {categories
+                              .filter((c) => c.type === TransactionType.EXPENSE)
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
                         </SelectContent>
                       </Select>
                       <FormMessage />
