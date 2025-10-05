@@ -29,7 +29,9 @@ export function PropertiesClient({
   canMutate = true,
   isAtLimit = false,
 }: PropertiesClientProps) {
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null
+  );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const router = useRouter();
@@ -40,17 +42,14 @@ export function PropertiesClient({
   };
 
   const handleSaveProperty = async () => {
-    // Refresh the page to get updated data
     router.refresh();
   };
 
   const handleAddProperty = async () => {
-    // Refresh the page to get updated data
     router.refresh();
   };
 
   const handleDeleteProperty = async () => {
-    // Refresh the page to get updated data
     router.refresh();
   };
 
@@ -68,8 +67,8 @@ export function PropertiesClient({
       });
       return;
     }
-
     setIsAddDialogOpen(true);
+    console.log(isAddDialogOpen);
   };
 
   const closeAddDialog = () => {
@@ -80,10 +79,17 @@ export function PropertiesClient({
 
   if (properties.length === 0) {
     return (
-      <EmptyPropertiesState
-        onAddProperty={openAddDialog}
-        disabled={isAddDisabled}
-      />
+      <>
+        <EmptyPropertiesState
+          onAddProperty={openAddDialog}
+          disabled={isAddDisabled}
+        />
+        <PropertyAddDialog
+          isOpen={isAddDialogOpen}
+          onClose={closeAddDialog}
+          onPropertyAdded={handleAddProperty}
+        />
+      </>
     );
   }
 
