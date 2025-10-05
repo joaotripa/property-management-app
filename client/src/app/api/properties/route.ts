@@ -9,7 +9,7 @@ import {
   propertyFiltersSchema
 } from "@/lib/db/properties";
 import { ZodError } from "zod";
-import { checkLimit, canMutate } from "@/lib/stripe/subscription";
+import { checkLimit, canMutate } from "@/lib/stripe/server";
 
 export async function GET(request: NextRequest) {
   try {

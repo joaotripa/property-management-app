@@ -15,6 +15,7 @@ import { PricingCards } from "@/components/pricing/PricingCards";
 import { Plan } from "@/components/pricing/types";
 import { toast } from "sonner";
 import { CreditCard, Zap } from "lucide-react";
+import { getPaymentLink } from "@/lib/stripe/config";
 
 interface UpgradePromptProps {
   children?: React.ReactNode;
@@ -31,27 +32,13 @@ export function UpgradePrompt({
 }: UpgradePromptProps) {
   const [open, setOpen] = useState(false);
 
-  const handlePlanSelect = async (plan: Plan, isYearly: boolean) => {
+  const handlePlanSelect = (plan: Plan, isYearly: boolean) => {
     try {
-      const response = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan: plan.name.toUpperCase(),
-          isYearly,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        window.location.href = data.url;
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to create checkout session');
-      }
-    } catch {
+      const planName = plan.name.toUpperCase() as 'STARTER' | 'PRO' | 'BUSINESS';
+      const paymentLink = getPaymentLink(planName, isYearly);
+      window.location.href = paymentLink;
+    } catch (error) {
+      console.error('Error getting payment link:', error);
       toast.error('Something went wrong. Please try again.');
     }
   };

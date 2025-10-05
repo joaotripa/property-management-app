@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createPortalSession } from '@/lib/stripe/subscription';
+import { createPortalSession } from '@/lib/stripe/server';
 
 export async function POST() {
   try {

@@ -45,12 +45,16 @@ export async function upsertUserSettings(data: {
   userId: string;
   currencyId: string;
   timezoneId: string;
+  hasCompletedOnboarding?: boolean;
 }) {
   return await prisma.userSettings.upsert({
     where: { userId: data.userId },
     update: {
       currencyId: data.currencyId,
       timezoneId: data.timezoneId,
+      ...(data.hasCompletedOnboarding !== undefined && {
+        hasCompletedOnboarding: data.hasCompletedOnboarding,
+      }),
     },
     create: data,
     include: {

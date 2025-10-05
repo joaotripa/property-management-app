@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getSubscriptionInfo, checkLimit } from '@/lib/stripe/subscription';
+import { getSubscriptionInfo, checkLimit } from '@/lib/stripe/server';
 
 export async function GET() {
   try {

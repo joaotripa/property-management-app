@@ -213,12 +213,13 @@ model Timezone {
 }
 
 model UserSettings {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @unique @map("user_id") @db.Uuid
-  currencyId String   @map("currency_id") @db.Uuid
-  timezoneId String   @map("timezone_id") @db.Uuid
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String   @unique @map("user_id") @db.Uuid
+  currencyId             String   @map("currency_id") @db.Uuid
+  timezoneId             String   @map("timezone_id") @db.Uuid
+  hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   currency Currency @relation(fields: [currencyId], references: [id])

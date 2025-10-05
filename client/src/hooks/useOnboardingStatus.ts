@@ -24,7 +24,6 @@ export function useOnboardingStatus(): OnboardingStatus {
   } = useUserSettings();
 
   const status = useMemo(() => {
-    // Still loading user settings
     if (isLoading) {
       return {
         needsOnboarding: false,
@@ -34,7 +33,6 @@ export function useOnboardingStatus(): OnboardingStatus {
       };
     }
 
-    // Error loading user settings - don't show onboarding
     if (error) {
       return {
         needsOnboarding: false,
@@ -45,15 +43,9 @@ export function useOnboardingStatus(): OnboardingStatus {
     }
 
     // Check if onboarding is complete
-    // User needs onboarding if they don't have user settings at all,
-    // or if they don't have both currency and timezone set
-    const hasBasicPreferences = !!(
-      userSettings &&
-      userSettings.currencyId &&
-      userSettings.timezoneId
-    );
-
-    const hasCompletedOnboarding = hasBasicPreferences;
+    // User needs onboarding if they haven't completed the onboarding dialog
+    // Settings are created with hasCompletedOnboarding = false during signup
+    const hasCompletedOnboarding = userSettings?.hasCompletedOnboarding ?? false;
     const needsOnboarding = !hasCompletedOnboarding;
 
     return {
@@ -85,7 +77,7 @@ export function useOnboardingStepStatus() {
     }
 
     return {
-      preferences: !!(userSettings?.currencyId && userSettings?.timezoneId),
+      preferences: userSettings?.hasCompletedOnboarding ?? false,
       // Future steps:
       // firstProperty: userSettings?.hasCreatedProperty,
       // tour: userSettings?.hasCompletedTour,

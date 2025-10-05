@@ -32,6 +32,7 @@ export const userSettingsResponseSchema = z.object({
   userId: z.uuid(),
   currencyId: z.uuid(),
   timezoneId: z.uuid(),
+  hasCompletedOnboarding: z.boolean(),
   currency: currencySchema,
   timezone: timezoneSchema,
   createdAt: z.string(),

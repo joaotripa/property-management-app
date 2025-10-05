@@ -8,7 +8,7 @@ import {
 } from "@/lib/db/properties";
 import { updatePropertySchema } from "@/lib/validations/property";
 import { ZodError } from "zod";
-import { canMutate } from "@/lib/stripe/subscription";
+import { canMutate } from "@/lib/stripe/server";
 
 interface RouteParams {
   params: Promise<{

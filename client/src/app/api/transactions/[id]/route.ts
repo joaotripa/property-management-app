@@ -6,7 +6,7 @@ import {
   softDeleteTransaction
 } from "@/lib/db/transactions/mutations";
 import { TransactionType } from "@prisma/client";
-import { canMutate } from "@/lib/stripe/subscription";
+import { canMutate } from "@/lib/stripe/server";
 
 interface RouteParams {
   params: Promise<{

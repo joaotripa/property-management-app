@@ -4,7 +4,7 @@ import { PropertiesClient } from "@/components/dashboard/properties/PropertiesCl
 import PropertiesStats from "@/components/dashboard/properties/PropertiesStats";
 import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { PropertyLimitBanner } from "@/components/billing/PropertyLimitBanner";
-import { getSubscriptionInfo, checkLimit, canMutate } from "@/lib/stripe/subscription";
+import { getSubscriptionInfo, checkLimit, canMutate } from "@/lib/stripe/server";
 import { redirect } from "next/navigation";
 
 export default async function PropertiesPage() {

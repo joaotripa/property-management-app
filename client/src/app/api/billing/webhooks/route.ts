@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyWebhook, handleWebhook } from '@/lib/stripe/webhooks';
+import { verifyWebhook, handleWebhook } from "@/lib/stripe/server";
 
 export async function POST(request: NextRequest) {
   try {

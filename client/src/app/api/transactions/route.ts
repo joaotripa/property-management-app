@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getTransactions } from "@/lib/db/transactions/queries";
 import { createTransaction } from "@/lib/db/transactions/mutations";
 import { TransactionType } from "@/types/transactions";
-import { canMutate } from "@/lib/stripe/subscription";
+import { canMutate } from "@/lib/stripe/server";
 
 export async function GET(request: NextRequest) {
   try {

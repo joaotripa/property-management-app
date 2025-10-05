@@ -3,8 +3,9 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendVerificationEmail } from "@/lib/services/server/emailService"
-import { createSubscription } from "@/lib/stripe/init"
+import { createSubscription } from "@/lib/stripe/server"
 import { signupSchema } from "@/lib/validations/auth"
+import { getDefaultCurrency, getDefaultTimezone } from "@/lib/db/preferences"
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,17 +40,46 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await prisma.user.create({
-      data: {
-        email: email,
-        passwordHash: hashedPassword,
-      },
-      select: {
-        id: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true
-      }
+    // Get default preferences
+    const [defaultCurrency, defaultTimezone] = await Promise.all([
+      getDefaultCurrency(),
+      getDefaultTimezone(),
+    ])
+
+    if (!defaultCurrency || !defaultTimezone) {
+      AuthLogger.signUpFailure(email, 'Default preferences not found')
+      return NextResponse.json(
+        { error: "System configuration error. Please try again later." },
+        { status: 500 }
+      )
+    }
+
+    // Create user + default settings atomically in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email: email,
+          passwordHash: hashedPassword,
+        },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      })
+
+      // Create default user settings with onboarding flag set to false
+      await tx.userSettings.create({
+        data: {
+          userId: newUser.id,
+          currencyId: defaultCurrency.id,
+          timezoneId: defaultTimezone.id,
+          hasCompletedOnboarding: false,
+        },
+      })
+
+      return newUser
     })
 
     // Create subscription with trial for new user
