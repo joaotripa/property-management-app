@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Mail } from "lucide-react";
-import Logo from "@/components/Logo";
+import Logo from "@/components/branding/Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

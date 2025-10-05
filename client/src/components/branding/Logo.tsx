@@ -16,7 +16,7 @@ const Logo = ({ size = "32px", className = "" }: LogoProps) => {
           fill
           sizes="(max-width: 640px) 120px, (max-width: 768px) 140px, 168px"
           priority
-          className="object-contain"
+          className="object-contain rounded-lg"
         />
       </div>
       <h1 className="font-bold">Domari</h1>
