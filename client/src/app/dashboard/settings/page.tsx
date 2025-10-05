@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
 import { AccountSettings } from "@/components/dashboard/settings/AccountSettings";
 import { BillingSettings } from "@/components/dashboard/settings/BillingSettings";
 import { PreferencesSettings } from "@/components/dashboard/settings/PreferencesSettings";
@@ -71,36 +72,47 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6"
-      >
-        <TabsList className="grid w-full grid-cols-3 max-w-lg">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-        </TabsList>
+      <div className="space-y-6">
+        <ButtonGroup className="grid w-full grid-cols-3 max-w-lg">
+          <Button
+            variant={activeTab === "account" ? "default" : "outline"}
+            onClick={() => setActiveTab("account")}
+          >
+            Account
+          </Button>
+          <Button
+            variant={activeTab === "preferences" ? "default" : "outline"}
+            onClick={() => setActiveTab("preferences")}
+          >
+            Preferences
+          </Button>
+          <Button
+            variant={activeTab === "billing" ? "default" : "outline"}
+            onClick={() => setActiveTab("billing")}
+          >
+            Billing
+          </Button>
+        </ButtonGroup>
 
-        <TabsContent value="account" className="space-y-6">
-          <AccountSettings accountInfo={accountInfo} />
-        </TabsContent>
+        <div className="space-y-6">
+          {activeTab === "account" && <AccountSettings accountInfo={accountInfo} />}
 
-        <TabsContent value="preferences" className="space-y-6">
-          <PreferencesSettings
-            userSettings={userSettings}
-            currencies={currencies}
-            timezones={timezones}
-          />
-        </TabsContent>
+          {activeTab === "preferences" && (
+            <PreferencesSettings
+              userSettings={userSettings}
+              currencies={currencies}
+              timezones={timezones}
+            />
+          )}
 
-        <TabsContent value="billing" className="space-y-6">
-          <BillingSettings
-            subscription={billingData.subscription}
-            usage={billingData.usage}
-          />
-        </TabsContent>
-      </Tabs>
+          {activeTab === "billing" && (
+            <BillingSettings
+              subscription={billingData.subscription}
+              usage={billingData.usage}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

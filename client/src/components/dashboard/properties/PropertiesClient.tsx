@@ -163,7 +163,7 @@ export function PropertiesClient({
         size="lg"
         onClick={openAddDialog}
         disabled={isAddDisabled}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+        className="fixed bottom-6 right-6 h-14 w-14 !rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Plus className="h-6 w-6" />
       </Button>

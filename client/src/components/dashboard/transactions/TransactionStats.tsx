@@ -5,7 +5,8 @@ import {
   KPICards,
   KPICardConfig,
 } from "@/components/dashboard/analytics/KPICards";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { useTransactionStatsQuery } from "@/hooks/queries/useTransactionStatsQuery";
 
@@ -67,22 +68,23 @@ const TransactionStats = () => {
 
   return (
     <div className="space-y-4">
-      <Tabs
-        value={selectedPeriod}
-        onValueChange={(value) =>
-          setSelectedPeriod(value as "current-month" | "ytd")
-        }
-      >
-        <div className="flex justify-end">
-          <TabsList className="grid w-fit grid-cols-2">
-            <TabsTrigger value="current-month">Current Month</TabsTrigger>
-            <TabsTrigger value="ytd">Year to Date (YTD)</TabsTrigger>
-          </TabsList>
-        </div>
-        <TabsContent value={selectedPeriod} className="mt-4">
-          <KPICards kpiConfigs={kpiConfigs} />
-        </TabsContent>
-      </Tabs>
+      <div className="flex justify-end">
+        <ButtonGroup>
+          <Button
+            variant={selectedPeriod === "current-month" ? "default" : "outline"}
+            onClick={() => setSelectedPeriod("current-month")}
+          >
+            Current Month
+          </Button>
+          <Button
+            variant={selectedPeriod === "ytd" ? "default" : "outline"}
+            onClick={() => setSelectedPeriod("ytd")}
+          >
+            Year to Date (YTD)
+          </Button>
+        </ButtonGroup>
+      </div>
+      <KPICards kpiConfigs={kpiConfigs} />
     </div>
   );
 };

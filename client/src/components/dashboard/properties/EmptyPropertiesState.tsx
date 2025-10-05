@@ -24,7 +24,8 @@ export function EmptyPropertiesState({
         </h3>
         <p className="text-muted-foreground mb-8 max-w-md">
           Start building your property portfolio by adding your first property.
-          Track rent, manage tenants, and monitor your investments all in one place.
+          Track rent, manage tenants, and monitor your investments all in one
+          place.
         </p>
         <Button
           onClick={onAddProperty}

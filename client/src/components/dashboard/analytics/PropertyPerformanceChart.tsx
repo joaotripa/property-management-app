@@ -1,7 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
   ChartTooltip,
@@ -259,45 +260,51 @@ export function PropertyPerformanceChart({
 
   return (
     <Card className="min-h-0">
-      <Tabs
-        defaultValue="income"
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(value as TabType)}
-      >
-        <CardHeader className="flex flex-col md:flex-row justify-between pb-4">
-          <CardTitle className="text-lg sm:text-xl md:text-2xl">
-            Property Performance
-          </CardTitle>
-          <TabsList>
-            <TabsTrigger value="income">Income</TabsTrigger>
-            <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
-            <TabsTrigger value="roi">ROI</TabsTrigger>
-          </TabsList>
-        </CardHeader>
-        <CardContent className="min-h-0">
-          <TabsContent value="income" className="min-h-0">
-            {renderChart(
-              "income",
-              "totalIncome",
-              chartConfigs.income,
-              currencyFormatter
-            )}
-          </TabsContent>
+      <CardHeader className="flex flex-col md:flex-row justify-between pb-4">
+        <CardTitle className="text-lg sm:text-xl md:text-2xl">
+          Property Performance
+        </CardTitle>
+        <ButtonGroup>
+          <Button
+            variant={activeTab === "income" ? "default" : "outline"}
+            onClick={() => setActiveTab("income")}
+          >
+            Income
+          </Button>
+          <Button
+            variant={activeTab === "cashflow" ? "default" : "outline"}
+            onClick={() => setActiveTab("cashflow")}
+          >
+            Cash Flow
+          </Button>
+          <Button
+            variant={activeTab === "roi" ? "default" : "outline"}
+            onClick={() => setActiveTab("roi")}
+          >
+            ROI
+          </Button>
+        </ButtonGroup>
+      </CardHeader>
+      <CardContent className="min-h-0">
+        {activeTab === "income" &&
+          renderChart(
+            "income",
+            "totalIncome",
+            chartConfigs.income,
+            currencyFormatter
+          )}
 
-          <TabsContent value="cashflow" className="min-h-0">
-            {renderChart(
-              "cashflow",
-              "cashFlow",
-              chartConfigs.cashflow,
-              currencyFormatter
-            )}
-          </TabsContent>
+        {activeTab === "cashflow" &&
+          renderChart(
+            "cashflow",
+            "cashFlow",
+            chartConfigs.cashflow,
+            currencyFormatter
+          )}
 
-          <TabsContent value="roi" className="min-h-0">
-            {renderChart("roi", "roi", chartConfigs.roi, formatPercentage)}
-          </TabsContent>
-        </CardContent>
-      </Tabs>
+        {activeTab === "roi" &&
+          renderChart("roi", "roi", chartConfigs.roi, formatPercentage)}
+      </CardContent>
     </Card>
   );
 }
