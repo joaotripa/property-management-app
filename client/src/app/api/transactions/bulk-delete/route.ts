@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { bulkSoftDeleteTransactions } from "@/lib/db/transactions/mutations";
+import { canMutate } from "@/lib/stripe/server";
 import { z } from "zod";
 
 // Validation schema for bulk delete request
@@ -17,6 +18,14 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const canModify = await canMutate(session.user.id);
+    if (!canModify) {
+      return NextResponse.json(
+        { error: "Subscription required to delete transactions" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

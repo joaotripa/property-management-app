@@ -26,6 +26,7 @@ interface TransactionsClientProps {
   pageSize: number;
   categories: CategoryOption[];
   properties: PropertyOption[];
+  canMutate: boolean;
 }
 
 export function TransactionsClient({
@@ -36,6 +37,7 @@ export function TransactionsClient({
   pageSize,
   categories,
   properties,
+  canMutate,
 }: TransactionsClientProps) {
   const [dialogType, setDialogType] = useState<"create" | "edit" | "delete" | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -126,6 +128,8 @@ export function TransactionsClient({
             onDelete={(transaction) => openDialog("delete", transaction)}
             onBulkDelete={handleBulkDelete}
             emptyMessage="No transactions found"
+            readOnly={!canMutate}
+            showSelection={canMutate}
           />
 
           {/* Pagination */}
@@ -144,13 +148,15 @@ export function TransactionsClient({
       </Card>
 
       {/* Floating Add Button */}
-      <Button
-        size="lg"
-        onClick={() => openDialog("create")}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {canMutate && (
+        <Button
+          size="lg"
+          onClick={() => openDialog("create")}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
 
       {/* Dialogs */}
       <TransactionCreateDialog

@@ -4,6 +4,7 @@ import { TransactionsClient } from "@/components/dashboard/transactions/Transact
 import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
 import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
 import { ExportButton } from "@/components/dashboard/transactions/ExportButton";
+import { canMutate } from "@/lib/stripe/server";
 import { redirect } from "next/navigation";
 
 interface TransactionsPageProps {
@@ -19,15 +20,21 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
 
   // Await search params and fetch data server-side
   const params = await searchParams;
-  const {
-    transactions,
-    totalCount,
-    totalPages,
-    currentPage,
-    pageSize,
-    categories,
-    properties
-  } = await getTransactionsPageData(session.user.id, params);
+  const [
+    {
+      transactions,
+      totalCount,
+      totalPages,
+      currentPage,
+      pageSize,
+      categories,
+      properties
+    },
+    accessControl
+  ] = await Promise.all([
+    getTransactionsPageData(session.user.id, params),
+    canMutate(session.user.id)
+  ]);
 
   return (
     <div className="flex flex-col max-w-7xl px-6 pb-6 gap-8 mx-auto">
@@ -61,6 +68,7 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         pageSize={pageSize}
         categories={categories}
         properties={properties}
+        canMutate={accessControl}
       />
     </div>
   );

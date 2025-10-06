@@ -45,6 +45,7 @@ export default async function PropertiesPage() {
           propertyLimit={propertyLimits.limit}
           isAtLimit={!propertyLimits.allowed}
           plan={subscription.plan}
+          subscriptionStatus={subscription.status}
         />
       )}
 

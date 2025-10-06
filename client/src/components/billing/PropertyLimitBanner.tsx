@@ -12,6 +12,7 @@ interface PropertyLimitBannerProps {
   propertyLimit: number;
   isAtLimit: boolean;
   plan: string;
+  subscriptionStatus: string;
 }
 
 const DISMISSAL_KEY = 'property-limit-banner-dismissed';
@@ -20,6 +21,7 @@ export function PropertyLimitBanner({
   propertyLimit,
   isAtLimit,
   plan,
+  subscriptionStatus,
 }: PropertyLimitBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const router = useRouter();
@@ -40,7 +42,9 @@ export function PropertyLimitBanner({
     router.push('/dashboard/settings');
   };
 
-  if (!isAtLimit || dismissed) {
+  const isSubscriptionActive = subscriptionStatus === "ACTIVE";
+
+  if (!isAtLimit || !isSubscriptionActive || dismissed) {
     return null;
   }
 

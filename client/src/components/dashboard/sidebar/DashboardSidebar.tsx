@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { NavMain } from "@/components/dashboard/sidebar/NavMain";
 import { NavUser } from "@/components/dashboard/sidebar/NavUser";
 import { DashboardLogo } from "@/components/dashboard/sidebar/DashboardLogo";
+import { SubscriptionExpiredBanner } from "@/components/billing/SubscriptionExpiredBanner";
 import {
   Sidebar,
   SidebarContent,
@@ -68,6 +69,9 @@ export function DashboardSidebar({
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
+      <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
+        <SubscriptionExpiredBanner />
+      </div>
       <SidebarFooter>
         <NavUser user={session?.user} />
       </SidebarFooter>

@@ -18,16 +18,9 @@ interface SubscriptionStatus {
   currentPeriodEnd?: string;
 }
 
-type BannerType =
-  | "trial-info"
-  | "trial-warning"
-  | "trial-expired"
-  | "limit-reached"
-  | "limit-warning";
+const DISMISSAL_KEY = "subscription-banner-dismissed";
 
-const DISMISSAL_KEY = "trial-banner-dismissed";
-
-export function TrialBanner() {
+export function SubscriptionExpiredBanner() {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(
     null
   );
@@ -64,7 +57,7 @@ export function TrialBanner() {
   };
 
   const handleUpgrade = () => {
-    router.push("/dashboard/settings");
+    router.push("/dashboard/settings?tab=billing");
   };
 
   if (loading || !subscription) {
@@ -72,7 +65,6 @@ export function TrialBanner() {
   }
 
   const getBannerConfig = (): {
-    type: BannerType;
     variant: "default" | "destructive" | "warning";
     icon: React.ReactNode;
     title: string;
@@ -83,10 +75,10 @@ export function TrialBanner() {
   } | null => {
     const trialDays = subscription.trialDaysRemaining ?? 0;
 
+    // Trial states
     if (subscription.status === "TRIAL") {
       if (trialDays <= 0) {
         return {
-          type: "trial-expired",
           variant: "destructive",
           icon: <AlertTriangle className="h-4 w-4" />,
           title:
@@ -100,7 +92,6 @@ export function TrialBanner() {
         };
       } else if (trialDays <= 3) {
         return {
-          type: "trial-warning",
           variant: "warning",
           icon: <Clock className="h-4 w-4" />,
           title: `${trialDays} ${trialDays === 1 ? "day" : "days"} left in your free trial`,
@@ -113,6 +104,32 @@ export function TrialBanner() {
       }
     }
 
+    // Canceled subscription
+    if (subscription.status === "CANCELED") {
+      return {
+        variant: "destructive",
+        icon: <AlertTriangle className="h-4 w-4" />,
+        title: "Your subscription has been canceled",
+        description: "Reactivate to continue managing your properties.",
+        badge: `${toCamelCase(subscription.plan)} Plan`,
+        canDismiss: false,
+        actionLabel: "Reactivate",
+      };
+    }
+
+    // Unpaid subscription
+    if (subscription.status === "UNPAID") {
+      return {
+        variant: "destructive",
+        icon: <AlertTriangle className="h-4 w-4" />,
+        title: "Payment required to continue",
+        description: "Update your payment method to restore access.",
+        badge: `${toCamelCase(subscription.plan)} Plan`,
+        canDismiss: false,
+        actionLabel: "Update Payment",
+      };
+    }
+
     return null;
   };
 
@@ -123,30 +140,33 @@ export function TrialBanner() {
   }
 
   return (
-    <Alert variant={config.variant} className="shadow-md">
+    <Alert variant={config.variant} className="shadow-sm">
       {config.icon}
-      <AlertDescription className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">{config.title}</span>
-              <Badge
-                variant={
-                  config.variant === "destructive"
-                    ? "destructive"
-                    : config.variant === "warning"
-                      ? "warning"
-                      : "secondary"
-                }
-              >
-                {config.badge}
-              </Badge>
-            </div>
-            <span className="text-sm">{config.description}</span>
+      <AlertDescription className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-sm">{config.title}</span>
+            <Badge
+              variant={
+                config.variant === "destructive"
+                  ? "destructive"
+                  : config.variant === "warning"
+                    ? "warning"
+                    : "secondary"
+              }
+            >
+              {config.badge}
+            </Badge>
           </div>
+          <span className="text-xs">{config.description}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant={config.variant} onClick={handleUpgrade}>
+          <Button
+            size="sm"
+            variant={config.variant}
+            onClick={handleUpgrade}
+            className="flex-1"
+          >
             <CreditCard className="h-3 w-3 mr-1" />
             {config.actionLabel}
           </Button>
