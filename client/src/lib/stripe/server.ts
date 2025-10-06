@@ -131,10 +131,8 @@ export async function syncSubscription(
     expand: ['customer'],
   });
 
-  // Try to get userId from metadata first (for programmatic subscriptions)
   let userId = sub.metadata.userId;
 
-  // If no userId in metadata, find user by customer email
   if (!userId) {
     const email = customerEmail || (sub.customer as Stripe.Customer)?.email;
     if (!email) {
@@ -152,7 +150,6 @@ export async function syncSubscription(
     userId = user.id;
   }
 
-  // Try to get plan from metadata first, then from priceId
   let plan = sub.metadata.plan as SubscriptionPlan | undefined;
 
   if (!plan) {
@@ -171,7 +168,6 @@ export async function syncSubscription(
   const currentPeriodEnd = (sub as { current_period_end?: number }).current_period_end;
   const cancelAtPeriodEnd = (sub as { cancel_at_period_end?: boolean }).cancel_at_period_end;
 
-  // Get customer ID (could be string or expanded object)
   const customerId = typeof sub.customer === 'string'
     ? sub.customer
     : sub.customer.id;
@@ -324,10 +320,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  // Try to get userId from metadata first
   let userId = subscription.metadata.userId;
 
-  // If no metadata, get customer email and find user
   if (!userId) {
     const customer = await stripe.customers.retrieve(subscription.customer as string);
     const customerEmail = (customer as Stripe.Customer).email;
