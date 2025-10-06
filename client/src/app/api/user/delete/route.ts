@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/config/database";
 import { z } from "zod";
-
-const deleteAccountSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-});
+import { deleteAccountApiSchema } from "@/lib/validations/user";
 
 // DELETE /api/user/delete - Soft delete user account
 export async function DELETE(request: NextRequest) {
@@ -20,9 +17,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json();
-    
-    // Validate input data
-    const validatedData = deleteAccountSchema.parse(body);
+
+    const validatedData = deleteAccountApiSchema.parse(body);
     
     // Verify email matches current user
     if (validatedData.email !== session.user.email) {

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -13,21 +12,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-
-const deleteAccountSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-  confirmDeletion: z.boolean().refine((val) => val === true, {
-    message: "You must confirm that you want to delete your account",
-  }),
-});
-
-type DeleteAccountFormData = z.infer<typeof deleteAccountSchema>;
+import { deleteAccount } from "@/lib/services/client/userService";
+import {
+  deleteAccountSchema,
+  DeleteAccountFormData,
+} from "@/lib/validations/user";
 
 interface DeleteAccountDialogProps {
   isOpen: boolean;
@@ -41,14 +43,7 @@ export function DeleteAccountDialog({
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-    watch,
-  } = useForm<DeleteAccountFormData>({
+  const form = useForm<DeleteAccountFormData>({
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       email: "",
@@ -56,11 +51,9 @@ export function DeleteAccountDialog({
     },
   });
 
-  const confirmDeletion = watch("confirmDeletion");
   const userEmail = session?.user?.email || "";
 
   const onSubmit = async (data: DeleteAccountFormData) => {
-    // Double-check email matches
     if (data.email !== userEmail) {
       toast.error("Email does not match your account email");
       return;
@@ -69,29 +62,15 @@ export function DeleteAccountDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to delete account");
-      }
+      await deleteAccount(data.email);
 
       toast.success("Account deleted successfully. You will be signed out.");
 
-      // Sign out user after successful deletion
+      handleClose();
+
       setTimeout(async () => {
         await signOut({ callbackUrl: "/" });
       }, 2000);
-
-      handleClose();
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error(
@@ -103,7 +82,7 @@ export function DeleteAccountDialog({
   };
 
   const handleClose = () => {
-    reset();
+    form.reset();
     onClose();
   };
 
@@ -137,73 +116,79 @@ export function DeleteAccountDialog({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              Type your email address{" "}
-              <span className="font-mono">({userEmail})</span> to confirm:
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email address"
-              {...register("email")}
-              className={errors.email ? "border-destructive" : ""}
-              autoComplete="off"
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="confirmDeletion"
-              checked={confirmDeletion}
-              onCheckedChange={(checked) =>
-                setValue("confirmDeletion", checked === true)
-              }
-            />
-            <Label
-              htmlFor="confirmDeletion"
-              className="text-sm leading-relaxed"
-            >
-              I understand that deleting my account is permanent and cannot be
-              undone
-            </Label>
-          </div>
-          {errors.confirmDeletion && (
-            <p className="text-sm text-destructive">
-              {errors.confirmDeletion.message}
-            </p>
-          )}
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="destructive"
-              disabled={isLoading}
-              className="min-w-[120px]"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Account
-                </>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Type your email address{" "}
+                    <span className="font-mono">({userEmail})</span> to confirm:
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email address"
+                      autoComplete="off"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmDeletion"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-sm leading-relaxed font-normal">
+                      I understand that deleting my account is permanent and
+                      cannot be undone
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={isLoading}
+                className="min-w-[120px]"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
