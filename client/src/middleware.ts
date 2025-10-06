@@ -14,7 +14,9 @@ export default auth((req) => {
     '/contact',
     '/api/auth',
     '/api/contact',
-    '/api/waitlist'
+    '/api/waitlist',
+    '/api/billing/webhooks',
+    '/api/billing/portal'
   ]
 
   const isPublicRoute = publicRoutes.some(route =>

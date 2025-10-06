@@ -55,9 +55,30 @@ export function SubscriptionInfoBanner({
     }
   };
 
+  const getPropertiesText = () => {
+    if (plan === "BUSINESS") {
+      return `${propertyCount} ${propertyCount === 1 ? "property" : "properties"} managed of unlimited properties`;
+    }
+    return `${propertyCount}/${propertyLimit} properties used`;
+  };
+
   const getStatusConfig = () => {
     switch (status) {
-      case "TRIAL":
+      case "TRIAL": {
+        const isExpired = (trialDaysRemaining ?? 0) <= 0;
+
+        if (isExpired) {
+          return {
+            variant: "default" as const,
+            icon: <AlertTriangle className="h-4 w-4" />,
+            badge: { label: "Trial Expired", variant: "outline" as const },
+            title: toCamelCase(plan),
+            description:
+              "Your free trial has ended. Upgrade to continue using all features.",
+            showAction: false,
+          };
+        }
+
         return {
           variant: "default" as const,
           icon: <Clock className="h-4 w-4" />,
@@ -65,10 +86,11 @@ export function SubscriptionInfoBanner({
           title: toCamelCase(plan),
           description:
             trialDaysRemaining !== null && trialDaysRemaining !== undefined
-              ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? "day" : "days"} remaining • ${propertyCount}/${propertyLimit} properties used`
-              : `${propertyCount}/${propertyLimit} properties used`,
+              ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? "day" : "days"} remaining • ${getPropertiesText()}`
+              : getPropertiesText(),
           showAction: false,
         };
+      }
 
       case "ACTIVE":
         return {
@@ -77,17 +99,17 @@ export function SubscriptionInfoBanner({
           badge: { label: "Active", variant: "default" as const },
           title: toCamelCase(plan),
           description: currentPeriodEnd
-            ? `${propertyCount}/${propertyLimit} properties used • Next billing: ${new Date(currentPeriodEnd).toLocaleDateString()}`
-            : `${propertyCount}/${propertyLimit} properties used`,
+            ? `${getPropertiesText()} • Next billing: ${new Date(currentPeriodEnd).toLocaleDateString()}`
+            : getPropertiesText(),
           showAction: true,
           actionLabel: "Manage Billing",
         };
 
       case "PAST_DUE":
         return {
-          variant: "destructive" as const,
+          variant: "default" as const,
           icon: <AlertTriangle className="h-4 w-4" />,
-          badge: { label: "Payment Required", variant: "destructive" as const },
+          badge: { label: "Payment Required", variant: "outline" as const },
           title: toCamelCase(plan),
           description: "Update payment method to continue service",
           showAction: true,
@@ -100,7 +122,7 @@ export function SubscriptionInfoBanner({
           icon: <XCircle className="h-4 w-4 text-muted-foreground" />,
           badge: { label: "Canceled", variant: "outline" as const },
           title: toCamelCase(plan),
-          description: `Subscription canceled • ${propertyCount}/${propertyLimit} properties used`,
+          description: `Subscription canceled • ${getPropertiesText()}`,
           showAction: false,
         };
 
@@ -110,7 +132,7 @@ export function SubscriptionInfoBanner({
           icon: <AlertTriangle className="h-4 w-4" />,
           badge: { label: status, variant: "outline" as const },
           title: toCamelCase(plan),
-          description: `${propertyCount}/${propertyLimit} properties used`,
+          description: getPropertiesText(),
           showAction: false,
         };
     }
@@ -121,12 +143,12 @@ export function SubscriptionInfoBanner({
   return (
     <Alert variant={config.variant} className="mb-6">
       <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="text-primary">{config.icon}</div>
+        <div className="text-muted-foreground">{config.icon}</div>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             You're currently on plan:{" "}
             <span className="font-medium">{config.title}</span>
-            {status === "TRIAL" && (
+            {config.badge && (
               <Badge variant={config.badge.variant}>{config.badge.label}</Badge>
             )}
             <span className="text-muted-foreground text-sm hidden sm:inline">
@@ -140,7 +162,7 @@ export function SubscriptionInfoBanner({
         {config.showAction && (
           <Button
             size="sm"
-            variant={config.variant === "destructive" ? "default" : "outline"}
+            variant="outline"
             onClick={handleManageBilling}
             disabled={loading}
             className="shrink-0"

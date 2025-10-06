@@ -75,7 +75,6 @@ export function SubscriptionExpiredBanner() {
   } | null => {
     const trialDays = subscription.trialDaysRemaining ?? 0;
 
-    // Trial states
     if (subscription.status === "TRIAL") {
       if (trialDays <= 0) {
         return {
@@ -104,7 +103,6 @@ export function SubscriptionExpiredBanner() {
       }
     }
 
-    // Canceled subscription
     if (subscription.status === "CANCELED") {
       return {
         variant: "destructive",
@@ -117,7 +115,6 @@ export function SubscriptionExpiredBanner() {
       };
     }
 
-    // Unpaid subscription
     if (subscription.status === "UNPAID") {
       return {
         variant: "destructive",
