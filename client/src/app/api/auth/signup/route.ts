@@ -26,8 +26,11 @@ export async function POST(request: NextRequest) {
 
     AuthLogger.signUpAttempt(email)
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        deletedAt: null
+      }
     })
 
     if (existingUser) {
@@ -40,7 +43,6 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Get default preferences
     const [defaultCurrency, defaultTimezone] = await Promise.all([
       getDefaultCurrency(),
       getDefaultTimezone(),
@@ -54,7 +56,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user + default settings atomically in a transaction
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
@@ -69,7 +70,6 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Create default user settings with onboarding flag set to false
       await tx.userSettings.create({
         data: {
           userId: newUser.id,
@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
       return newUser
     })
 
-    // Create subscription with trial for new user
     try {
       await createSubscription(user.id);
       AuthLogger.info({ action: 'subscription_created', email: user.email });

@@ -4,7 +4,6 @@ import { prisma } from "@/lib/config/database";
 import { z } from "zod";
 import { deleteAccountApiSchema } from "@/lib/validations/user";
 
-// DELETE /api/user/delete - Soft delete user account
 export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
@@ -20,7 +19,6 @@ export async function DELETE(request: NextRequest) {
 
     const validatedData = deleteAccountApiSchema.parse(body);
     
-    // Verify email matches current user
     if (validatedData.email !== session.user.email) {
       return NextResponse.json(
         { error: "Email does not match your account" },
@@ -28,7 +26,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get current user to verify they exist and aren't already deleted
     const user = await prisma.user.findUnique({
       where: { id: session.user!.id },
       select: {
@@ -52,24 +49,25 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Use transaction to ensure all operations succeed or fail together
     await prisma.$transaction(async (tx) => {
       const now = new Date();
 
-      // Soft delete user account
       await tx.user.update({
         where: { id: session.user!.id },
         data: {
+          email: `deleted_${now.getTime()}_${user.email}`,
           deletedAt: now,
           updatedAt: now,
+          name: null,
+          phone: null,
+          image: null,
         },
       });
 
-      // Soft delete all user's properties
       await tx.property.updateMany({
-        where: { 
+        where: {
           userId: session.user!.id,
-          deletedAt: null, // Only update properties that aren't already deleted
+          deletedAt: null,
         },
         data: {
           deletedAt: now,
@@ -77,23 +75,18 @@ export async function DELETE(request: NextRequest) {
         },
       });
 
-      // Soft delete all user's transactions
       await tx.transaction.updateMany({
-        where: { 
+        where: {
           userId: session.user!.id,
-          deletedAt: null, // Only update transactions that aren't already deleted
+          deletedAt: null,
         },
         data: {
           deletedAt: now,
           updatedAt: now,
         },
       });
-
-      // Note: We're not deleting sessions here as NextAuth will handle session cleanup
-      // and we want the user to be signed out gracefully
     });
 
-    // Log account deletion event
     console.log(`Account deleted for user: ${user.email} at ${new Date().toISOString()}`);
 
     return NextResponse.json({ 
