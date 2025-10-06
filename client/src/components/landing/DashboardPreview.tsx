@@ -56,8 +56,8 @@ const DashboardPreview = () => {
                     </p>
                     <div className="flex items-end justify-between gap-3">
                       <p className="text-3xl font-semibold">$2,180</p>
-                      <span className="text-xs font-medium text-success bg-success/10 rounded-full px-2 py-1">
-                        -5.2%
+                      <span className="text-xs font-medium text-destructive bg-destructive/10 rounded-full px-2 py-1">
+                        +5.2%
                       </span>
                     </div>
                   </div>

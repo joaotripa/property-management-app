@@ -156,9 +156,6 @@ export function BillingPricingCards({
                       Billed ${(plan.yearlyPrice * 12).toFixed(0)}/year
                     </div>
                   )}
-                  <div className="text-sm text-accent font-medium mt-2">
-                    {plan.maxProperties}
-                  </div>
                 </div>
               </CardHeader>
 

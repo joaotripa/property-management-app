@@ -120,11 +120,10 @@ export function OnboardingPreferencesDialog({
       >
         <DialogHeader className="text-center">
           <DialogTitle className="flex items-center justify-center gap-2 text-2xl">
-            <Sparkles className="h-6 w-6 text-primary" />
-            Welcome to Domari!
+            🎉 Welcome to Domari!
           </DialogTitle>
           <DialogDescription className="text-center mt-4 text-base leading-relaxed">
-            🎉 Let&apos;s get you set up! First, we&apos;ll configure your
+            Let&apos;s get you set up! First, we&apos;ll configure your
             preferred currency and timezone so we can display your financial
             data in the format that&apos;s most familiar to you.
             <br />

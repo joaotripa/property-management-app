@@ -97,9 +97,6 @@ export function PricingCards({
                     ${plan.monthlyPrice}/month billed monthly
                   </div>
                 )}
-                <div className="text-sm text-accent font-medium mt-2">
-                  {plan.maxProperties}
-                </div>
               </div>
             </CardHeader>
 

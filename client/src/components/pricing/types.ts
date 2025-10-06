@@ -3,7 +3,6 @@ export interface Plan {
   description: string;
   monthlyPrice: number;
   yearlyPrice: number;
-  maxProperties: string;
   features: string[];
   buttonText: string;
   buttonVariant: "default" | "outline";
@@ -16,16 +15,13 @@ export const PRICING_PLANS: Plan[] = [
     description: "Perfect for getting started",
     monthlyPrice: 9,
     yearlyPrice: 7.5, // $90/year = $7.5/month
-    maxProperties: "Up to 10 properties",
     features: [
+      "Up to 10 properties",
       "Complete property portfolio management",
       "Track every income & expense automatically",
       "Real-time cash flow insights & profitability analytics",
       "Beautiful visual reports & performance dashboards",
       "Smart property comparison & ranking tools",
-      "Bulk operations to save hours of manual work",
-      "Professional image galleries for each property",
-      "Multi-currency & timezone support",
       "Export financial data instantly",
       "Automated monthly metrics tracking",
     ],
@@ -38,11 +34,10 @@ export const PRICING_PLANS: Plan[] = [
     description: "Most popular for growing portfolios",
     monthlyPrice: 29,
     yearlyPrice: 24.17, // $290/year = $24.17/month
-    maxProperties: "Up to 50 properties",
     features: [
+      "Up to 50 properties",
       "Everything in Starter plan",
       "Priority support",
-      "Early access to new advanced features",
     ],
     buttonText: "Start 14-day free trial",
     buttonVariant: "default",
@@ -53,8 +48,8 @@ export const PRICING_PLANS: Plan[] = [
     description: "For serious property investors",
     monthlyPrice: 49,
     yearlyPrice: 40.83, // $490/year = $40.83/month
-    maxProperties: "Unlimited properties",
     features: [
+      "Unlimited properties",
       "Everything in Pro plan",
       "Priority support",
       "Early access to new advanced features",

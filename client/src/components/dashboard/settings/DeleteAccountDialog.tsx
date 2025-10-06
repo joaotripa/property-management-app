@@ -30,6 +30,7 @@ import {
   deleteAccountSchema,
   DeleteAccountFormData,
 } from "@/lib/validations/user";
+import { Badge } from "@/components/ui/badge";
 
 interface DeleteAccountDialogProps {
   isOpen: boolean;
@@ -88,7 +89,7 @@ export function DeleteAccountDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <Trash2 className="h-5 w-5" />
@@ -125,7 +126,10 @@ export function DeleteAccountDialog({
                 <FormItem>
                   <FormLabel>
                     Type your email address{" "}
-                    <span className="font-mono">({userEmail})</span> to confirm:
+                    <Badge variant="outline" className="font-mono">
+                      {userEmail}
+                    </Badge>{" "}
+                    to confirm:
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -136,28 +140,6 @@ export function DeleteAccountDialog({
                     />
                   </FormControl>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmDeletion"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="text-sm leading-relaxed font-normal">
-                      I understand that deleting my account is permanent and
-                      cannot be undone
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
                 </FormItem>
               )}
             />
