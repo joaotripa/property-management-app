@@ -1,6 +1,6 @@
 export function getWelcomeEmailTemplate(): string {
   const currentYear = new Date().getFullYear();
-  const logoUrl = 'https://domari.app/domari-logo-icon.png';
+  const logoUrl = 'https://domari.app/domari-logo-light.png';
 
   return `
     <!DOCTYPE html>
@@ -21,9 +21,11 @@ export function getWelcomeEmailTemplate(): string {
                 <td style="background: #2F6DF2; color: #ffffff; padding: 40px 32px; text-align: center;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td style="text-align: center;">
-                        <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                      </td>
+                      <a href="https://domari.app" target="_blank" style="text-decoration: none;">
+                        <td style="text-align: center;">
+                          <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        </td>
+                      </a>
                     </tr>
                   </table>
                 </td>

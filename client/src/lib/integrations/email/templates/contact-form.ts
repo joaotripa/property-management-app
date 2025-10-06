@@ -30,10 +30,11 @@ interface ContactFormData {
                 <td style="background: #2F6DF2; color: #ffffff; padding: 40px 32px; text-align: center;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td style="text-align: center;">
-                        <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; display: inline-block; vertical-align: middle;">Domari</h1>
-                      </td>
+                      <a href="https://domari.app" target="_blank" style="text-decoration: none;">
+                        <td style="text-align: center;">
+                          <img alt="Domari Logo" src="${logoUrl}" style="height: 60px; width: auto; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        </td>
+                      </a>
                     </tr>
                   </table>
                   <p style="margin: 16px 0 0 0; font-size: 16px; opacity: 0.9;">New Contact Form Submission</p>
