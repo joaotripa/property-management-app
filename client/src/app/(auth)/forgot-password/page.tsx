@@ -7,12 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 
 const ForgotPasswordPage = () => {
-  useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

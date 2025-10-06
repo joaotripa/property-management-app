@@ -1,6 +1,5 @@
 "use client";
 
-import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { toast } from "sonner";
@@ -9,18 +8,9 @@ import { Suspense } from "react";
 import { Loading } from "@/components/ui/loading";
 
 function VerifyCodeContent() {
-  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-
-  if (isRedirectLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
 
   const handleResendCode = async () => {
     try {

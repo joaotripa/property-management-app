@@ -11,7 +11,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { getAuthErrorMessage } from "@/lib/utils/index";
-import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { Suspense } from "react";
 import { Loading } from "@/components/ui/loading";
 import {
@@ -20,7 +19,6 @@ import {
 } from "@/components/auth/ErrorMessage";
 
 function LoginContent() {
-  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,14 +27,6 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
-
-  if (isRedirectLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
 
   function renderAlertMessage(message: string | null) {
     const config = getErrorMessageConfig(message);

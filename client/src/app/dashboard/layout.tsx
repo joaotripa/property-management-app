@@ -6,7 +6,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useRedirectIfSignedOut } from "@/hooks/useRedirectIfSignedOut";
+import { useSessionExpiredToast } from "@/hooks/useSessionExpiredToast";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { OnboardingPreferencesDialog } from "@/components/onboarding/OnboardingPreferencesDialog";
 
@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  useRedirectIfSignedOut();
+  useSessionExpiredToast();
   const { needsOnboarding } = useOnboardingStatus();
 
   return (

@@ -1,18 +1,16 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
-import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/config/database"
 import bcrypt from "bcryptjs"
 import { AuthLogger } from "@/lib/utils/auth"
+import authConfig from "./auth.config"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  ...authConfig,
   providers: [
-    GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
+    ...authConfig.providers,
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -52,38 +50,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
-          emailVerified: user.emailVerified, // Now a DateTime | null instead of boolean
+          emailVerified: user.emailVerified,
         }
       }
     })
   ],
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-      }
-      return session
-    },
-  },
-  events: {
-    async createUser({ user }) {
-      AuthLogger.info({ action: 'user_created', email: user.email || undefined})
-    },
-    async signIn({ user, account }) {
-      AuthLogger.signInSuccess(user.email || 'unknown', account?.provider || 'credentials')
-    },
-  },
 })

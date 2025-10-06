@@ -10,10 +10,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
-import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { getAuthErrorMessage } from "@/lib/utils/index";
-import { Suspense } from "react";
-import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +21,6 @@ import {
 } from "@/lib/validations/auth";
 
 const SignupPage = () => {
-  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -44,10 +40,6 @@ const SignupPage = () => {
 
   const password = watch("password", "");
   const passwordStrength = password ? getPasswordStrength(password) : null;
-
-  if (isRedirectLoading) {
-    return <Loading />;
-  }
 
   const onSubmit = async (data: SignupInput) => {
     setLoading(true);

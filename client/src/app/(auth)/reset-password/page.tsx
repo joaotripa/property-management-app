@@ -10,13 +10,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getAuthErrorMessage } from "@/lib/utils/index";
-import { useRedirectIfSignedIn } from "@/hooks/useRedirectIfSignedIn";
 import { CodeVerification } from "@/components/auth/CodeVerification";
 import { Suspense } from "react";
 import { Loading } from "@/components/ui/loading";
 
 function ResetPasswordContent() {
-  const { isLoading: isRedirectLoading } = useRedirectIfSignedIn();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,14 +25,6 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-
-  if (isRedirectLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
 
   if (!email) {
     return (
