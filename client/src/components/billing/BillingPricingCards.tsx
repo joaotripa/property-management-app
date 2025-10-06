@@ -11,6 +11,7 @@ import { PRICING_PLANS } from "@/components/pricing/types";
 interface BillingPricingCardsProps {
   currentPlan: SubscriptionPlan;
   currentStatus: SubscriptionStatus;
+  trialDaysRemaining?: number | null;
   isYearly?: boolean;
   onPlanSelect: (plan: SubscriptionPlan, isYearly: boolean) => void;
 }
@@ -20,13 +21,15 @@ const PLAN_ORDER: SubscriptionPlan[] = ["STARTER", "PRO", "BUSINESS"];
 export function BillingPricingCards({
   currentPlan,
   currentStatus,
+  trialDaysRemaining,
   isYearly: initialIsYearly = false,
   onPlanSelect,
 }: BillingPricingCardsProps) {
   const [isYearly, setIsYearly] = useState(initialIsYearly);
 
   const hasActiveSubscription =
-    currentStatus === "ACTIVE" || currentStatus === "TRIAL";
+    currentStatus === "ACTIVE" ||
+    (currentStatus === "TRIAL" && (trialDaysRemaining ?? 0) > 0);
 
   const getCurrentPlanIndex = () => {
     return PLAN_ORDER.indexOf(currentPlan);

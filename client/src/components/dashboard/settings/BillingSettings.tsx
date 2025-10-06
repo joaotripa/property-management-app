@@ -50,6 +50,7 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
           <BillingPricingCards
             currentPlan={subscription.plan}
             currentStatus={subscription.status}
+            trialDaysRemaining={subscription.trialDaysRemaining}
             onPlanSelect={handlePlanSelect}
           />
         </CardContent>
