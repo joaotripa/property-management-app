@@ -46,7 +46,6 @@ export async function createSubscription(userId: string) {
 export async function createPortalSession(params: {
   userId: string;
   returnUrl: string;
-  priceId?: string;
 }) {
   const subscription = await prisma.subscription.findUnique({
     where: { userId: params.userId },
@@ -63,35 +62,6 @@ export async function createPortalSession(params: {
 
   if (stripeConfig.billingPortalConfigId) {
     createParams.configuration = stripeConfig.billingPortalConfigId;
-  }
-
-  if (params.priceId && subscription.stripeSubscriptionId) {
-    let subscriptionItemId = subscription.stripeSubscriptionItemId;
-
-    if (!subscriptionItemId) {
-      const stripeSubscription = await stripe.subscriptions.retrieve(
-        subscription.stripeSubscriptionId
-      );
-
-      subscriptionItemId = stripeSubscription.items.data[0]?.id;
-
-      if (!subscriptionItemId) {
-        throw new Error('No subscription item found');
-      }
-
-      await prisma.subscription.update({
-        where: { userId: params.userId },
-        data: { stripeSubscriptionItemId: subscriptionItemId },
-      });
-    }
-
-    createParams.flow_data = {
-      type: 'subscription_update_confirm',
-      subscription_update_confirm: {
-        subscription: subscription.stripeSubscriptionId,
-        items: [{ id: subscriptionItemId, price: params.priceId, quantity: 1 }],
-      },
-    };
   }
 
   const session = await stripe.billingPortal.sessions.create(createParams);
@@ -370,6 +340,57 @@ export async function cancelSubscriptionNow(userId: string): Promise<{
   }
 }
 
+export async function updateSubscriptionPlan(params: {
+  userId: string;
+  newPriceId: string;
+}): Promise<{ success: boolean; message: string }> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: params.userId },
+    select: { 
+      stripeSubscriptionId: true,
+      stripeSubscriptionItemId: true,
+      plan: true,
+    },
+  });
+
+  if (!subscription?.stripeSubscriptionId) {
+    throw new Error('No active subscription found');
+  }
+
+  if (!subscription.stripeSubscriptionItemId) {
+    throw new Error('No subscription item found');
+  }
+
+  const currentPlan = subscription.plan;
+  const newPlan = getPlanFromPriceId(params.newPriceId);
+  const currentLimit = getLimit(currentPlan);
+  const newLimit = getLimit(newPlan);
+  const isUpgrade = newLimit > currentLimit;
+
+  if (isUpgrade) {
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [{ 
+        id: subscription.stripeSubscriptionItemId, 
+        price: params.newPriceId 
+      }],
+      proration_behavior: 'create_prorations',
+    });
+    
+    return { success: true, message: 'Subscription upgraded successfully' };
+  } else {
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [{ 
+        id: subscription.stripeSubscriptionItemId, 
+        price: params.newPriceId 
+      }],
+      proration_behavior: 'none',
+      billing_cycle_anchor: 'unchanged',
+    });
+    
+    return { success: true, message: 'Subscription will downgrade at period end' };
+  }
+}
+
 function mapStatus(stripeStatus: string): SubscriptionStatus {
   switch (stripeStatus) {
     case 'active': return 'ACTIVE';
@@ -455,6 +476,37 @@ export async function handleWebhook(event: Stripe.Event) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode === 'subscription' && session.subscription) {
+    const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+    
+    if (subscription.metadata.update_existing === 'true') {
+      const isUpgrade = subscription.metadata.isUpgrade === 'true';
+      
+      if (isUpgrade) {
+        await stripe.subscriptions.update(subscription.id, {
+          proration_behavior: 'create_prorations',
+        });
+      } else {
+        const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
+        const currentPriceId = subscription.items.data[0]?.price?.id;
+        const newPriceId = subscription.metadata.newPriceId;
+        
+        if (currentPriceId && newPriceId) {
+          await stripe.subscriptionSchedules.create({
+            from_subscription: subscription.id,
+            phases: [
+              {
+                items: [{ price: currentPriceId, quantity: 1 }],
+                end_date: currentPeriodEnd,
+              },
+              {
+                items: [{ price: newPriceId, quantity: 1 }],
+              },
+            ],
+          });
+        }
+      }
+    }
+    
     await syncSubscription(session.subscription as string);
   }
 }

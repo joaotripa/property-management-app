@@ -15,7 +15,7 @@ import { SubscriptionData, Usage } from "@/hooks/queries/useBillingQueries";
 import { getLimit } from "@/lib/stripe/plans";
 import { useSession } from "next-auth/react";
 import {
-  createPortalSession,
+  updateSubscription,
   getPaymentLink,
   BillingServiceError,
 } from "@/lib/services/client/billingService";
@@ -46,8 +46,9 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
           return;
         }
 
-        const { url } = await createPortalSession({ plan, isYearly });
-        window.location.href = url;
+        const result = await updateSubscription({ plan, isYearly });
+        toast.success(result.message);
+        window.location.reload();
         return;
       }
 

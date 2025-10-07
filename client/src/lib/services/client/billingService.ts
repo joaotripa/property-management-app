@@ -99,3 +99,47 @@ export async function cancelSubscriptionNow(): Promise<CancelSubscriptionNowResp
     );
   }
 }
+
+interface UpdateSubscriptionParams {
+  plan: SubscriptionPlan;
+  isYearly: boolean;
+}
+
+interface UpdateSubscriptionResponse {
+  success: boolean;
+  message: string;
+}
+
+export async function updateSubscription({
+  plan,
+  isYearly,
+}: UpdateSubscriptionParams): Promise<UpdateSubscriptionResponse> {
+  try {
+    const response = await fetch(
+      `/api/billing/checkout?plan=${plan}&isYearly=${isYearly}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new BillingServiceError(
+        errorData.error || "Failed to update subscription",
+        response.status
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof BillingServiceError) {
+      throw error;
+    }
+    throw new BillingServiceError(
+      "Something went wrong. Please try again."
+    );
+  }
+}
