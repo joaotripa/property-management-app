@@ -136,7 +136,10 @@ export async function syncSubscription(
   if (!userId) {
     let email: string | null = customerEmail || null;
 
-    if (!email && typeof sub.customer !== 'string') {
+    if (!email && typeof sub.customer === 'string') {
+      const customer = await stripe.customers.retrieve(sub.customer);
+      email = (customer as Stripe.Customer).email;
+    } else if (!email && typeof sub.customer !== 'string') {
       if ('email' in sub.customer && !('deleted' in sub.customer)) {
         email = sub.customer.email;
       }
@@ -340,6 +343,94 @@ export async function cancelSubscriptionNow(userId: string): Promise<{
   }
 }
 
+export async function calculateSubscriptionChange(params: {
+  userId: string;
+  newPriceId: string;
+}): Promise<{
+  isUpgrade: boolean;
+  currentPlan: string;
+  newPlan: string;
+  immediateChargeAmount: number;
+  nextBillingDate: string;
+  message: string;
+}> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: params.userId },
+    select: { 
+      stripeSubscriptionId: true,
+      plan: true,
+      currentPeriodEnd: true,
+    },
+  });
+
+  if (!subscription?.stripeSubscriptionId) {
+    throw new Error('No active subscription found');
+  }
+
+  const currentPlan = subscription.plan;
+  const newPlan = getPlanFromPriceId(params.newPriceId);
+  const currentLimit = getLimit(currentPlan);
+  const newLimit = getLimit(newPlan);
+  const isUpgrade = newLimit > currentLimit;
+
+  const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
+  const subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+  if (!subscriptionItemId) {
+    throw new Error('No subscription item found');
+  }
+
+  const prorationDate = Math.floor(Date.now() / 1000);
+  
+  const upcomingInvoice = await stripe.invoices.createPreview({
+    customer: stripeSubscription.customer as string,
+    subscription: subscription.stripeSubscriptionId,
+    subscription_details: {
+      items: [{
+        id: subscriptionItemId,
+        price: params.newPriceId,
+      }],
+      proration_date: prorationDate,
+    },
+  });
+
+  let immediateChargeAmount = 0;
+  
+  if (isUpgrade && upcomingInvoice.lines?.data) {
+    for (const line of upcomingInvoice.lines.data) {
+      const parent = line.parent as { subscription_item_details?: { proration?: boolean } } | null;
+      if (parent?.subscription_item_details?.proration) {
+        immediateChargeAmount += line.amount;
+      }
+    }
+  }
+
+  const nextBillingDate = subscription.currentPeriodEnd?.toLocaleDateString() || 'N/A';
+
+  let message: string;
+  if (isUpgrade) {
+    message = `You'll be charged ${formatCurrency(immediateChargeAmount)} today for the prorated upgrade. Your next billing of ${formatCurrency(upcomingInvoice.amount_due - immediateChargeAmount)} for the full ${newPlan} plan will be on ${nextBillingDate}.`;
+  } else {
+    message = `Your plan will change to ${newPlan} at your next billing date (${nextBillingDate}). No immediate charge.`;
+  }
+
+  function formatCurrency(amountInCents: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: upcomingInvoice.currency?.toUpperCase() || 'USD',
+    }).format(amountInCents / 100);
+  }
+
+  return {
+    isUpgrade,
+    currentPlan,
+    newPlan,
+    immediateChargeAmount,
+    nextBillingDate,
+    message,
+  };
+}
+
 export async function updateSubscriptionPlan(params: {
   userId: string;
   newPriceId: string;
@@ -349,6 +440,7 @@ export async function updateSubscriptionPlan(params: {
     select: { 
       stripeSubscriptionId: true,
       stripeSubscriptionItemId: true,
+      stripeCustomerId: true,
       plan: true,
     },
   });
@@ -359,6 +451,10 @@ export async function updateSubscriptionPlan(params: {
 
   if (!subscription.stripeSubscriptionItemId) {
     throw new Error('No subscription item found');
+  }
+
+  if (!subscription.stripeCustomerId) {
+    throw new Error('No Stripe customer found');
   }
 
   const currentPlan = subscription.plan;
@@ -375,6 +471,15 @@ export async function updateSubscriptionPlan(params: {
       }],
       proration_behavior: 'create_prorations',
     });
+
+    const invoice = await stripe.invoices.create({
+      customer: subscription.stripeCustomerId,
+      subscription: subscription.stripeSubscriptionId,
+      auto_advance: true, 
+    });
+
+    await stripe.invoices.finalizeInvoice(invoice.id);
+    await stripe.invoices.pay(invoice.id);
     
     return { success: true, message: 'Subscription upgraded successfully' };
   } else {
@@ -386,7 +491,7 @@ export async function updateSubscriptionPlan(params: {
       proration_behavior: 'none',
       billing_cycle_anchor: 'unchanged',
     });
-    
+         
     return { success: true, message: 'Subscription will downgrade at period end' };
   }
 }
@@ -557,13 +662,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 
   const customerEmail = invoice.customer_email || undefined;
 
-  let priceId: string | undefined;
-  const firstLine = invoice.lines?.data?.[0];
-  if (firstLine?.pricing?.price_details?.price) {
-    priceId = firstLine.pricing.price_details.price;
-  }
-
-  await syncSubscription(subscriptionId, customerEmail, priceId);
+  await syncSubscription(subscriptionId, customerEmail);
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {

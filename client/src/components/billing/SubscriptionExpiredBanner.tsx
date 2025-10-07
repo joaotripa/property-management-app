@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CreditCard, AlertTriangle, X } from "lucide-react";
+import { CreditCard, X } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
 
 interface SubscriptionStatus {
@@ -68,7 +68,6 @@ export function SubscriptionExpiredBanner() {
 
   const getBannerConfig = (): {
     variant: "default" | "destructive" | "warning";
-    icon: React.ReactNode;
     title: string;
     description: string;
     badge: string;
@@ -81,7 +80,6 @@ export function SubscriptionExpiredBanner() {
       if (trialDays <= 0) {
         return {
           variant: "destructive",
-          icon: <AlertTriangle className="h-4 w-4" />,
           title:
             trialDays === 0
               ? "Your free trial expires today!"
@@ -94,7 +92,6 @@ export function SubscriptionExpiredBanner() {
       } else if (trialDays <= 3) {
         return {
           variant: "warning",
-          icon: <Clock className="h-4 w-4" />,
           title: `${trialDays} ${trialDays === 1 ? "day" : "days"} left in your free trial`,
           description:
             "Upgrade to continue accessing all premium features after your trial ends.",
@@ -112,7 +109,6 @@ export function SubscriptionExpiredBanner() {
 
       return {
         variant: "warning",
-        icon: <AlertTriangle className="h-4 w-4" />,
         title: "Your subscription is scheduled to cancel",
         description: `Access continues until ${endDate}. Reactivate anytime before then.`,
         badge: `${toCamelCase(subscription.plan)} Plan`,
@@ -132,7 +128,6 @@ export function SubscriptionExpiredBanner() {
 
       return {
         variant: "destructive",
-        icon: <AlertTriangle className="h-4 w-4" />,
         title: "Your subscription has been canceled",
         description: "Reactivate to continue managing your properties.",
         badge: `${toCamelCase(subscription.plan)} Plan`,
@@ -147,7 +142,6 @@ export function SubscriptionExpiredBanner() {
     ) {
       return {
         variant: "destructive",
-        icon: <AlertTriangle className="h-4 w-4" />,
         title: "Payment required to continue",
         description: "Update your payment method to restore access.",
         badge: `${toCamelCase(subscription.plan)} Plan`,
@@ -166,8 +160,7 @@ export function SubscriptionExpiredBanner() {
   }
 
   return (
-    <Alert variant={config.variant} className="shadow-sm pr-10">
-      {config.icon}
+    <Alert variant={config.variant} className="shadow-sm">
       <AlertDescription className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,16 +10,19 @@ import {
 } from "@/components/ui/card";
 import { BillingPricingCards } from "@/components/billing/BillingPricingCards";
 import { SubscriptionInfoBanner } from "@/components/billing/SubscriptionInfoBanner";
+import { SubscriptionChangeDialog } from "@/components/billing/SubscriptionChangeDialog";
 import { toast } from "sonner";
 import { SubscriptionPlan } from "@prisma/client";
 import { SubscriptionData, Usage } from "@/hooks/queries/useBillingQueries";
 import { getLimit } from "@/lib/stripe/plans";
 import { useSession } from "next-auth/react";
 import {
+  getSubscriptionPreview,
   updateSubscription,
   getPaymentLink,
   BillingServiceError,
 } from "@/lib/services/client/billingService";
+import { useRouter } from "next/navigation";
 
 interface BillingSettingsProps {
   subscription: SubscriptionData;
@@ -26,7 +30,21 @@ interface BillingSettingsProps {
 }
 
 export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
+  const router = useRouter();
   const { data: session } = useSession();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
+    null
+  );
+  const [selectedIsYearly, setSelectedIsYearly] = useState(false);
+  const [preview, setPreview] = useState<{
+    isUpgrade: boolean;
+    currentPlan: string;
+    newPlan: string;
+    immediateChargeAmount: number;
+    nextBillingDate: string;
+    message: string;
+  } | null>(null);
 
   const handlePlanSelect = async (
     plan: SubscriptionPlan,
@@ -46,9 +64,17 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
           return;
         }
 
-        const result = await updateSubscription({ plan, isYearly });
-        toast.success(result.message);
-        window.location.reload();
+        // Show confirmation dialog with preview
+        try {
+          const previewData = await getSubscriptionPreview({ plan, isYearly });
+          setPreview(previewData);
+          setSelectedPlan(plan);
+          setSelectedIsYearly(isYearly);
+          setDialogOpen(true);
+        } catch (error) {
+          console.error("Error getting preview:", error);
+          toast.error("Failed to get subscription preview. Please try again.");
+        }
         return;
       }
 
@@ -58,6 +84,26 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
     } catch (error) {
       console.error("Error handling plan selection:", error);
 
+      if (error instanceof BillingServiceError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+  };
+
+  const handleConfirmChange = async () => {
+    if (!selectedPlan) return;
+
+    try {
+      const result = await updateSubscription({
+        plan: selectedPlan,
+        isYearly: selectedIsYearly,
+      });
+      toast.success(result.message);
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating subscription:", error);
       if (error instanceof BillingServiceError) {
         toast.error(error.message);
       } else {
@@ -103,6 +149,16 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
           />
         </CardContent>
       </Card>
+
+      {preview && (
+        <SubscriptionChangeDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          isYearly={selectedIsYearly}
+          preview={preview}
+          onConfirm={handleConfirmChange}
+        />
+      )}
     </div>
   );
 }
