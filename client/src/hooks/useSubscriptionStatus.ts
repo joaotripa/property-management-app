@@ -11,6 +11,8 @@ interface SubscriptionData {
   trialDaysRemaining?: number;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd?: string;
+  scheduledPlan?: string | null;
+  scheduledPlanDate?: string | null;
 }
 
 interface UsageData {

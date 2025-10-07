@@ -16,6 +16,8 @@ interface SubscriptionStatus {
   trialDaysRemaining?: number;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd?: string;
+  scheduledPlan?: string | null;
+  scheduledPlanDate?: string | null;
 }
 
 const DISMISSAL_KEY = "subscription-banner-dismissed";
@@ -103,7 +105,31 @@ export function SubscriptionExpiredBanner() {
       }
     }
 
+    if (subscription.status === "ACTIVE" && subscription.cancelAtPeriodEnd) {
+      const endDate = subscription.currentPeriodEnd
+        ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
+        : "the end of your billing period";
+
+      return {
+        variant: "warning",
+        icon: <AlertTriangle className="h-4 w-4" />,
+        title: "Your subscription is scheduled to cancel",
+        description: `Access continues until ${endDate}. Reactivate anytime before then.`,
+        badge: `${toCamelCase(subscription.plan)} Plan`,
+        canDismiss: true,
+        actionLabel: "Reactivate",
+      };
+    }
+
     if (subscription.status === "CANCELED") {
+      const isStillActive =
+        subscription.currentPeriodEnd &&
+        new Date(subscription.currentPeriodEnd) > new Date();
+
+      if (isStillActive) {
+        return null;
+      }
+
       return {
         variant: "destructive",
         icon: <AlertTriangle className="h-4 w-4" />,
@@ -115,7 +141,10 @@ export function SubscriptionExpiredBanner() {
       };
     }
 
-    if (subscription.status === "UNPAID") {
+    if (
+      subscription.status === "UNPAID" ||
+      subscription.status === "PAST_DUE"
+    ) {
       return {
         variant: "destructive",
         icon: <AlertTriangle className="h-4 w-4" />,
@@ -137,10 +166,10 @@ export function SubscriptionExpiredBanner() {
   }
 
   return (
-    <Alert variant={config.variant} className="shadow-sm">
+    <Alert variant={config.variant} className="shadow-sm pr-10">
       {config.icon}
       <AlertDescription className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm">{config.title}</span>
             <Badge
@@ -155,37 +184,39 @@ export function SubscriptionExpiredBanner() {
               {config.badge}
             </Badge>
           </div>
-          <span className="text-xs">{config.description}</span>
+          <span className="text-xs break-words text-pretty leading-normal">
+            {config.description}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-col sm:flex-row w-full">
           <Button
             size="sm"
             variant={config.variant}
             onClick={handleUpgrade}
-            className="flex-1"
+            className="w-full text-sm"
           >
             <CreditCard className="h-3 w-3 mr-1" />
             {config.actionLabel}
           </Button>
-          {config.canDismiss && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleDismiss}
-              aria-label="Dismiss banner"
-              className={`${
-                config.variant === "destructive"
-                  ? "hover:bg-destructive hover:text-destructive-foreground"
-                  : config.variant === "warning"
-                    ? "hover:bg-warning hover:text-warning-foreground"
-                    : ""
-              }`}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
         </div>
       </AlertDescription>
+      {config.canDismiss && (
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={handleDismiss}
+          aria-label="Dismiss banner"
+          className={`absolute right-2 top-2 h-7 w-7 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+            config.variant === "destructive"
+              ? "hover:bg-destructive/20"
+              : config.variant === "warning"
+                ? "hover:bg-warning hover:text-warning-foreground"
+                : "hover:bg-muted"
+          }`}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
     </Alert>
   );
 }

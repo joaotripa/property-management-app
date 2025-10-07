@@ -9,6 +9,8 @@ export interface SubscriptionData {
   trialDaysRemaining?: number;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd?: string;
+  scheduledPlan?: SubscriptionPlan | null;
+  scheduledPlanDate?: string | null;
 }
 
 export interface Usage {

@@ -1,4 +1,5 @@
 // Export all client-side services
+export * from './billingService';
 export * from './imageService';
 export * from './transactionsService';
 export * from './propertiesService';

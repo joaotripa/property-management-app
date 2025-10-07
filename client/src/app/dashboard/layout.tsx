@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar/DashboardSidebar";
+import { SubscriptionExpiredBanner } from "@/components/billing/SubscriptionExpiredBanner";
 import {
   SidebarInset,
   SidebarProvider,
@@ -27,6 +28,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <SidebarTrigger className="hover:bg-primary" />
           </div>
         </header>
+        {/* Mobile-only subscription banner (sidebar hidden on mobile) */}
+        <div className="px-6 pb-2 block md:hidden">
+          <SubscriptionExpiredBanner />
+        </div>
         <div>{children}</div>
       </SidebarInset>
 

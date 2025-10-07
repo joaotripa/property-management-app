@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check, Star } from "lucide-react";
+import { Check } from "lucide-react";
 import { SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
 import { PRICING_PLANS } from "@/components/pricing/types";
 

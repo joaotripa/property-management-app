@@ -18,19 +18,21 @@ import { toCamelCase } from "@/lib/utils";
 interface SubscriptionInfoBannerProps {
   status: SubscriptionStatus;
   plan: SubscriptionPlan;
-  propertyCount: number;
-  propertyLimit: number;
   trialDaysRemaining?: number | null;
   currentPeriodEnd?: Date | null;
+  cancelAtPeriodEnd?: boolean | null;
+  scheduledPlan?: SubscriptionPlan | null;
+  scheduledPlanDate?: Date | null;
 }
 
 export function SubscriptionInfoBanner({
   status,
   plan,
-  propertyCount,
-  propertyLimit,
   trialDaysRemaining,
   currentPeriodEnd,
+  cancelAtPeriodEnd,
+  scheduledPlan,
+  scheduledPlanDate,
 }: SubscriptionInfoBannerProps) {
   const [loading, setLoading] = useState(false);
 
@@ -53,13 +55,6 @@ export function SubscriptionInfoBanner({
     } finally {
       setLoading(false);
     }
-  };
-
-  const getPropertiesText = () => {
-    if (plan === "BUSINESS") {
-      return `${propertyCount} ${propertyCount === 1 ? "property" : "properties"} managed of unlimited properties`;
-    }
-    return `${propertyCount}/${propertyLimit} properties used`;
   };
 
   const getStatusConfig = () => {
@@ -86,24 +81,47 @@ export function SubscriptionInfoBanner({
           title: toCamelCase(plan),
           description:
             trialDaysRemaining !== null && trialDaysRemaining !== undefined
-              ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? "day" : "days"} remaining • ${getPropertiesText()}`
-              : getPropertiesText(),
+              ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? "day" : "days"} remaining`
+              : "",
           showAction: false,
         };
       }
 
-      case "ACTIVE":
+      case "ACTIVE": {
+        let description: string | undefined = undefined;
+
+        if (cancelAtPeriodEnd) {
+          const end = currentPeriodEnd
+            ? new Date(currentPeriodEnd).toLocaleDateString()
+            : "end of period";
+          description = `Scheduled to cancel on ${end}`;
+          return {
+            variant: "default" as const,
+            icon: <CheckCircle className="h-4 w-4" />,
+            badge: { label: "Active", variant: "default" as const },
+            title: toCamelCase(plan),
+            description,
+            showAction: true,
+            actionLabel: "Reactivate",
+          };
+        }
+
+        if (scheduledPlan && scheduledPlanDate) {
+          description = `Switching to ${toCamelCase(scheduledPlan)} on ${new Date(scheduledPlanDate).toLocaleDateString()}`;
+        } else if (currentPeriodEnd) {
+          description = `Next billing: ${new Date(currentPeriodEnd).toLocaleDateString()}`;
+        }
+
         return {
           variant: "default" as const,
           icon: <CheckCircle className="h-4 w-4" />,
           badge: { label: "Active", variant: "default" as const },
           title: toCamelCase(plan),
-          description: currentPeriodEnd
-            ? `${getPropertiesText()} • Next billing: ${new Date(currentPeriodEnd).toLocaleDateString()}`
-            : getPropertiesText(),
+          description,
           showAction: true,
           actionLabel: "Manage Billing",
         };
+      }
 
       case "PAST_DUE":
         return {
@@ -116,15 +134,32 @@ export function SubscriptionInfoBanner({
           actionLabel: "Update Payment",
         };
 
-      case "CANCELED":
+      case "CANCELED": {
+        const isStillActive =
+          currentPeriodEnd && new Date(currentPeriodEnd) > new Date();
+
+        if (isStillActive) {
+          const endDate = new Date(currentPeriodEnd!).toLocaleDateString();
+          return {
+            variant: "default" as const,
+            icon: <Clock className="h-4 w-4" />,
+            badge: { label: "Canceled", variant: "destructive" as const },
+            title: toCamelCase(plan),
+            description: `Subscription canceled • You have access until ${endDate}`,
+            showAction: true,
+            actionLabel: "Reactivate",
+          };
+        }
+
         return {
           variant: "default" as const,
           icon: <XCircle className="h-4 w-4 text-muted-foreground" />,
-          badge: { label: "Canceled", variant: "outline" as const },
+          badge: { label: "Canceled", variant: "destructive" as const },
           title: toCamelCase(plan),
-          description: `Subscription canceled • ${getPropertiesText()}`,
+          description: `Subscription canceled`,
           showAction: false,
         };
+      }
 
       default:
         return {
@@ -132,7 +167,7 @@ export function SubscriptionInfoBanner({
           icon: <AlertTriangle className="h-4 w-4" />,
           badge: { label: status, variant: "outline" as const },
           title: toCamelCase(plan),
-          description: getPropertiesText(),
+          description: "",
           showAction: false,
         };
     }
@@ -146,7 +181,7 @@ export function SubscriptionInfoBanner({
         <div className="text-muted-foreground">{config.icon}</div>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            You're currently on plan:{" "}
+            You&apos;re currently on plan:{" "}
             <span className="font-medium">{config.title}</span>
             {config.badge && (
               <Badge variant={config.badge.variant}>{config.badge.label}</Badge>

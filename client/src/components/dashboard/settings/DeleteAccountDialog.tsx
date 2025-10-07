@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { deleteAccount } from "@/lib/services/client/userService";

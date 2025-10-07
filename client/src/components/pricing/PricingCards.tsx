@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Star } from "lucide-react";
+import { Check } from "lucide-react";
 import { Plan, PRICING_PLANS } from "./types";
 
 interface PricingCardsProps {

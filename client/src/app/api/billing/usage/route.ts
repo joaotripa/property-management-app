@@ -27,6 +27,8 @@ export async function GET() {
         trialDaysRemaining: subscription.trialDaysRemaining,
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
         currentPeriodEnd: subscription.currentPeriodEnd,
+        scheduledPlan: subscription.scheduledPlan,
+        scheduledPlanDate: subscription.scheduledPlanDate,
       },
       usage: {
         propertyCount: limitCheck.current,

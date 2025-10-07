@@ -46,6 +46,7 @@ export async function createSubscription(userId: string) {
 export async function createPortalSession(params: {
   userId: string;
   returnUrl: string;
+  priceId?: string;
 }) {
   const subscription = await prisma.subscription.findUnique({
     where: { userId: params.userId },
@@ -62,6 +63,35 @@ export async function createPortalSession(params: {
 
   if (stripeConfig.billingPortalConfigId) {
     createParams.configuration = stripeConfig.billingPortalConfigId;
+  }
+
+  if (params.priceId && subscription.stripeSubscriptionId) {
+    let subscriptionItemId = subscription.stripeSubscriptionItemId;
+
+    if (!subscriptionItemId) {
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        subscription.stripeSubscriptionId
+      );
+
+      subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+      if (!subscriptionItemId) {
+        throw new Error('No subscription item found');
+      }
+
+      await prisma.subscription.update({
+        where: { userId: params.userId },
+        data: { stripeSubscriptionItemId: subscriptionItemId },
+      });
+    }
+
+    createParams.flow_data = {
+      type: 'subscription_update_confirm',
+      subscription_update_confirm: {
+        subscription: subscription.stripeSubscriptionId,
+        items: [{ id: subscriptionItemId, price: params.priceId, quantity: 1 }],
+      },
+    };
   }
 
   const session = await stripe.billingPortal.sessions.create(createParams);
@@ -128,13 +158,20 @@ export async function syncSubscription(
   priceId?: string
 ) {
   const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId, {
-    expand: ['customer'],
+    expand: ['customer', 'schedule'],
   });
 
   let userId = sub.metadata.userId;
 
   if (!userId) {
-    const email = customerEmail || (sub.customer as Stripe.Customer)?.email;
+    let email: string | null = customerEmail || null;
+
+    if (!email && typeof sub.customer !== 'string') {
+      if ('email' in sub.customer && !('deleted' in sub.customer)) {
+        email = sub.customer.email;
+      }
+    }
+
     if (!email) {
       throw new Error('No customer email found');
     }
@@ -164,13 +201,46 @@ export async function syncSubscription(
   const status = mapStatus(sub.status);
   const limit = getLimit(plan);
 
-  const currentPeriodStart = (sub as { current_period_start?: number }).current_period_start;
-  const currentPeriodEnd = (sub as { current_period_end?: number }).current_period_end;
-  const cancelAtPeriodEnd = (sub as { cancel_at_period_end?: boolean }).cancel_at_period_end;
+  const firstItem = sub.items.data[0];
+  if (!firstItem) {
+    throw new Error('Subscription has no items');
+  }
+
+  if (!firstItem.current_period_start || !firstItem.current_period_end) {
+    throw new Error('Missing billing period in subscription item');
+  }
+
+  const currentPeriodStart = firstItem.current_period_start;
+  const currentPeriodEnd = firstItem.current_period_end;
+  const subscriptionItemId = firstItem.id;
+  const cancelAtPeriodEnd = sub.cancel_at_period_end || Boolean(sub.cancel_at);
 
   const customerId = typeof sub.customer === 'string'
     ? sub.customer
     : sub.customer.id;
+
+  let scheduledPlan: SubscriptionPlan | null = null;
+  let scheduledPlanDate: Date | null = null;
+
+  if (sub.schedule && typeof sub.schedule !== 'string') {
+    const schedule = await stripe.subscriptionSchedules.retrieve(sub.schedule.id);
+    const currentPhaseIndex = schedule.phases.findIndex(
+      (phase) => phase.start_date <= Date.now() / 1000 && phase.end_date > Date.now() / 1000
+    );
+
+    if (currentPhaseIndex !== -1 && currentPhaseIndex < schedule.phases.length - 1) {
+      const nextPhase = schedule.phases[currentPhaseIndex + 1];
+      const nextPriceId = nextPhase?.items?.[0]?.price;
+
+      if (nextPriceId && typeof nextPriceId === 'string') {
+        try {
+          scheduledPlan = getPlanFromPriceId(nextPriceId);
+          scheduledPlanDate = nextPhase.start_date ? new Date(nextPhase.start_date * 1000) : null;
+        } catch {
+        }
+      }
+    }
+  }
 
   await prisma.subscription.upsert({
     where: { userId },
@@ -178,12 +248,15 @@ export async function syncSubscription(
       userId,
       stripeCustomerId: customerId,
       stripeSubscriptionId: sub.id,
+      stripeSubscriptionItemId: subscriptionItemId,
       status,
       plan,
       propertyLimit: limit,
       currentPeriodStart: currentPeriodStart ? new Date(currentPeriodStart * 1000) : null,
       currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
       cancelAtPeriodEnd: cancelAtPeriodEnd || false,
+      scheduledPlan,
+      scheduledPlanDate,
       trialEndsAt: null,
     },
     update: {
@@ -192,9 +265,12 @@ export async function syncSubscription(
       propertyLimit: limit,
       stripeCustomerId: customerId,
       stripeSubscriptionId: sub.id,
+      stripeSubscriptionItemId: subscriptionItemId,
       currentPeriodStart: currentPeriodStart ? new Date(currentPeriodStart * 1000) : null,
       currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
       cancelAtPeriodEnd: cancelAtPeriodEnd || false,
+      scheduledPlan,
+      scheduledPlanDate,
     },
   });
 }
@@ -223,7 +299,26 @@ export async function getSubscriptionInfo(userId: string) {
     trialDaysRemaining,
     currentPeriodEnd: subscription.currentPeriodEnd,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+    scheduledPlan: subscription.scheduledPlan,
+    scheduledPlanDate: subscription.scheduledPlanDate,
   };
+}
+
+export function getPriceId(
+  plan: SubscriptionPlan,
+  isYearly: boolean
+): string | null {
+  const priceMappings: Record<string, string | undefined> = {
+    STARTER_MONTHLY: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID,
+    STARTER_YEARLY: process.env.STRIPE_STARTER_YEARLY_PRICE_ID,
+    PRO_MONTHLY: process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
+    PRO_YEARLY: process.env.STRIPE_PRO_YEARLY_PRICE_ID,
+    BUSINESS_MONTHLY: process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID,
+    BUSINESS_YEARLY: process.env.STRIPE_BUSINESS_YEARLY_PRICE_ID,
+  };
+
+  const key = `${plan}_${isYearly ? 'YEARLY' : 'MONTHLY'}`;
+  return priceMappings[key] || null;
 }
 
 function mapStatus(stripeStatus: string): SubscriptionStatus {
@@ -350,23 +445,28 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.parent?.subscription_details?.subscription as string;
-
-  if (!subscriptionId) {
+  if (!invoice.parent?.subscription_details?.subscription) {
     console.log('No subscription ID in invoice');
     return;
   }
 
+  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
+    ? invoice.parent.subscription_details.subscription
+    : invoice.parent.subscription_details.subscription.id;
+
   const customerEmail = invoice.customer_email || undefined;
-  const priceId = invoice.lines?.data?.[0]?.pricing?.price_details?.price || undefined;
+
+  let priceId: string | undefined;
+  const firstLine = invoice.lines?.data?.[0];
+  if (firstLine?.pricing?.price_details?.price) {
+    priceId = firstLine.pricing.price_details.price;
+  }
 
   await syncSubscription(subscriptionId, customerEmail, priceId);
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.parent?.subscription_details?.subscription as string;
-
-  if (!subscriptionId) {
+  if (!invoice.parent?.subscription_details?.subscription) {
     console.log('No subscription ID in invoice');
     return;
   }
