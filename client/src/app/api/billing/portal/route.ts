@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
 
     let finalPriceId = priceId;
 
-    // If plan and isYearly are provided, get the priceId from server-side function
     if (plan && !priceId) {
       finalPriceId = getPriceId(plan, isYearly);
       
@@ -32,14 +31,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // If changing plan, validate property limit for downgrades
     if (finalPriceId) {
       const subscription = await prisma.subscription.findUnique({
         where: { userId: session.user.id },
       });
 
       if (subscription) {
-        // Map priceId to plan
         const priceMappings: Record<string, SubscriptionPlan> = {
           [process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || '']: 'STARTER',
           [process.env.STRIPE_STARTER_YEARLY_PRICE_ID || '']: 'STARTER',
@@ -55,7 +52,6 @@ export async function POST(req: NextRequest) {
           const newLimit = getLimit(targetPlan);
           const currentLimit = getLimit(subscription.plan);
 
-          // Check if this is a downgrade
           if (newLimit < currentLimit) {
             const { current } = await checkLimit(session.user.id);
 

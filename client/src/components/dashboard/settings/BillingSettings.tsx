@@ -51,7 +51,6 @@ export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
         return;
       }
 
-      // Trial/Expired users use payment links to create new subscription
       const customerEmail = session?.user?.email || undefined;
       const paymentLink = getPaymentLink({ plan, isYearly, customerEmail });
       window.location.href = paymentLink;

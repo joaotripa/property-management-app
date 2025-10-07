@@ -321,6 +321,55 @@ export function getPriceId(
   return priceMappings[key] || null;
 }
 
+export async function cancelSubscriptionNow(userId: string): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  try {
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        stripeSubscriptionId: true,
+        status: true,
+      },
+    });
+
+    if (!subscription) {
+      return {
+        success: true,
+        message: "No subscription found to cancel",
+      };
+    }
+
+    if (!subscription.stripeSubscriptionId) {
+      await prisma.subscription.update({
+        where: { userId },
+        data: { status: 'CANCELED', cancelAtPeriodEnd: false },
+      });
+      return {
+        success: true,
+        message: "Subscription canceled locally",
+      };
+    }
+
+    await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+
+    await prisma.subscription.update({
+      where: { userId },
+      data: { status: 'CANCELED', cancelAtPeriodEnd: false },
+    });
+
+    return {
+      success: true,
+      message: "Subscription canceled successfully",
+    };
+  } catch (error) {
+    console.error("Error canceling subscription:", error);
+    throw new Error("Failed to cancel subscription");
+  }
+}
+
 function mapStatus(stripeStatus: string): SubscriptionStatus {
   switch (stripeStatus) {
     case 'active': return 'ACTIVE';

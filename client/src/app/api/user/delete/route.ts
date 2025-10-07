@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/config/database";
 import { z } from "zod";
 import { deleteAccountApiSchema } from "@/lib/validations/user";
+import { cancelSubscriptionNow } from "@/lib/stripe/server";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -47,6 +48,13 @@ export async function DELETE(request: NextRequest) {
         { error: "Account is already deleted" },
         { status: 400 }
       );
+    }
+
+    try {
+      await cancelSubscriptionNow(session.user.id);
+      console.log(`Subscription canceled for user: ${user.email}`);
+    } catch (subscriptionError) {
+      console.error("Error canceling subscription:", subscriptionError);
     }
 
     await prisma.$transaction(async (tx) => {

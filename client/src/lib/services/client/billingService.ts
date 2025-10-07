@@ -65,3 +65,37 @@ export function getPaymentLink({
 }: GetPaymentLinkParams): string {
   return getPaymentLinkFromConfig(plan, isYearly, customerEmail);
 }
+
+interface CancelSubscriptionNowResponse {
+  success: boolean;
+  message?: string;
+}
+
+export async function cancelSubscriptionNow(): Promise<CancelSubscriptionNowResponse> {
+  try {
+    const response = await fetch("/api/billing/cancel-now", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new BillingServiceError(
+        errorData.error || "Failed to cancel subscription",
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof BillingServiceError) {
+      throw error;
+    }
+    throw new BillingServiceError(
+      "Something went wrong. Please try again."
+    );
+  }
+}
