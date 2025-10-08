@@ -27,7 +27,7 @@ interface ContactFormData {
 
               <!-- Header -->
               <tr>
-                <td style="background: #2F6DF2; color: #ffffff; padding: 40px 32px; text-align: center;">
+                <td style="background: #ffffff; padding: 40px 32px; text-align: center;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <a href="https://domari.app" target="_blank" style="text-decoration: none;">

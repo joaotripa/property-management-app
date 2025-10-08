@@ -4,7 +4,7 @@ export interface PasswordResetEmailProps {
 
 export function getPasswordResetEmailTemplate({ resetCode }: PasswordResetEmailProps): string {
   const currentYear = new Date().getFullYear();
-  const logoUrl = 'https://domari.app/domari-logo-icon.png';
+  const logoUrl = 'https://domari.app/domari-logo.png';
 
   return `
     <!DOCTYPE html>
@@ -22,7 +22,7 @@ export function getPasswordResetEmailTemplate({ resetCode }: PasswordResetEmailP
 
               <!-- Header -->
               <tr>
-                <td style="background: #2F6DF2; color: #ffffff; padding: 40px 32px; text-align: center;">
+                <td style="background: #ffffff; padding: 40px 32px; text-align: center;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <a href="https://domari.app" target="_blank" style="text-decoration: none;">

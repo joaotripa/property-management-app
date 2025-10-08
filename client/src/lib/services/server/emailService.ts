@@ -53,7 +53,7 @@ export async function sendWelcomeEmail(email: string): Promise<EmailResult> {
     await resend.emails.send({
       from: fromEmail,
       to: email,
-      subject: 'Welcome to Domari - Your Free Trial Has Started! 🎉',
+      subject: 'Welcome to Domari - Your Free Trial Has Started!',
       html: getWelcomeEmailTemplate()
     });
 
