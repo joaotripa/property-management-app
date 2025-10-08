@@ -225,9 +225,6 @@ export function TransactionForm({
                             <SelectItem key={property.id} value={property.id}>
                               <div className="flex flex-col items-start">
                                 <span>{property.name}</span>
-                                <span className="text-xs">
-                                  {property.address}
-                                </span>
                               </div>
                             </SelectItem>
                           ))}
@@ -261,7 +258,10 @@ export function TransactionForm({
                               .filter((c) => c.type === TransactionType.INCOME)
                               .sort((a, b) => a.name.localeCompare(b.name))
                               .map((category) => (
-                                <SelectItem key={category.id} value={category.id}>
+                                <SelectItem
+                                  key={category.id}
+                                  value={category.id}
+                                >
                                   {category.name}
                                 </SelectItem>
                               ))}
@@ -272,7 +272,10 @@ export function TransactionForm({
                               .filter((c) => c.type === TransactionType.EXPENSE)
                               .sort((a, b) => a.name.localeCompare(b.name))
                               .map((category) => (
-                                <SelectItem key={category.id} value={category.id}>
+                                <SelectItem
+                                  key={category.id}
+                                  value={category.id}
+                                >
                                   {category.name}
                                 </SelectItem>
                               ))}
