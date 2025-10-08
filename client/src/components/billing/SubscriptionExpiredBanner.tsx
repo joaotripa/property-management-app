@@ -163,19 +163,38 @@ export function SubscriptionExpiredBanner() {
     <Alert variant={config.variant} className="shadow-sm">
       <AlertDescription className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm">{config.title}</span>
-            <Badge
-              variant={
-                config.variant === "destructive"
-                  ? "destructive"
-                  : config.variant === "warning"
-                    ? "warning"
-                    : "secondary"
-              }
-            >
-              {config.badge}
-            </Badge>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+              <span className="font-semibold text-sm">{config.title}</span>
+              <Badge
+                variant={
+                  config.variant === "destructive"
+                    ? "destructive"
+                    : config.variant === "warning"
+                      ? "warning"
+                      : "secondary"
+                }
+              >
+                {config.badge}
+              </Badge>
+            </div>
+            {config.canDismiss && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleDismiss}
+                aria-label="Dismiss banner"
+                className={`h-7 w-7 rounded-lg flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                  config.variant === "destructive"
+                    ? "hover:bg-destructive/20"
+                    : config.variant === "warning"
+                      ? "hover:bg-warning hover:text-warning-foreground"
+                      : "hover:bg-muted"
+                }`}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <span className="text-xs break-words text-pretty leading-normal">
             {config.description}
@@ -193,23 +212,6 @@ export function SubscriptionExpiredBanner() {
           </Button>
         </div>
       </AlertDescription>
-      {config.canDismiss && (
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={handleDismiss}
-          aria-label="Dismiss banner"
-          className={`absolute right-2 top-2 h-7 w-7 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-            config.variant === "destructive"
-              ? "hover:bg-destructive/20"
-              : config.variant === "warning"
-                ? "hover:bg-warning hover:text-warning-foreground"
-                : "hover:bg-muted"
-          }`}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
     </Alert>
   );
 }
