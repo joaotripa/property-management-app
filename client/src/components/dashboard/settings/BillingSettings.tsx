@@ -41,7 +41,7 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
       let description: string;
       if (subscription.trialDaysRemaining === 0) {
         description =
-          "Your free trial ends today! Upgrade now to continue using all features.";
+          "Your free trial ends in a few hours! Upgrade now to continue using all features.";
       } else if (subscription.trialDaysRemaining === 1) {
         description = `${subscription.trialDaysRemaining} day left`;
       } else {

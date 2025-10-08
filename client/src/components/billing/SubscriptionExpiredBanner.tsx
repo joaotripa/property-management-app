@@ -84,7 +84,7 @@ export function SubscriptionExpiredBanner() {
             trialDays === 0
               ? "Your free trial expires today!"
               : "Your free trial has expired!",
-          description: `Upgrade now to continue using all ${subscription.plan} plan features.`,
+          description: `Upgrade now to continue using all ${toCamelCase(subscription.plan)} plan features.`,
           badge: `${toCamelCase(subscription.plan)} Plan`,
           canDismiss: false,
           actionLabel: "Upgrade Now",
