@@ -15,8 +15,6 @@ interface BillingPricingCardsProps {
   onPlanSelect: (plan: SubscriptionPlan, isYearly: boolean) => void;
 }
 
-const PLAN_ORDER: SubscriptionPlan[] = ["STARTER", "PRO", "BUSINESS"];
-
 export function BillingPricingCards({
   currentPlan,
   currentStatus,
@@ -26,63 +24,8 @@ export function BillingPricingCards({
 }: BillingPricingCardsProps) {
   const [isYearly, setIsYearly] = useState(initialIsYearly);
 
-  const hasActiveSubscription =
-    currentStatus === "ACTIVE" ||
-    (currentStatus === "TRIAL" && (trialDaysRemaining ?? 0) > 0);
-
-  const getCurrentPlanIndex = () => {
-    return PLAN_ORDER.indexOf(currentPlan);
-  };
-
-  const getButtonConfig = (planName: string) => {
-    const plan = planName.toUpperCase() as SubscriptionPlan;
-    const planIndex = PLAN_ORDER.indexOf(plan);
-    const currentIndex = getCurrentPlanIndex();
-
-    if (!hasActiveSubscription) {
-      return {
-        text: "Upgrade",
-        variant: "default" as const,
-        disabled: false,
-        action: "subscribe" as const,
-      };
-    }
-
-    // Current plan
-    if (planIndex === currentIndex) {
-      return {
-        text: "Current Plan",
-        variant: "outline" as const,
-        disabled: true,
-        action: "current" as const,
-      };
-    }
-
-    // Higher tier - Upgrade
-    if (planIndex > currentIndex) {
-      return {
-        text: "Upgrade",
-        variant: "default" as const,
-        disabled: false,
-        action: "upgrade" as const,
-      };
-    }
-
-    // Lower tier - Downgrade
-    return {
-      text: "Downgrade",
-      variant: "outline" as const,
-      disabled: false,
-      action: "downgrade" as const,
-    };
-  };
-
   const handlePlanClick = (planName: string) => {
     const plan = planName.toUpperCase() as SubscriptionPlan;
-    const buttonConfig = getButtonConfig(planName);
-
-    if (buttonConfig.disabled) return;
-
     onPlanSelect(plan, isYearly);
   };
 
@@ -120,20 +63,17 @@ export function BillingPricingCards({
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6">
         {PRICING_PLANS.map((plan) => {
-          const buttonConfig = getButtonConfig(plan.name);
-          const isCurrentPlan = plan.name.toUpperCase() === currentPlan;
-
           return (
             <Card
               key={plan.name}
               className={`relative hover:shadow-xl transition-shadow flex flex-col ${
-                plan.popular && !isCurrentPlan
+                plan.popular
                   ? "border-2 border-primary shadow-lg"
                   : "border border-border"
               }`}
             >
-              {/* Popular Badge (only for Pro if not current plan) */}
-              {plan.popular && !isCurrentPlan && (
+              {/* Popular Badge */}
+              {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <div className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium flex items-center">
                     Most Popular
@@ -171,27 +111,12 @@ export function BillingPricingCards({
                   ))}
                 </ul>
 
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => handlePlanClick(plan.name)}
-                    disabled={buttonConfig.disabled}
-                    className={`w-full py-3 font-semibold rounded-xl ${
-                      buttonConfig.variant === "default"
-                        ? "bg-primary hover:bg-primary/90 text-white"
-                        : "border border-primary text-primary hover:bg-primary hover:text-white"
-                    } ${buttonConfig.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                    variant={buttonConfig.variant}
-                  >
-                    {buttonConfig.text}
-                  </Button>
-
-                  {/* Helper text for downgrades */}
-                  {buttonConfig.action === "downgrade" && (
-                    <p className="text-xs text-center text-muted-foreground">
-                      Changes apply at end of billing period
-                    </p>
-                  )}
-                </div>
+                <Button
+                  onClick={() => handlePlanClick(plan.name)}
+                  className="w-full py-3 font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white"
+                >
+                  Choose Plan
+                </Button>
               </CardContent>
             </Card>
           );
