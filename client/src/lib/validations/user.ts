@@ -2,9 +2,6 @@ import { z } from "zod";
 
 export const deleteAccountSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  confirmDeletion: z.boolean().refine((val) => val === true, {
-    message: "You must confirm that you want to delete your account",
-  }),
 });
 
 export const deleteAccountApiSchema = z.object({

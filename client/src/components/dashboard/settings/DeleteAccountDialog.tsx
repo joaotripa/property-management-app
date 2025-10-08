@@ -47,7 +47,6 @@ export function DeleteAccountDialog({
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       email: "",
-      confirmDeletion: false,
     },
   });
 
