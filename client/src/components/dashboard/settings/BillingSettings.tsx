@@ -114,7 +114,12 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
                   <span className="text-sm text-muted-foreground">
                     Current Plan:
                   </span>
-                  <Badge variant="default" className="text-sm font-medium">
+                  <Badge
+                    variant={
+                      subscription.status === "TRIAL" ? "secondary" : "default"
+                    }
+                    className="text-sm font-medium"
+                  >
                     {toCamelCase(subscription.plan)}
                   </Badge>
                 </div>
