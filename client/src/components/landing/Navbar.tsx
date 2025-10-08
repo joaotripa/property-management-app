@@ -25,8 +25,9 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex">
+          {/* Desktop Navigation & Auth Buttons */}
+          <div className="hidden lg:flex items-center gap-6">
+            {/* Navigation Items */}
             <div className="flex flex-row items-center gap-2">
               {navItems.map((item) => (
                 <Link
@@ -38,21 +39,21 @@ const Navbar = () => {
                 </Link>
               ))}
             </div>
-          </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" passHref>
-              <Button className="bg-white border border-border hover:bg-muted text-md text-foreground font-normal !px-8 !py-4 rounded-full group">
-                Login{" "}
-              </Button>
-            </Link>
-            <Link href="/signup" passHref>
-              <Button className="bg-primary hover:bg-primary/90 text-md text-primary-foreground !px-8 !py-4  rounded-full group">
-                Start 14-day free trial
-                <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
-              </Button>
-            </Link>
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-4">
+              <Link href="/login" passHref>
+                <Button className="bg-white border border-border hover:bg-muted text-md text-foreground font-normal !px-8 !py-4 rounded-full group">
+                  Login{" "}
+                </Button>
+              </Link>
+              <Link href="/signup" passHref>
+                <Button className="bg-primary hover:bg-primary/90 text-md text-primary-foreground !px-8 !py-4  rounded-full group">
+                  Start 14-day free trial
+                  <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform duration-200" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Mobile menu button */}

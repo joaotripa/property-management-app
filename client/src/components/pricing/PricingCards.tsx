@@ -12,7 +12,6 @@ interface PricingCardsProps {
   showToggle?: boolean;
   onPlanSelect?: (plan: Plan, isYearly: boolean) => void;
   defaultHref?: string;
-  showDisclaimer?: boolean;
 }
 
 export function PricingCards({
@@ -21,7 +20,6 @@ export function PricingCards({
   showToggle = true,
   onPlanSelect,
   defaultHref = "/dashboard",
-  showDisclaimer = true,
 }: PricingCardsProps) {
   const [isYearly, setIsYearly] = useState(false);
 
@@ -140,14 +138,6 @@ export function PricingCards({
           </Card>
         ))}
       </div>
-
-      {showDisclaimer && (
-        <div className="mt-16 text-center">
-          <p className="mb-4">
-            All plans include a 14-day free trial. No credit card required.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

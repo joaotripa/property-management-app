@@ -19,11 +19,7 @@ const Pricing = () => {
           </p>
         </div>
 
-        <PricingCards
-          showToggle={true}
-          showDisclaimer={true}
-          defaultHref="/dashboard"
-        />
+        <PricingCards showToggle={true} defaultHref="/dashboard" />
       </div>
     </section>
   );

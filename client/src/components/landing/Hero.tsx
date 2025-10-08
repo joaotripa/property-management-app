@@ -18,7 +18,10 @@ const Hero = () => {
             visibility.
           </h2>
 
-          <CTAButton />
+          <div className="flex flex-col items-center gap-2">
+            <CTAButton />
+            <p className="text-sm">No credit card required.</p>
+          </div>
         </div>
       </div>
     </section>

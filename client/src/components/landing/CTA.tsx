@@ -8,7 +8,7 @@ const CTA = () => {
           <div className="text-center animate-fade-in">
             <div className="flex sm:flex-row flex-col items-center justify-between px-16 gap-4">
               <h3 className="text-3xl sm:text-4xl text-balance py-6 font-bold text-foreground justify-start leading-snug">
-                Domari organizes finances for you.
+                Domari organizes property finances for you.
               </h3>
               <CTAButton />
             </div>
