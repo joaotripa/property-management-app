@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
-            <Toaster closeButton theme="light" />
+            <Toaster richColors closeButton theme="light" />
             {children}
           </AuthProvider>
         </QueryProvider>
