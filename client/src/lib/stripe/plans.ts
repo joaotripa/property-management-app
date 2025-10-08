@@ -37,7 +37,7 @@ export const PLANS = {
     name: 'Business',
     description: 'For serious property investors',
     price: { monthly: 49, yearly: 490 },
-    limits: { properties: 999 },
+    limits: { properties: 9999 },
     features: [
       'Unlimited properties',
       'Complete property portfolio management',

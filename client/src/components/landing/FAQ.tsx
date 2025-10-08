@@ -16,7 +16,7 @@ const FAQ = () => {
     {
       question: "What happens if I exceed my property limit?",
       answer:
-        "We'll notify you when you're approaching your plan's property limit. You can easily upgrade to the next tier (Starter: 10 properties, Pro: 50 properties, Business: unlimited) or remove unused properties from your account.",
+        "We'll notify you when you reach your plan's property limit. You can easily upgrade to the next tier (Starter: 10 properties, Pro: 50 properties, Business: unlimited) or remove unused properties from your account.",
     },
     {
       question: "Can I switch plans or cancel anytime?",
@@ -26,7 +26,7 @@ const FAQ = () => {
     {
       question: "How is my financial data stored and secured?",
       answer:
-        "Your data is securely stored in encrypted PostgreSQL databases with enterprise-grade security. You retain full ownership of your data and can export it anytime. We never share your information with third parties.",
+        "Your data is securely stored in encrypted PostgreSQL databases with enterprise-grade security. You retain full ownership of your data. We never share your information with third parties.",
     },
   ];
 
