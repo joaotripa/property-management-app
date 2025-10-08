@@ -34,6 +34,31 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
   const hasActivePaidSubscription = subscription.status === "ACTIVE";
 
   const getSubscriptionDateInfo = () => {
+    if (
+      subscription.trialEndsAt &&
+      new Date(subscription.trialEndsAt).getTime() > Date.now()
+    ) {
+      let description: string;
+      if (subscription.trialDaysRemaining === 0) {
+        description =
+          "Your free trial ends today! Upgrade now to continue using all features.";
+      } else if (subscription.trialDaysRemaining === 1) {
+        description = `${subscription.trialDaysRemaining} day left`;
+      } else {
+        description = `${subscription.trialDaysRemaining} days left`;
+      }
+
+      return {
+        label: "Trial ends at",
+        date:
+          new Date(subscription.trialEndsAt).toLocaleDateString() +
+          " " +
+          new Date(subscription.trialEndsAt).toLocaleTimeString(),
+        description: description,
+        variant: "secondary" as const,
+      };
+    }
+
     if (subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
       return {
         label: "Cancels on",
@@ -95,35 +120,35 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
 
   return (
     <div className="space-y-6">
-      {hasActivePaidSubscription ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Subscription Management
-            </CardTitle>
-            <CardDescription>
-              Manage your subscription, update payment methods, change plans,
-              and view invoices.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-muted-foreground">
-                    Current Plan:
-                  </span>
-                  <Badge
-                    variant={
-                      subscription.status === "TRIAL" ? "secondary" : "default"
-                    }
-                    className="text-sm font-medium"
-                  >
-                    {toCamelCase(subscription.plan)}
-                  </Badge>
-                </div>
-                {subscriptionDateInfo && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscription Management
+          </CardTitle>
+          <CardDescription>
+            Manage your subscription, update payment methods, change plans, and
+            view invoices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-muted-foreground">
+                  Current Plan:
+                </span>
+                <Badge
+                  variant={
+                    subscription.status === "TRIAL" ? "secondary" : "default"
+                  }
+                  className="text-sm font-medium"
+                >
+                  {toCamelCase(subscription.plan)}
+                </Badge>
+              </div>
+              {subscriptionDateInfo && (
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-sm">
                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
@@ -133,8 +158,16 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
                       {subscriptionDateInfo.date}
                     </span>
                   </div>
-                )}
-              </div>
+
+                  <div className="flex items-center text-sm">
+                    <span className="text-muted-foreground">
+                      {subscriptionDateInfo.description}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            {hasActivePaidSubscription && (
               <Button
                 onClick={handleManageSubscription}
                 disabled={isLoadingPortal}
@@ -152,27 +185,27 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
                   </>
                 )}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscription Plans</CardTitle>
-            <CardDescription>
-              Choose the plan that best fits your property portfolio needs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BillingPricingCards
-              currentPlan={subscription.plan}
-              currentStatus={subscription.status}
-              trialDaysRemaining={subscription.trialDaysRemaining}
-              onPlanSelect={handlePlanSelect}
-            />
-          </CardContent>
-        </Card>
-      )}
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Plans</CardTitle>
+          <CardDescription>
+            Choose the plan that best fits your property portfolio needs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BillingPricingCards
+            currentPlan={subscription.plan}
+            currentStatus={subscription.status}
+            trialDaysRemaining={subscription.trialDaysRemaining}
+            onPlanSelect={handlePlanSelect}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
