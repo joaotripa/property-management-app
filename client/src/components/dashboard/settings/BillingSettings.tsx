@@ -8,156 +8,165 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BillingPricingCards } from "@/components/billing/BillingPricingCards";
-import { SubscriptionInfoBanner } from "@/components/billing/SubscriptionInfoBanner";
-import { SubscriptionChangeDialog } from "@/components/billing/SubscriptionChangeDialog";
 import { toast } from "sonner";
 import { SubscriptionPlan } from "@prisma/client";
-import { SubscriptionData, Usage } from "@/hooks/queries/useBillingQueries";
-import { getLimit } from "@/lib/stripe/plans";
+import { SubscriptionData } from "@/hooks/queries/useBillingQueries";
 import { useSession } from "next-auth/react";
 import {
-  getSubscriptionPreview,
-  updateSubscription,
   getPaymentLink,
+  createPortalSession,
   BillingServiceError,
 } from "@/lib/services/client/billingService";
-import { useRouter } from "next/navigation";
+import { CreditCard, ExternalLink, Loader2, CalendarDays } from "lucide-react";
+import { toCamelCase } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface BillingSettingsProps {
   subscription: SubscriptionData;
-  usage: Usage;
 }
 
-export function BillingSettings({ subscription, usage }: BillingSettingsProps) {
-  const router = useRouter();
+export function BillingSettings({ subscription }: BillingSettingsProps) {
   const { data: session } = useSession();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
-    null
-  );
-  const [selectedIsYearly, setSelectedIsYearly] = useState(false);
-  const [preview, setPreview] = useState<{
-    isUpgrade: boolean;
-    currentPlan: string;
-    newPlan: string;
-    immediateChargeAmount: number;
-    nextBillingDate: string;
-    message: string;
-  } | null>(null);
+  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+
+  const hasActivePaidSubscription = subscription.status === "ACTIVE";
+
+  const getSubscriptionDateInfo = () => {
+    if (subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
+      return {
+        label: "Cancels on",
+        date: new Date(subscription.currentPeriodEnd).toLocaleDateString(),
+        variant: "destructive" as const,
+      };
+    }
+
+    if (subscription.scheduledPlan && subscription.scheduledPlanDate) {
+      return {
+        label: `Switching to ${toCamelCase(subscription.scheduledPlan)} on`,
+        date: new Date(subscription.scheduledPlanDate).toLocaleDateString(),
+        variant: "secondary" as const,
+      };
+    }
+
+    if (subscription.currentPeriodEnd) {
+      return {
+        label: "Next billing",
+        date: new Date(subscription.currentPeriodEnd).toLocaleDateString(),
+        variant: "secondary" as const,
+      };
+    }
+
+    return null;
+  };
+
+  const subscriptionDateInfo = getSubscriptionDateInfo();
 
   const handlePlanSelect = async (
     plan: SubscriptionPlan,
     isYearly: boolean
   ) => {
     try {
-      const hasActiveSubscription = subscription.status === "ACTIVE";
-
-      if (hasActiveSubscription) {
-        const newLimit = getLimit(plan);
-        const currentLimit = getLimit(subscription.plan);
-
-        if (newLimit < currentLimit && usage.propertyCount > newLimit) {
-          toast.error(
-            `Cannot downgrade: You have ${usage.propertyCount} properties but ${plan} plan allows only ${newLimit}. Please delete some properties first.`
-          );
-          return;
-        }
-
-        // Show confirmation dialog with preview
-        try {
-          const previewData = await getSubscriptionPreview({ plan, isYearly });
-          setPreview(previewData);
-          setSelectedPlan(plan);
-          setSelectedIsYearly(isYearly);
-          setDialogOpen(true);
-        } catch (error) {
-          console.error("Error getting preview:", error);
-          toast.error("Failed to get subscription preview. Please try again.");
-        }
-        return;
-      }
-
       const customerEmail = session?.user?.email || undefined;
       const paymentLink = getPaymentLink({ plan, isYearly, customerEmail });
       window.location.href = paymentLink;
     } catch (error) {
-      console.error("Error handling plan selection:", error);
-
-      if (error instanceof BillingServiceError) {
-        toast.error(error.message);
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+      console.error("Error getting payment link:", error);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
-  const handleConfirmChange = async () => {
-    if (!selectedPlan) return;
-
+  const handleManageSubscription = async () => {
+    setIsLoadingPortal(true);
     try {
-      const result = await updateSubscription({
-        plan: selectedPlan,
-        isYearly: selectedIsYearly,
-      });
-      toast.success(result.message);
-      router.refresh();
+      const { url } = await createPortalSession();
+      window.location.href = url;
     } catch (error) {
-      console.error("Error updating subscription:", error);
+      console.error("Error creating portal session:", error);
       if (error instanceof BillingServiceError) {
         toast.error(error.message);
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Failed to open billing portal. Please try again.");
       }
+      setIsLoadingPortal(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <SubscriptionInfoBanner
-        status={subscription.status}
-        plan={subscription.plan}
-        trialDaysRemaining={subscription.trialDaysRemaining}
-        currentPeriodEnd={
-          subscription.currentPeriodEnd
-            ? new Date(subscription.currentPeriodEnd)
-            : null
-        }
-        cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}
-        scheduledPlan={subscription.scheduledPlan}
-        scheduledPlanDate={
-          subscription.scheduledPlanDate
-            ? new Date(subscription.scheduledPlanDate)
-            : null
-        }
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Subscription Plans</CardTitle>
-          <CardDescription>
-            Choose the plan that best fits your property portfolio needs. You
-            can upgrade or downgrade at any time.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BillingPricingCards
-            currentPlan={subscription.plan}
-            currentStatus={subscription.status}
-            trialDaysRemaining={subscription.trialDaysRemaining}
-            onPlanSelect={handlePlanSelect}
-          />
-        </CardContent>
-      </Card>
-
-      {preview && (
-        <SubscriptionChangeDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          isYearly={selectedIsYearly}
-          preview={preview}
-          onConfirm={handleConfirmChange}
-        />
+      {hasActivePaidSubscription ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Subscription Management
+            </CardTitle>
+            <CardDescription>
+              Manage your subscription, update payment methods, change plans,
+              and view invoices.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">
+                    Current Plan:
+                  </span>
+                  <Badge variant="default" className="text-sm font-medium">
+                    {toCamelCase(subscription.plan)}
+                  </Badge>
+                </div>
+                {subscriptionDateInfo && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {subscriptionDateInfo.label}:
+                    </span>
+                    <span className="text-muted-foreground">
+                      {subscriptionDateInfo.date}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={handleManageSubscription}
+                disabled={isLoadingPortal}
+                variant="outline"
+              >
+                {isLoadingPortal ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Manage Subscription
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Plans</CardTitle>
+            <CardDescription>
+              Choose the plan that best fits your property portfolio needs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BillingPricingCards
+              currentPlan={subscription.plan}
+              currentStatus={subscription.status}
+              trialDaysRemaining={subscription.trialDaysRemaining}
+              onPlanSelect={handlePlanSelect}
+            />
+          </CardContent>
+        </Card>
       )}
     </div>
   );

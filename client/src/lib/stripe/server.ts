@@ -18,6 +18,19 @@ export const stripe = new Stripe(apiKey!, {
 // SUBSCRIPTION INITIALIZATION
 // ============================================================================
 
+/**
+ * Creates a new trial subscription for a user on signup.
+ * No Stripe customer is created yet - that happens when they first pay.
+ * 
+ * @param userId - The user ID to create subscription for
+ * @returns The created subscription record
+ * 
+ * @example
+ * ```typescript
+ * const subscription = await createSubscription(user.id);
+ * console.log(`Trial ends: ${subscription.trialEndsAt}`);
+ * ```
+ */
 export async function createSubscription(userId: string) {
   const trialEnabled = stripeConfig.trial.enabled;
   const defaultPlan: SubscriptionPlan = 'BUSINESS';
@@ -40,9 +53,26 @@ export async function createSubscription(userId: string) {
 }
 
 // ============================================================================
-// BILLING PORTAL & SUBSCRIPTION MANAGEMENT
+// BILLING PORTAL
 // ============================================================================
 
+/**
+ * Creates a Stripe Billing Portal session for customer self-service.
+ * Allows users to manage payment methods, view invoices, and cancel subscriptions.
+ * 
+ * @param params.userId - User ID
+ * @param params.returnUrl - URL to redirect after portal session
+ * @returns Portal session URL to redirect user to
+ * 
+ * @example
+ * ```typescript
+ * const { url } = await createPortalSession({
+ *   userId: user.id,
+ *   returnUrl: 'https://app.com/dashboard/settings',
+ * });
+ * // Redirect user to url
+ * ```
+ */
 export async function createPortalSession(params: {
   userId: string;
   returnUrl: string;
@@ -69,6 +99,24 @@ export async function createPortalSession(params: {
   return { url: session.url };
 }
 
+// ============================================================================
+// LIMIT ENFORCEMENT
+// ============================================================================
+
+/**
+ * Checks if a user can create more properties based on their subscription.
+ * 
+ * @param userId - User ID to check limits for
+ * @returns Limit check result with current usage and limit
+ * 
+ * @example
+ * ```typescript
+ * const check = await checkLimit(userId);
+ * if (!check.allowed) {
+ *   return res.json({ error: check.reason }, { status: 403 });
+ * }
+ * ```
+ */
 export async function checkLimit(userId: string): Promise<{
   allowed: boolean;
   current: number;
@@ -122,6 +170,19 @@ export async function canMutate(userId: string): Promise<boolean> {
   );
 }
 
+// ============================================================================
+// SUBSCRIPTION SYNCHRONIZATION
+// ============================================================================
+
+/**
+ * Syncs a Stripe subscription with the local database.
+ * Called by webhooks to keep local state in sync with Stripe.
+ * Handles user lookup by email if userId not in metadata.
+ * 
+ * @param stripeSubscriptionId - Stripe subscription ID
+ * @param customerEmail - Optional customer email for user lookup
+ * @param priceId - Optional price ID override
+ */
 export async function syncSubscription(
   stripeSubscriptionId: string,
   customerEmail?: string,
@@ -294,6 +355,17 @@ export function getPriceId(
   return priceMappings[key] || null;
 }
 
+// ============================================================================
+// SUBSCRIPTION CANCELLATION
+// ============================================================================
+
+/**
+ * Immediately cancels a user's subscription.
+ * Handles both Stripe-managed and local-only subscriptions.
+ * 
+ * @param userId - User ID
+ * @returns Success status and optional message
+ */
 export async function cancelSubscriptionNow(userId: string): Promise<{
   success: boolean;
   message?: string;
@@ -343,158 +415,10 @@ export async function cancelSubscriptionNow(userId: string): Promise<{
   }
 }
 
-export async function calculateSubscriptionChange(params: {
-  userId: string;
-  newPriceId: string;
-}): Promise<{
-  isUpgrade: boolean;
-  currentPlan: string;
-  newPlan: string;
-  immediateChargeAmount: number;
-  nextBillingDate: string;
-  message: string;
-}> {
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: params.userId },
-    select: { 
-      stripeSubscriptionId: true,
-      plan: true,
-      currentPeriodEnd: true,
-    },
-  });
 
-  if (!subscription?.stripeSubscriptionId) {
-    throw new Error('No active subscription found');
-  }
-
-  const currentPlan = subscription.plan;
-  const newPlan = getPlanFromPriceId(params.newPriceId);
-  const currentLimit = getLimit(currentPlan);
-  const newLimit = getLimit(newPlan);
-  const isUpgrade = newLimit > currentLimit;
-
-  const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
-  const subscriptionItemId = stripeSubscription.items.data[0]?.id;
-
-  if (!subscriptionItemId) {
-    throw new Error('No subscription item found');
-  }
-
-  const prorationDate = Math.floor(Date.now() / 1000);
-  
-  const upcomingInvoice = await stripe.invoices.createPreview({
-    customer: stripeSubscription.customer as string,
-    subscription: subscription.stripeSubscriptionId,
-    subscription_details: {
-      items: [{
-        id: subscriptionItemId,
-        price: params.newPriceId,
-      }],
-      proration_date: prorationDate,
-    },
-  });
-
-  let immediateChargeAmount = 0;
-  
-  if (isUpgrade && upcomingInvoice.lines?.data) {
-    for (const line of upcomingInvoice.lines.data) {
-      const parent = line.parent as { subscription_item_details?: { proration?: boolean } } | null;
-      if (parent?.subscription_item_details?.proration) {
-        immediateChargeAmount += line.amount;
-      }
-    }
-  }
-
-  const nextBillingDate = subscription.currentPeriodEnd?.toLocaleDateString() || 'N/A';
-
-  let message: string;
-  if (isUpgrade) {
-    message = `You'll be charged ${formatCurrency(immediateChargeAmount)} today for the prorated upgrade. Your next billing of ${formatCurrency(upcomingInvoice.amount_due - immediateChargeAmount)} for the full ${newPlan} plan will be on ${nextBillingDate}.`;
-  } else {
-    message = `Your plan will change to ${newPlan} at your next billing date (${nextBillingDate}). No immediate charge.`;
-  }
-
-  function formatCurrency(amountInCents: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: upcomingInvoice.currency?.toUpperCase() || 'USD',
-    }).format(amountInCents / 100);
-  }
-
-  return {
-    isUpgrade,
-    currentPlan,
-    newPlan,
-    immediateChargeAmount,
-    nextBillingDate,
-    message,
-  };
-}
-
-export async function updateSubscriptionPlan(params: {
-  userId: string;
-  newPriceId: string;
-}): Promise<{ success: boolean; message: string }> {
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: params.userId },
-    select: { 
-      stripeSubscriptionId: true,
-      stripeSubscriptionItemId: true,
-      stripeCustomerId: true,
-      plan: true,
-    },
-  });
-
-  if (!subscription?.stripeSubscriptionId) {
-    throw new Error('No active subscription found');
-  }
-
-  if (!subscription.stripeSubscriptionItemId) {
-    throw new Error('No subscription item found');
-  }
-
-  if (!subscription.stripeCustomerId) {
-    throw new Error('No Stripe customer found');
-  }
-
-  const currentPlan = subscription.plan;
-  const newPlan = getPlanFromPriceId(params.newPriceId);
-  const currentLimit = getLimit(currentPlan);
-  const newLimit = getLimit(newPlan);
-  const isUpgrade = newLimit > currentLimit;
-
-  if (isUpgrade) {
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      items: [{ 
-        id: subscription.stripeSubscriptionItemId, 
-        price: params.newPriceId 
-      }],
-      proration_behavior: 'create_prorations',
-    });
-
-    const invoice = await stripe.invoices.create({
-      customer: subscription.stripeCustomerId,
-      subscription: subscription.stripeSubscriptionId,
-      auto_advance: true, 
-    });
-
-    await stripe.invoices.finalizeInvoice(invoice.id);
-    await stripe.invoices.pay(invoice.id);
-    
-    return { success: true, message: 'Subscription upgraded successfully' };
-  } else {
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      items: [{ 
-        id: subscription.stripeSubscriptionItemId, 
-        price: params.newPriceId 
-      }],
-      proration_behavior: 'none',
-      billing_cycle_anchor: 'unchanged',
-    });
-         
-    return { success: true, message: 'Subscription will downgrade at period end' };
-  }
-}
+// ============================================================================
+// UTILITY FUNCTIONS (INTERNAL)
+// ============================================================================
 
 function mapStatus(stripeStatus: string): SubscriptionStatus {
   switch (stripeStatus) {
@@ -527,9 +451,17 @@ function getPlanFromPriceId(priceId: string): SubscriptionPlan {
 }
 
 // ============================================================================
-// WEBHOOKS
+// WEBHOOK HANDLING
 // ============================================================================
 
+/**
+ * Verifies and constructs a Stripe webhook event from raw request data.
+ * 
+ * @param body - Raw request body string
+ * @param signature - Stripe-Signature header value
+ * @returns Verified Stripe event
+ * @throws Error if signature verification fails
+ */
 export function verifyWebhook(body: string, signature: string): Stripe.Event {
   try {
     return stripe.webhooks.constructEvent(body, signature, stripeConfig.webhookSecret);
@@ -581,37 +513,6 @@ export async function handleWebhook(event: Stripe.Event) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode === 'subscription' && session.subscription) {
-    const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-    
-    if (subscription.metadata.update_existing === 'true') {
-      const isUpgrade = subscription.metadata.isUpgrade === 'true';
-      
-      if (isUpgrade) {
-        await stripe.subscriptions.update(subscription.id, {
-          proration_behavior: 'create_prorations',
-        });
-      } else {
-        const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
-        const currentPriceId = subscription.items.data[0]?.price?.id;
-        const newPriceId = subscription.metadata.newPriceId;
-        
-        if (currentPriceId && newPriceId) {
-          await stripe.subscriptionSchedules.create({
-            from_subscription: subscription.id,
-            phases: [
-              {
-                items: [{ price: currentPriceId, quantity: 1 }],
-                end_date: currentPeriodEnd,
-              },
-              {
-                items: [{ price: newPriceId, quantity: 1 }],
-              },
-            ],
-          });
-        }
-      }
-    }
-    
     await syncSubscription(session.subscription as string);
   }
 }
@@ -651,14 +552,16 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  if (!invoice.parent?.subscription_details?.subscription) {
+  const invoiceWithSubscription = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription };
+  
+  if (!invoiceWithSubscription.subscription) {
     console.log('No subscription ID in invoice');
     return;
   }
 
-  const subscriptionId = typeof invoice.parent.subscription_details.subscription === 'string'
-    ? invoice.parent.subscription_details.subscription
-    : invoice.parent.subscription_details.subscription.id;
+  const subscriptionId = typeof invoiceWithSubscription.subscription === 'string'
+    ? invoiceWithSubscription.subscription
+    : invoiceWithSubscription.subscription.id;
 
   const customerEmail = invoice.customer_email || undefined;
 
@@ -666,7 +569,9 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  if (!invoice.parent?.subscription_details?.subscription) {
+  const invoiceWithSubscription = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription };
+  
+  if (!invoiceWithSubscription.subscription) {
     console.log('No subscription ID in invoice');
     return;
   }

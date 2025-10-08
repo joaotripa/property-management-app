@@ -8,29 +8,32 @@ export class BillingServiceError extends Error {
   }
 }
 
-interface CreatePortalSessionParams {
+interface GetPaymentLinkParams {
   plan: SubscriptionPlan;
   isYearly: boolean;
+  customerEmail?: string;
+}
+
+export function getPaymentLink({
+  plan,
+  isYearly,
+  customerEmail,
+}: GetPaymentLinkParams): string {
+  return getPaymentLinkFromConfig(plan, isYearly, customerEmail);
 }
 
 interface CreatePortalSessionResponse {
   url: string;
 }
 
-export async function createPortalSession({
-  plan,
-  isYearly,
-}: CreatePortalSessionParams): Promise<CreatePortalSessionResponse> {
+export async function createPortalSession(): Promise<CreatePortalSessionResponse> {
   try {
-    const response = await fetch(
-      `/api/billing/portal?plan=${plan}&isYearly=${isYearly}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch("/api/billing/portal", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -50,20 +53,6 @@ export async function createPortalSession({
       "Something went wrong. Please try again."
     );
   }
-}
-
-interface GetPaymentLinkParams {
-  plan: SubscriptionPlan;
-  isYearly: boolean;
-  customerEmail?: string;
-}
-
-export function getPaymentLink({
-  plan,
-  isYearly,
-  customerEmail,
-}: GetPaymentLinkParams): string {
-  return getPaymentLinkFromConfig(plan, isYearly, customerEmail);
 }
 
 interface CancelSubscriptionNowResponse {
@@ -100,94 +89,4 @@ export async function cancelSubscriptionNow(): Promise<CancelSubscriptionNowResp
   }
 }
 
-interface SubscriptionPreviewParams {
-  plan: SubscriptionPlan;
-  isYearly: boolean;
-}
 
-interface SubscriptionPreviewResponse {
-  isUpgrade: boolean;
-  currentPlan: string;
-  newPlan: string;
-  immediateChargeAmount: number;
-  nextBillingDate: string;
-  message: string;
-}
-
-interface UpdateSubscriptionParams {
-  plan: SubscriptionPlan;
-  isYearly: boolean;
-}
-
-interface UpdateSubscriptionResponse {
-  success: boolean;
-  message: string;
-}
-
-export async function getSubscriptionPreview({
-  plan,
-  isYearly,
-}: SubscriptionPreviewParams): Promise<SubscriptionPreviewResponse> {
-  try {
-    const response = await fetch(
-      `/api/billing/preview?plan=${plan}&isYearly=${isYearly}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new BillingServiceError(
-        errorData.error || "Failed to get subscription preview",
-        response.status
-      );
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof BillingServiceError) {
-      throw error;
-    }
-    throw new BillingServiceError(
-      "Something went wrong. Please try again."
-    );
-  }
-}
-
-export async function updateSubscription({
-  plan,
-  isYearly,
-}: UpdateSubscriptionParams): Promise<UpdateSubscriptionResponse> {
-  try {
-    const response = await fetch(
-      `/api/billing/checkout?plan=${plan}&isYearly=${isYearly}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new BillingServiceError(
-        errorData.error || "Failed to update subscription",
-        response.status
-      );
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof BillingServiceError) {
-      throw error;
-    }
-    throw new BillingServiceError(
-      "Something went wrong. Please try again."
-    );
-  }
-}
