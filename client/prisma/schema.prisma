@@ -60,6 +60,7 @@ model Property {
   @@index([deletedAt])
   @@index([occupancy])
   @@index([userId, occupancy])
+  @@index([userId, isActive])
   @@map("properties")
 }
 
@@ -93,6 +94,7 @@ model Category {
 
   @@index([type])
   @@index([isActive])
+  @@index([type, isActive])
   @@map("categories")
 }
 
@@ -144,6 +146,7 @@ model MonthlyMetrics {
   @@index([propertyId])
   @@index([userId])
   @@index([year, month])
+  @@index([userId, propertyId])
   @@map("monthly_metrics")
 }
 
@@ -163,6 +166,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -173,6 +177,7 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
@@ -249,6 +254,7 @@ model Subscription {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
   @@index([status])
