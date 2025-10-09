@@ -4,10 +4,11 @@ import { config } from 'dotenv';
 import { Resend } from 'resend';
 
 // Load environment variables from .env.local
-config({ path: '.env.local' });
+config({ path: '.env' });
 import { getVerificationEmailTemplate } from '../src/lib/integrations/email/templates/verification-email';
 import { getPasswordResetEmailTemplate } from '../src/lib/integrations/email/templates/password-reset-email';
 import { createContactEmailTemplate } from '../src/lib/integrations/email/templates/contact-form';
+import { getWelcomeEmailTemplate } from '../src/lib/integrations/email/templates/welcome-email';
 
 const sampleData = {
   verification: {
@@ -87,17 +88,39 @@ async function sendContactEmail() {
   return true;
 }
 
+async function sendWelcomeEmail() {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const htmlContent = getWelcomeEmailTemplate();
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.RESEND_EMAIL_FROM || 'noreply@email.domari.app',
+    to: process.env.RESEND_EMAIL_TO || 'support@domari.app',
+    subject: 'Test: Welcome to Domari - Your 14-Day Trial Has Started',
+    html: htmlContent
+  });
+
+  if (error) {
+    console.error('❌ Failed to send welcome email:', error);
+    return false;
+  }
+
+  console.log('✅ Welcome email sent successfully');
+  console.log(`📧 Email ID: ${data?.id}`);
+  return true;
+}
+
 async function sendAllEmails() {
   console.log('📨 Sending all test emails...\n');
 
   const results = await Promise.allSettled([
     sendVerificationEmail(),
     sendPasswordResetEmail(),
-    sendContactEmail()
+    sendContactEmail(),
+    sendWelcomeEmail()
   ]);
 
   const successful = results.filter(result => result.status === 'fulfilled' && result.value).length;
-  console.log(`\n📊 Results: ${successful}/3 emails sent successfully`);
+  console.log(`\n📊 Results: ${successful}/4 emails sent successfully`);
 }
 
 async function main() {
@@ -109,7 +132,8 @@ async function main() {
     console.log('  npm run test:emails verification   - Send verification email');
     console.log('  npm run test:emails password-reset - Send password reset email');
     console.log('  npm run test:emails contact        - Send contact form email');
-    console.log('  npm run test:emails all           - Send all three emails');
+    console.log('  npm run test:emails welcome        - Send welcome email');
+    console.log('  npm run test:emails all            - Send all emails');
     console.log(`\n📍 Test emails will be sent to: ${process.env.RESEND_EMAIL_TO || 'support@domari.app'}`);
     process.exit(1);
   }
@@ -132,12 +156,15 @@ async function main() {
       case 'contact':
         await sendContactEmail();
         break;
+      case 'welcome':
+        await sendWelcomeEmail();
+        break;
       case 'all':
         await sendAllEmails();
         break;
       default:
         console.error(`❌ Unknown email type: ${emailType}`);
-        console.log('\nValid options: verification, password-reset, contact, all');
+        console.log('\nValid options: verification, password-reset, contact, welcome, all');
         process.exit(1);
     }
   } catch (error) {
