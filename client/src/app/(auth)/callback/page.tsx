@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 
 export default function CallbackPage() {
   const router = useRouter();
@@ -16,10 +16,5 @@ export default function CallbackPage() {
     }
   }, [status, session, router]);
 
-  return (
-    <div className="flex flex-col items-center justify-center h-96">
-      <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-4" />
-      <p className="text-gray-600 mt-4">Processing authentication...</p>
-    </div>
-  );
+  return <Loading loadingText="Processing authentication..." />;
 }
