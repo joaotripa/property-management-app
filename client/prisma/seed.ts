@@ -188,14 +188,14 @@ async function main() {
       description: 'Management fees, letting agent fees, advertising, and tenant screening',
     },
     {
-      name: 'Community Charges',
+      name: 'Condominium Fees',
       type: TransactionType.EXPENSE,
-      description: 'Condominium fees, building maintenance, and community assessments',
+      description: 'Monthly building maintenance fees and community charges',
     },
     {
-      name: 'Mortgage Interest',
+      name: 'Mortgage Payment',
       type: TransactionType.EXPENSE,
-      description: 'Mortgage interest payments for this property',
+      description: 'Monthly mortgage payments (principal and interest)',
     },
     {
       name: 'Capital Improvements',

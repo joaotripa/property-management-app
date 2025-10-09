@@ -355,21 +355,21 @@ SELECT
     true,
     '@user_id',
     cf.property_id,
-    COALESCE((SELECT id FROM categories WHERE name = 'Community Charges' AND type = 'EXPENSE' LIMIT 1), (SELECT id FROM categories WHERE name = 'Other' AND type = 'EXPENSE' LIMIT 1)),
+    COALESCE((SELECT id FROM categories WHERE name = 'Condominium Fees' AND type = 'EXPENSE' LIMIT 1), (SELECT id FROM categories WHERE name = 'Other' AND type = 'EXPENSE' LIMIT 1)),
     cf.fee_date::timestamptz,
     now()
 FROM community_fees cf;
 
--- Mortgage Interest (monthly mortgage payments)
+-- Mortgage Payment (monthly mortgage payments - principal and interest)
 WITH property_data AS (
     SELECT id, purchase_price, created_at::date as start_date
-    FROM properties 
+    FROM properties
     WHERE user_id = '@user_id'
 ),
 mortgage_payments AS (
-    SELECT 
+    SELECT
         p.id as property_id,
-        (p.purchase_price * 0.002)::numeric(10,2) as monthly_interest, -- ~2.4% annual rate (reduced)
+        (p.purchase_price * 0.002)::numeric(10,2) as monthly_payment, -- ~2.4% annual rate (reduced)
         DATE(date_trunc('month', generate_series(
             DATE '2025-03-01',
             DATE '2025-09-01',
@@ -382,16 +382,16 @@ INSERT INTO transactions (
     id, amount, type, description, transaction_date, is_recurring,
     user_id, property_id, category_id, created_at, updated_at
 )
-SELECT 
+SELECT
     gen_random_uuid(),
-    mp.monthly_interest,
+    mp.monthly_payment,
     'EXPENSE',
-    'Monthly Mortgage Interest Payment',
+    'Monthly Mortgage Payment',
     mp.payment_date,
     true,
     '@user_id',
     mp.property_id,
-    COALESCE((SELECT id FROM categories WHERE name = 'Mortgage Interest' AND type = 'EXPENSE' LIMIT 1), (SELECT id FROM categories WHERE name = 'Other' AND type = 'EXPENSE' LIMIT 1)),
+    COALESCE((SELECT id FROM categories WHERE name = 'Mortgage Payment' AND type = 'EXPENSE' LIMIT 1), (SELECT id FROM categories WHERE name = 'Other' AND type = 'EXPENSE' LIMIT 1)),
     mp.payment_date::timestamptz,
     now()
 FROM mortgage_payments mp;
