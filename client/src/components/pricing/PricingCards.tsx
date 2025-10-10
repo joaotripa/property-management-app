@@ -19,7 +19,7 @@ export function PricingCards({
   className = "",
   showToggle = true,
   onPlanSelect,
-  defaultHref = "/dashboard",
+  defaultHref = "/signup",
 }: PricingCardsProps) {
   const [isYearly, setIsYearly] = useState(false);
 
