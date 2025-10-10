@@ -9,51 +9,51 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String        @unique
-  passwordHash  String?       @map("password_hash")
-  name          String?
-  phone         String?
-  emailVerified DateTime?     @map("email_verified")
-  image         String?
-  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz(6)
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
-  accounts      Account[]
-  properties    Property[]
-  sessions      Session[]
-  transactions  Transaction[]
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String           @unique
+  passwordHash   String?          @map("password_hash")
+  name           String?
+  phone          String?
+  emailVerified  DateTime?        @map("email_verified")
+  image          String?
+  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  accounts       Account[]
   monthlyMetrics MonthlyMetrics[]
-  userSettings  UserSettings?
-  subscription  Subscription?
+  properties     Property[]
+  sessions       Session[]
+  subscription   Subscription?
+  transactions   Transaction[]
+  userSettings   UserSettings?
 
   @@index([deletedAt])
   @@map("users")
 }
 
 model Property {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String
-  address       String
-  city          String?
-  state         String?
-  zipCode       String?         @map("zip_code")
-  country       String?
-  purchasePrice Decimal?        @map("purchase_price") @db.Decimal(12, 2)
-  marketValue   Decimal?        @map("market_value") @db.Decimal(12, 2)
-  isActive      Boolean         @default(true) @map("is_active")
-  deletedAt     DateTime?       @map("deleted_at") @db.Timestamptz(6)
-  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
-  userId        String          @map("user_id") @db.Uuid
-  rent          Decimal         @default(0) @db.Decimal(12, 2)
-  tenants       Int             @default(0)
-  type          PropertyType    @default(APARTMENT)
-  occupancy     OccupancyStatus @default(AVAILABLE)
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions  Transaction[]
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  address        String
+  city           String?
+  state          String?
+  zipCode        String?          @map("zip_code")
+  country        String?
+  purchasePrice  Decimal?         @map("purchase_price") @db.Decimal(12, 2)
+  marketValue    Decimal?         @map("market_value") @db.Decimal(12, 2)
+  isActive       Boolean          @default(true) @map("is_active")
+  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  userId         String           @map("user_id") @db.Uuid
+  rent           Decimal          @default(0) @db.Decimal(12, 2)
+  tenants        Int              @default(0)
+  type           PropertyType     @default(APARTMENT)
+  occupancy      OccupancyStatus  @default(AVAILABLE)
   monthlyMetrics MonthlyMetrics[]
-  images        PropertyImage[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images         PropertyImage[]
+  transactions   Transaction[]
 
   @@index([userId])
   @@index([isActive])
@@ -126,16 +126,15 @@ model Transaction {
   @@map("transactions")
 }
 
-
 model MonthlyMetrics {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   propertyId       String   @map("property_id") @db.Uuid
   userId           String   @map("user_id") @db.Uuid
   year             Int
-  month            Int      // 1-12
+  month            Int
   totalIncome      Decimal  @default(0) @map("total_income") @db.Decimal(12, 2)
   totalExpenses    Decimal  @default(0) @map("total_expenses") @db.Decimal(12, 2)
-  cashFlow        Decimal  @default(0) @map("cash_flow") @db.Decimal(12, 2)
+  cashFlow         Decimal  @default(0) @map("cash_flow") @db.Decimal(12, 2)
   transactionCount Int      @default(0) @map("transaction_count")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -192,9 +191,9 @@ model VerificationToken {
 
 model Currency {
   id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code         String         @unique // ISO 4217 (e.g., 'USD', 'EUR')
-  symbol       String         // e.g., '$', '€', '£'
-  name         String         // e.g., 'US Dollar', 'Euro'
+  code         String         @unique
+  symbol       String
+  name         String
   isActive     Boolean        @default(true) @map("is_active")
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -206,8 +205,8 @@ model Currency {
 
 model Timezone {
   id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  iana         String         @unique // IANA timezone (e.g., 'America/New_York')
-  label        String         // Human-readable label (e.g., 'Eastern Time (ET)')
+  iana         String         @unique
+  label        String
   isActive     Boolean        @default(true) @map("is_active")
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -225,10 +224,9 @@ model UserSettings {
   hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
   createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
-
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currency Currency @relation(fields: [currencyId], references: [id])
-  timezone Timezone @relation(fields: [timezoneId], references: [id])
+  currency               Currency @relation(fields: [currencyId], references: [id])
+  timezone               Timezone @relation(fields: [timezoneId], references: [id])
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("user_settings")
@@ -251,8 +249,7 @@ model Subscription {
   scheduledPlanDate        DateTime?          @map("scheduled_plan_date") @db.Timestamptz(6)
   createdAt                DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([stripeCustomerId])
