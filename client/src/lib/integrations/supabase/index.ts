@@ -6,6 +6,3 @@ export { createServerSupabaseClient, createServiceSupabaseClient } from './serve
 
 // Types and utilities
 export type { Database } from './types';
-
-// S3 client
-export * from './s3-client';

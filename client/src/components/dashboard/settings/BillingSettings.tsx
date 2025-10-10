@@ -34,28 +34,30 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
   const hasActivePaidSubscription = subscription.status === "ACTIVE";
 
   const getSubscriptionDateInfo = () => {
-    if (
-      subscription.trialEndsAt &&
-      new Date(subscription.trialEndsAt).getTime() > Date.now()
-    ) {
+    if (subscription.trialEndsAt && subscription.status === "TRIAL") {
       let description: string;
-      if (subscription.trialDaysRemaining === 0) {
+      const daysRemaining = subscription.trialDaysRemaining ?? 0;
+
+      if (daysRemaining < 0) {
         description =
-          "Your free trial ends in a few hours! Upgrade now to continue using all features.";
-      } else if (subscription.trialDaysRemaining === 1) {
-        description = `${subscription.trialDaysRemaining} day left`;
+          "Your free trial has expired! Upgrade now to continue using all features.";
+      } else if (daysRemaining === 0) {
+        description =
+          "Your free trial expires today! Upgrade now to continue using all features.";
+      } else if (daysRemaining === 1) {
+        description = `${daysRemaining} day left`;
       } else {
-        description = `${subscription.trialDaysRemaining} days left`;
+        description = `${daysRemaining} days left`;
       }
 
       return {
-        label: "Trial ends at",
+        label: daysRemaining < 0 ? "Trial expired on" : "Trial ends at",
         date:
           new Date(subscription.trialEndsAt).toLocaleDateString() +
           " " +
           new Date(subscription.trialEndsAt).toLocaleTimeString(),
         description: description,
-        variant: "secondary" as const,
+        variant: daysRemaining < 0 ? ("destructive" as const) : ("secondary" as const),
       };
     }
 

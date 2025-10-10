@@ -16,9 +16,6 @@ interface BillingPricingCardsProps {
 }
 
 export function BillingPricingCards({
-  currentPlan,
-  currentStatus,
-  trialDaysRemaining,
   isYearly: initialIsYearly = false,
   onPlanSelect,
 }: BillingPricingCardsProps) {

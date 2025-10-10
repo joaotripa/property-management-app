@@ -321,7 +321,7 @@ export async function getSubscriptionInfo(userId: string) {
   });
 
   const trialDaysRemaining = subscription.trialEndsAt
-    ? Math.max(0, Math.floor((subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.floor((subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
   return {
