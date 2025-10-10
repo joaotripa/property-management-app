@@ -16,6 +16,7 @@
     "db:seed:prod": "dotenv -e .env.production -- tsx prisma/seed.ts",
     "db:studio:prod": "dotenv -e .env.production -- prisma studio",
     "db:migrate:deploy": "dotenv -e .env.production -- prisma migrate deploy",
+    "db:migrate:resolve": "dotenv -e .env.production -- prisma migrate resolve --applied",
     "test:emails": "tsx scripts/send-test-emails.ts"
   },
   "dependencies": {
