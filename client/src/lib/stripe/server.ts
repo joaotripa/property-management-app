@@ -321,7 +321,21 @@ export async function getSubscriptionInfo(userId: string) {
   });
 
   const trialDaysRemaining = subscription.trialEndsAt
-    ? Math.floor((subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? (() => {
+        const millisDiff = subscription.trialEndsAt.getTime() - Date.now();
+        const daysDiff = millisDiff / (1000 * 60 * 60 * 24);
+
+        if (millisDiff < 0) {
+          // Trial already expired - use floor to get negative days
+          return Math.floor(daysDiff);
+        } else if (millisDiff < 86400000) {
+          // Less than 24 hours remaining = "expires today"
+          return 0;
+        } else {
+          // 24+ hours remaining - round up so 13.999 days = 14 days
+          return Math.ceil(daysDiff);
+        }
+      })()
     : null;
 
   return {
