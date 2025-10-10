@@ -51,8 +51,7 @@ export const PRICING_PLANS: Plan[] = [
     features: [
       "Unlimited properties",
       "Everything in Pro plan",
-      "Priority support",
-      "Early access to new advanced features",
+      "Early access to new features",
     ],
     buttonText: "Start 14-day free trial",
     buttonVariant: "outline",
