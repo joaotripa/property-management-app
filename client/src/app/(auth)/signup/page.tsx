@@ -234,7 +234,7 @@ const SignupPage = () => {
                         >
                           I agree to the{" "}
                           <Link
-                            href="/legal/terms"
+                            href="/terms-of-service"
                             className="font-medium text-accent hover:text-accent/70 transition-colors"
                             target="_blank"
                           >
@@ -242,7 +242,7 @@ const SignupPage = () => {
                           </Link>{" "}
                           and{" "}
                           <Link
-                            href="/legal/privacy"
+                            href="/privacy-policy"
                             className="font-medium text-accent hover:text-accent/70 transition-colors"
                             target="_blank"
                           >
