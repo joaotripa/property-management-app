@@ -5,30 +5,30 @@ const Problem = () => {
   const features = [
     {
       icon: FileStack,
-      title: "Spreadsheet Hell",
+      title: "Spreadsheet Chaos",
       description:
-        "You're wrestling with multiple Excel files, losing data, and spending weekends fixing formulas instead of growing your portfolio.",
+        "Multiple Excel files, broken formulas, and no idea which version is current. More time fixing spreadsheets than actually managing properties.",
       color: "from-destructive/70 to-rose-500",
     },
     {
       icon: CalendarClock,
-      title: "Tax Season Nightmare",
+      title: "Tax Season Panic",
       description:
-        'Scrambling through receipts and bank statements because your "system" is actually just a folder of random documents.',
+        "Scrambling through receipts and bank statements at the last minute because your 'system' is just a folder of random PDFs.",
       color: "from-destructive/70 to-rose-500",
     },
     {
       icon: Target,
-      title: "Missing Money",
+      title: "Your Profits Are Hiding",
       description:
-        "Without clear tracking, you're losing track of expenses, making poor investment decisions and leaving deductions on the table.",
+        "You collect rent every month, but between repairs, property taxes, and random fees, you're not sure what's actually left. Without tracking it all, you can't tell if you're building wealth or just breaking even.",
       color: "from-destructive/70 to-rose-500",
     },
     {
       icon: EyeOff,
-      title: "Zero Visibility",
+      title: "Flying Blind",
       description:
-        "No idea which properties are actually profitable or where your money is going each month.",
+        "No idea which properties make money or if this month was better than last. Running a business on gut feeling instead of real numbers.",
       color: "from-destructive/70 to-rose-500",
     },
   ];

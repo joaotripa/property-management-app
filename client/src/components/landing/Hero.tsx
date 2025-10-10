@@ -9,13 +9,13 @@ const Hero = () => {
         <div className="text-center animate-fade-in">
           <h1 className="text-5xl font-medium leading-tight mb-6">
             See exactly how your{" "}
-            <span className="text-primary">properties perform</span>
+            <span className="text-primary">properties make money</span>
           </h1>
 
           <h2 className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto text-balance">
-            Track income, expenses, and real profit margins in one clean
-            dashboard. Make smarter investment decisions with complete financial
-            visibility.
+            Track income, expenses, and cash flow in one simple dashboard.
+            No more spreadsheets, no more guesswork. Just clear numbers that
+            help you invest smarter.
           </h2>
 
           <div className="flex flex-col items-center gap-2">

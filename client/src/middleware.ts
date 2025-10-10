@@ -15,6 +15,8 @@ export default auth((req) => {
     '/verify-code',
     '/reset-password',
     '/contact',
+    '/privacy-policy',
+    '/terms-of-service',
     '/api/auth',
     '/api/contact',
     '/api/waitlist',

@@ -1,38 +1,34 @@
-import { BarChart3, TrendingUp, Building2, ReceiptText } from "lucide-react";
+import { BarChart3, FileText, Building2, ReceiptText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Solution = () => {
   const features = [
     {
       icon: ReceiptText,
-      title: "Financial Transaction Tracking",
-      subheadline: "Every dollar, perfectly organized",
+      title: "Track Every Transaction",
       description:
-        "Log rent, expenses, maintenance costs, repairs, and more in seconds. Built-in categories mean no more guessing where that repair bill should go.",
+        "Log rent payments, maintenance costs, and property expenses in seconds. Organize with built-in categories and find any transaction fast—no more digging through piles of receipts.",
       color: "from-primary/80 to-primary",
     },
     {
       icon: Building2,
-      title: "Property Portfolio Management",
-      subheadline: "All your properties in one place",
+      title: "Manage Your Portfolio",
       description:
-        "Add your properties and see performance at a glance. Switch between properties instantly and track what matters most.",
+        "See all your properties in one place. Compare performance, identify your best earners, and make smarter decisions about where to invest next.",
       color: "from-primary/80 to-primary",
     },
     {
       icon: BarChart3,
-      title: "Essential Reporting",
-      subheadline: "Tax-ready reports in one click",
+      title: "Visualize Your Performance",
       description:
-        "Generate profit & loss statements, export everything for your accountant, and see exactly which properties make you money.",
+        "Watch your cash flow over time, see exactly where your money goes, and compare properties side-by-side. All the insights, none of the spreadsheet headaches.",
       color: "from-primary/80 to-primary",
     },
     {
-      icon: TrendingUp,
-      title: "Cash Flow Summary",
-      subheadline: "Know your numbers instantly",
+      icon: FileText,
+      title: "Tax Season Made Simple",
       description:
-        "See total income, expenses, and profit across your entire portfolio. Monthly, yearly, or property-by-property views.",
+        "Export all your transactions instantly. Give your accountant organized data instead of chaos, and make tax season the easiest part of your year.",
       color: "from-primary/80 to-primary",
     },
   ];
