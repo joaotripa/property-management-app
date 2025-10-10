@@ -12,10 +12,10 @@ const Hero = () => {
             <span className="text-primary">properties make money</span>
           </h1>
 
-          <h2 className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto text-balance">
-            Track income, expenses, and cash flow in one simple dashboard.
-            No more spreadsheets, no more guesswork. Just clear numbers that
-            help you invest smarter.
+          <h2 className="text-lg sm:text-xl mb-8 leading-relaxed max-w-4xl mx-auto text-balance">
+            Track income, expenses, and cash flow in one simple dashboard. No
+            more spreadsheets, no more guesswork. Just clear numbers that help
+            you invest smarter.
           </h2>
 
           <div className="flex flex-col items-center gap-2">
