@@ -48,9 +48,10 @@ const Problem = () => {
               shouldn&apos;t be this hard
             </h2>
             <p className="text-lg text-balance">
-              Most landlords are drowning in spreadsheet chaos, missing
-              deductions, and wasting hours on basic bookkeeping that should
-              take minutes.
+              If you've ever scrambled to find a receipt at tax time, stared at
+              a spreadsheet wondering where your profit went, or realized you
+              have no idea which property actually makes money. You're exactly
+              who we built this for.
             </p>
           </div>
         </div>

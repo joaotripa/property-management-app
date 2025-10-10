@@ -46,8 +46,9 @@ const Solution = () => {
               <span className="text-primary">track your property</span> finances
             </h2>
             <p className="text-lg text-balance">
-              Track income, manage expenses, generate tax-ready reports from one
-              simple dashboard and scale your portfolio effortlessly.
+              Track every rent payment and expense, see which properties make
+              you money, and have everything organized for tax season. All in
+              one place, without the Excel headaches.
             </p>
           </div>
         </div>
