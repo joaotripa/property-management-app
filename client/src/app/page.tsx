@@ -1,23 +1,27 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import HeroSection from "@/components/landing/HeroSection";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import WhyDomariSection from "@/components/landing/WhyDomariSection";
-import AboutSection from "@/components/landing/AboutSection";
-import CallToActionSection from "@/components/landing/CallToActionSection";
+import Navbar from "@/components/landing/Navbar";
+import Hero from "@/components/landing/Hero";
+import DashboardPreview from "@/components/landing/DashboardPreview";
+import Problem from "@/components/landing/Problem";
+import Solution from "@/components/landing/Solution";
+import Footer from "@/components/landing/Footer";
+import Pricing from "@/components/landing/Pricing";
+import FAQ from "@/components/landing/FAQ";
+import CTA from "@/components/landing/CTA";
 
 export default function Home() {
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 h-full w-full">
+    <div className="h-full w-full">
       <Navbar />
-      <main className={`h-full flex w-full flex-col`}>
-        <HeroSection />
-        <HowItWorksSection />
-        <WhyDomariSection />
-        <AboutSection />
-        <CallToActionSection />
+      <main className="flex flex-col">
+        <Hero />
+        <DashboardPreview />
+        <Problem />
+        <Solution />
+        <Pricing />
+        <FAQ />
+        <CTA />
+        <Footer />
       </main>
-      <Footer />
     </div>
   );
 }

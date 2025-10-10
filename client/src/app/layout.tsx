@@ -1,26 +1,19 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { Montserrat, Nunito_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+
 import Script from "next/script";
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
-
-const nunitoSans = Nunito_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-nunito-sans",
-  display: "swap",
-});
+import AuthProvider from "@/components/providers/AuthProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${nunitoSans.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={GeistSans.className}
+    >
       <head>
         <Script
           defer
@@ -28,9 +21,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
         ></Script>
       </head>
-      <body className="font-body" suppressHydrationWarning>
-        <Toaster richColors closeButton theme="light" />
-        {children}
+      <body suppressHydrationWarning>
+        <QueryProvider>
+          <AuthProvider>
+            <Toaster richColors closeButton theme="light" />
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

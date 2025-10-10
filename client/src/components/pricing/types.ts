@@ -1,0 +1,61 @@
+export interface Plan {
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  features: string[];
+  buttonText: string;
+  buttonVariant: "default" | "outline";
+  popular: boolean;
+}
+
+export const PRICING_PLANS: Plan[] = [
+  {
+    name: "Starter",
+    description: "Perfect for getting started",
+    monthlyPrice: 9,
+    yearlyPrice: 7.5, // $90/year = $7.5/month
+    features: [
+      "Up to 10 properties",
+      "Complete property portfolio management",
+      "Track every income & expense automatically",
+      "Real-time cash flow insights & profitability analytics",
+      "Beautiful visual reports & performance dashboards",
+      "Smart property comparison & ranking tools",
+      "Export financial data instantly",
+      "Automated monthly metrics tracking",
+    ],
+    buttonText: "Start 14-day free trial",
+    buttonVariant: "outline",
+    popular: false,
+  },
+  {
+    name: "Pro",
+    description: "Most popular for growing portfolios",
+    monthlyPrice: 29,
+    yearlyPrice: 24.17, // $290/year = $24.17/month
+    features: [
+      "Up to 50 properties",
+      "Everything in Starter plan",
+      "Priority support",
+    ],
+    buttonText: "Start 14-day free trial",
+    buttonVariant: "default",
+    popular: true,
+  },
+  {
+    name: "Business",
+    description: "For serious property investors",
+    monthlyPrice: 49,
+    yearlyPrice: 40.83, // $490/year = $40.83/month
+    features: [
+      "Unlimited properties",
+      "Everything in Pro plan",
+      "Priority support",
+      "Early access to new advanced features",
+    ],
+    buttonText: "Start 14-day free trial",
+    buttonVariant: "outline",
+    popular: false,
+  },
+];

@@ -1,0 +1,47 @@
+"use client";
+
+import { DashboardSidebar } from "@/components/dashboard/sidebar/DashboardSidebar";
+import { SubscriptionExpiredBanner } from "@/components/billing/SubscriptionExpiredBanner";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { useSessionExpiredToast } from "@/hooks/useSessionExpiredToast";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { OnboardingPreferencesDialog } from "@/components/onboarding/OnboardingPreferencesDialog";
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+  useSessionExpiredToast();
+  const { needsOnboarding } = useOnboardingStatus();
+
+  return (
+    <SidebarProvider>
+      <DashboardSidebar />
+      <SidebarInset>
+        <header className="flex py-2 max-w-7xl shrink-0 items-center justify-between">
+          <div className="flex items-center px-6">
+            <SidebarTrigger className="hover:bg-primary" />
+          </div>
+        </header>
+        {/* Mobile-only subscription banner (sidebar hidden on mobile) */}
+        <div className="px-6 pb-2 block md:hidden">
+          <SubscriptionExpiredBanner />
+        </div>
+        <div>{children}</div>
+      </SidebarInset>
+
+      {/* Onboarding Dialog - Shows only if user needs onboarding */}
+      <OnboardingPreferencesDialog
+        isOpen={needsOnboarding}
+        onComplete={() => {}}
+      />
+    </SidebarProvider>
+  );
+};
+
+export default DashboardLayout;
