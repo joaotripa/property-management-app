@@ -123,14 +123,14 @@ export function OnboardingPreferencesDialog({
             🎉 Welcome to Domari!
           </DialogTitle>
           <DialogDescription className="text-center mt-4 text-base leading-relaxed">
-            Let&apos;s get you set up! First, we&apos;ll configure your
-            preferred currency and timezone so we can display your financial
-            data in the format that&apos;s most familiar to you.
+            Your 14-day free trial starts right now — enjoy full access to all
+            features! Before we jump in, let&apos;s quickly set up your currency
+            and timezone so everything displays in a way that makes sense for
+            you.
             <br />
             <br />
             <span className="text-sm text-muted-foreground">
-              Don&apos;t worry - you can always change these later in your
-              account settings.
+              You can always change these later in your account settings.
             </span>
           </DialogDescription>
         </DialogHeader>
