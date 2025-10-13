@@ -68,7 +68,7 @@ export function getWelcomeEmailTemplate(): string {
                     </p>
                     <p style="color: #1E293B; font-size: 15px; line-height: 1.7; margin: 0;">
                       Let's make property management simple,<br/>
-                      <strong>The Domari Team</strong>
+                      <strong>João Tripa, Founder</strong>
                     </p>
                   </div>
 
