@@ -48,7 +48,7 @@ Important: Always ask before running database migration commands. Never reset th
 - **Auth**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 (no config file needed) with Radix UI primitives and shadcn/ui
 - **Storage**: Supabase for file uploads and AWS S3
-- **Analytics**: PostHog (client-side: posthog-js, server-side: posthog-node)
+- **Analytics**: Umami Cloud (privacy-focused event tracking)
 - **Payments**: Stripe for subscription management
 - **Validation**: Zod schemas
 - **Forms**: react-hook-form with Zod resolvers
@@ -180,31 +180,30 @@ All API operations use dedicated service functions:
 - **Property Limits**: Enforced based on subscription plan
 - **Contact Email**: `support@domari.app` for all inquiries (billing, privacy, general support)
 
-### Analytics System (PostHog)
+### Analytics System (Umami)
 
-- **Provider**: PostHog for product analytics and event tracking
-- **Client SDK**: `posthog-js` for browser-based tracking
-- **Server SDK**: `posthog-node` for reliable server-side tracking
-- **Implementation**: Direct SDK usage in `/lib/analytics/`
-  - `PostHogProvider.tsx`: Client-side initialization (autocapture disabled)
-  - `posthog-server.ts`: Server-side singleton instance
-  - `tracker.ts`: Client-side tracking helpers
-  - `server-tracker.ts`: Server-side tracking helpers
+- **Provider**: Umami Cloud for privacy-focused analytics and event tracking
+- **Implementation**: Ultra-simple script tag + direct API calls (no npm packages)
+- **Architecture**: Single file approach in `/lib/analytics/`
+  - `tracker.ts`: Unified client + server tracking (replaces 3 PostHog files)
   - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
-- **Architecture Pattern**: Server-side tracking for reliability
-  - Authentication events tracked in `auth.ts` (Node.js runtime)
-  - Email verification tracked in `/api/auth/verify-email`
-  - Billing events tracked in subscription webhooks
-  - User identification in `AnalyticsIdentifier.tsx`
-- **Edge Runtime Safety**: Analytics imports kept out of `auth.config.ts` to avoid Edge Runtime bundling issues
+  - `AnalyticsIdentifier.tsx`: User identification and trial tracking
+- **Script Integration**: Umami script tag in `app/layout.tsx` head
+- **Environment Variables**:
+  - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: Your Umami website ID
+  - `NEXT_PUBLIC_UMAMI_HOST`: Umami Cloud URL (https://cloud.umami.is)
 - **Key Events**:
-  - Auth: SIGNUP_STARTED, SIGNUP_COMPLETED, LOGIN_COMPLETED
-  - Billing: TRIAL_STARTED, TRIAL_ENDING_SOON, SUBSCRIPTION_CREATED, etc.
+  - Auth: SIGNUP_STARTED, SIGNUP_COMPLETED, LOGIN_COMPLETED, EMAIL_VERIFIED
+  - Billing: TRIAL_STARTED, TRIAL_ENDING_SOON, SUBSCRIPTION_UPGRADED, etc.
+  - Properties: PROPERTY_CREATED, PROPERTY_DELETED
+  - Transactions: TRANSACTION_CREATED, TRANSACTION_DELETED, TRANSACTION_EXPORTED
+  - Settings: PREFERENCES_UPDATED, PASSWORD_CHANGED, ACCOUNT_DELETED
 - **Best Practices**:
-  - Server-side tracking for critical events (signups, conversions)
-  - Client-side tracking for user interactions and funnel analysis
-  - Single source of truth approach (no double-tracking)
-  - Runtime-safe imports (Edge vs Node.js separation)
+  - Client-side tracking via `window.umami.track()`
+  - Server-side tracking via direct Umami API calls
+  - Privacy-first (no PII collection, GDPR compliant)
+  - Zero dependencies (script tag only)
+  - Type-safe event constants prevent errors
 
 ### Backend Rules & Patterns
 
@@ -298,12 +297,9 @@ All API operations use dedicated service functions:
 - `/client/src/lib/services/`: API service layers
 - `/client/src/lib/validations/`: Zod validation schemas
 - `/client/src/lib/stripe/`: Stripe subscription and billing logic
-- `/client/src/lib/analytics/`: PostHog analytics implementation
-  - `posthog-server.ts`: Server-side PostHog singleton
-  - `server-tracker.ts`: Server-side event tracking
-  - `tracker.ts`: Client-side event tracking
+- `/client/src/lib/analytics/`: Umami analytics implementation
+  - `tracker.ts`: Unified client + server event tracking
   - `events.ts`: Event name constants
-- `/client/src/providers/PostHogProvider.tsx`: Client-side PostHog initialization
 - `/client/src/lib/analytics/AnalyticsIdentifier.tsx`: User identification and trial tracking
 - `/client/prisma/seed.ts`: Database seeding with property categories
 - `/client/src/app/(nondashboard)/privacy-policy/page.tsx`: Privacy Policy (GDPR/CCPA compliant)
@@ -323,7 +319,7 @@ All API operations use dedicated service functions:
 - **Database**: Supabase (PostgreSQL)
 - **File Storage**: Supabase Storage + AWS S3
 - **Payment Processing**: Stripe
-- **Analytics**: PostHog (product analytics with event tracking)
+- **Analytics**: Umami Cloud (privacy-focused analytics with event tracking)
 - **Domain**: domari.app
 - **Support Email**: support@domari.app
 
@@ -331,7 +327,7 @@ All API operations use dedicated service functions:
 
 - **Privacy Policy**: Located at `/privacy-policy` - GDPR and CCPA compliant
 - **Terms of Service**: Located at `/terms-of-service` - includes 14-day trial and refund policy
-- **Cookie Policy**: Uses session cookies for authentication (strictly necessary) and PostHog analytics cookies for product insights
+- **Cookie Policy**: Uses session cookies for authentication (strictly necessary) and Umami analytics cookies for privacy-focused insights
 - **Refund Policy**: 14-day trial for exploration, no refunds after purchase except for billing errors
 - **Data Ownership**: Users retain full ownership of their data
 - **Contact**: All legal/privacy/billing inquiries go to `support@domari.app`
@@ -404,10 +400,10 @@ All API operations use dedicated service functions:
   ### Examples of Good Simplicity
 
   - ✅ Stripe integration: 4-5 files, direct SDK usage, ~500 lines total
-  - ✅ PostHog analytics: Direct SDK usage, Edge/Node.js separation via auth.config.ts vs auth.ts
+  - ✅ Umami analytics: Script tag + direct API calls, Edge/Node.js separation via auth.config.ts vs auth.ts
   - ✅ API routes: Directly call Prisma, validate with Zod, return JSON
   - ✅ Components: Colocate state, handlers, and JSX in same file
-  - ✅ Types: Import from `@prisma/client`, `stripe`, `posthog-node`, extend only when needed
+  - ✅ Types: Import from `@prisma/client`, `stripe`, extend only when needed
 
   ### When Complexity Is Justified
 

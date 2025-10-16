@@ -7,26 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, X } from "lucide-react";
 import { toCamelCase } from "@/lib/utils";
-
-interface SubscriptionStatus {
-  status: string;
-  plan: string;
-  propertyLimit: number;
-  trialEndsAt?: string;
-  trialDaysRemaining?: number;
-  cancelAtPeriodEnd: boolean;
-  currentPeriodEnd?: string;
-  scheduledPlan?: string | null;
-  scheduledPlanDate?: string | null;
-}
+import { useBillingData } from "@/hooks/queries/useBillingQueries";
 
 const DISMISSAL_KEY = "subscription-banner-dismissed";
 
 export function SubscriptionExpiredBanner() {
-  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
+  const { data: billingData, isLoading } = useBillingData();
   const [dismissed, setDismissed] = useState(false);
   const router = useRouter();
 
@@ -35,23 +21,7 @@ export function SubscriptionExpiredBanner() {
     if (sessionDismissed === "true") {
       setDismissed(true);
     }
-
-    fetchBillingStatus();
   }, []);
-
-  const fetchBillingStatus = async () => {
-    try {
-      const response = await fetch("/api/billing/usage");
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data.subscription);
-      }
-    } catch (error) {
-      console.error("Error fetching billing status:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDismiss = () => {
     sessionStorage.setItem(DISMISSAL_KEY, "true");
@@ -62,9 +32,11 @@ export function SubscriptionExpiredBanner() {
     router.push("/dashboard/settings?tab=billing");
   };
 
-  if (loading || !subscription) {
+  if (isLoading || !billingData) {
     return null;
   }
+
+  const subscription = billingData.subscription;
 
   const getBannerConfig = (): {
     variant: "default" | "destructive" | "warning";

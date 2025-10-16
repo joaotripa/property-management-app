@@ -5,7 +5,7 @@ import { prisma } from "@/lib/config/database"
 import bcrypt from "bcryptjs"
 import { AuthLogger } from "@/lib/utils/auth"
 import authConfig from "./auth.config"
-import { trackServerEvent } from "@/lib/analytics/server-tracker"
+import { trackServerEvent } from "@/lib/analytics/tracker"
 import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

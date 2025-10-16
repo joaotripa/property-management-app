@@ -1,6 +1,6 @@
 # Domari - Property Management App
 
-Domari is a simple, powerful **property finance management tool** designed specifically for small landlords and property managers. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and generate tax-ready reports** — all in one place.
+Domari is a simple, powerful **property finance management tool** designed specifically for small landlords and property managers. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and generate tax-friendly reports** — all in one place.
 
 ## 🏗 Tech Stack
 
@@ -8,7 +8,7 @@ Domari is a simple, powerful **property finance management tool** designed speci
 - **Database**: PostgreSQL with Prisma ORM (Supabase)
 - **Authentication**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 + shadcn/ui + Radix UI primitives
-- **Storage**: Supabase Storage + AWS S3
+- **Storage**: Supabase Storage
 - **Validation**: Zod schemas
 - **Forms**: react-hook-form with Zod resolvers
 - **Hosting**: Vercel
@@ -237,6 +237,7 @@ client/
 ## Key Features
 
 ### Core Functionality
+
 - **Property Management**: Add, edit, and track rental properties with images
 - **Transaction Tracking**: Record income and expenses with pre-built categories
 - **Analytics Dashboard**: Cash flow trends, expense breakdowns, and property performance comparison
@@ -244,12 +245,14 @@ client/
 - **Recent Activity Feed**: Track all changes across your portfolio
 
 ### Financial Features
+
 - **Multi-Currency Support**: EUR, USD, GBP, AUD, CAD, CHF with automatic formatting
 - **Real-Time Calculations**: Cash flow, ROI, expense ratios, and profit margins
 - **Property Comparison**: Rank properties by performance with trend indicators
 - **Monthly Metrics**: Automated aggregation of monthly financial data
 
 ### Technical Features
+
 - **Authentication**: Secure login with Google OAuth or email/password
 - **Responsive UI**: Mobile-friendly interface with dark/light theme support
 - **Type Safety**: Full TypeScript implementation with Zod validation
@@ -261,11 +264,11 @@ Domari uses Stripe for subscription management with a 3-tier pricing model:
 
 ### Plans
 
-| Plan | Properties | Price (Monthly) | Price (Yearly) |
-|------|-----------|-----------------|----------------|
-| **Starter** | Up to 10 | $9/month | $90/year ($7.50/month) |
-| **Pro** | Up to 50 | $29/month | $290/year ($24.17/month) |
-| **Business** | Unlimited | $49/month | $490/year ($40.83/month) |
+| Plan         | Properties | Price (Monthly) | Price (Yearly)           |
+| ------------ | ---------- | --------------- | ------------------------ |
+| **Starter**  | Up to 10   | $9/month        | $90/year ($7.50/month)   |
+| **Pro**      | Up to 50   | $29/month       | $290/year ($24.17/month) |
+| **Business** | Unlimited  | $49/month       | $490/year ($40.83/month) |
 
 ### Features
 

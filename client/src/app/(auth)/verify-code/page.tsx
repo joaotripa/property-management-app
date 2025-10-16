@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { getAuthErrorMessage } from "@/lib/utils/index";
 import { Suspense } from "react";
 import { Loading } from "@/components/ui/loading";
-import { usePostHog } from "posthog-js/react";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { AUTH_EVENTS } from "@/lib/analytics/events";
 
@@ -14,7 +13,6 @@ function VerifyCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-  const posthog = usePostHog();
 
   const handleResendCode = async () => {
     try {
@@ -59,7 +57,7 @@ function VerifyCodeContent() {
               throw new Error(data.error || "Verification failed");
             }
 
-            trackEvent(posthog, AUTH_EVENTS.EMAIL_VERIFIED);
+            trackEvent(AUTH_EVENTS.EMAIL_VERIFIED);
             toast.success("Email verified successfully! You can now sign in.");
             router.push("/login?message=email-verified");
           } catch (err: unknown) {

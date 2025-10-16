@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
 import { PRICING_PLANS } from "@/components/pricing/types";
-import { usePostHog } from "posthog-js/react";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
 
@@ -23,19 +22,17 @@ export function BillingPricingCards({
   onPlanSelect,
 }: BillingPricingCardsProps) {
   const [isYearly, setIsYearly] = useState(initialIsYearly);
-  const posthog = usePostHog();
-
   useEffect(() => {
-    trackEvent(posthog, BILLING_EVENTS.PRICING_VIEWED, {
+    trackEvent(BILLING_EVENTS.PRICING_VIEWED, {
       source: "settings",
       billing_period: isYearly ? "yearly" : "monthly",
     });
-  }, [posthog, isYearly]);
+  }, [isYearly]);
 
   const handlePlanClick = (planName: string) => {
     const plan = planName.toUpperCase() as SubscriptionPlan;
 
-    trackEvent(posthog, BILLING_EVENTS.PLAN_SELECTED, {
+    trackEvent(BILLING_EVENTS.PLAN_SELECTED, {
       plan: plan.toLowerCase(),
       billing_period: isYearly ? "yearly" : "monthly",
     });

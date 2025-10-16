@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { SETTINGS_EVENTS } from "@/lib/analytics/events";
 import {
@@ -45,7 +45,6 @@ export function DeleteAccountDialog({
 }: DeleteAccountDialogProps) {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const posthog = usePostHog();
 
   const form = useForm<DeleteAccountFormData>({
     resolver: zodResolver(deleteAccountSchema),
@@ -67,7 +66,7 @@ export function DeleteAccountDialog({
     try {
       await deleteAccount(data.email);
 
-      trackEvent(posthog, SETTINGS_EVENTS.ACCOUNT_DELETED);
+      trackEvent(SETTINGS_EVENTS.ACCOUNT_DELETED);
 
       toast.success("Account deleted successfully. You will be signed out.");
 

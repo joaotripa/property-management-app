@@ -3,7 +3,7 @@ import { stripeConfig } from './config';
 import { getLimit } from './plans';
 import { prisma } from '@/lib/config/database';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
-import { trackServerEvent } from '@/lib/analytics/server-tracker';
+import { trackServerEvent } from '@/lib/analytics/tracker';
 import { BILLING_EVENTS } from '@/lib/analytics/events';
 
 const apiKey = process.env.STRIPE_SECRET_KEY;

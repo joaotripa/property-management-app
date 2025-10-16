@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CreditCard, X } from "lucide-react";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
 
@@ -18,7 +18,7 @@ interface PropertyLimitBannerProps {
   subscriptionStatus: string;
 }
 
-const DISMISSAL_KEY = 'property-limit-banner-dismissed';
+const DISMISSAL_KEY = "property-limit-banner-dismissed";
 
 export function PropertyLimitBanner({
   propertyLimit,
@@ -28,11 +28,10 @@ export function PropertyLimitBanner({
 }: PropertyLimitBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const router = useRouter();
-  const posthog = usePostHog();
 
   useEffect(() => {
     const sessionDismissed = sessionStorage.getItem(DISMISSAL_KEY);
-    if (sessionDismissed === 'true') {
+    if (sessionDismissed === "true") {
       setDismissed(true);
     }
   }, []);
@@ -40,19 +39,19 @@ export function PropertyLimitBanner({
   useEffect(() => {
     const isSubscriptionActive = subscriptionStatus === "ACTIVE";
     if (isAtLimit && isSubscriptionActive && !dismissed) {
-      trackEvent(posthog, BILLING_EVENTS.PROPERTY_LIMIT_REACHED, {
+      trackEvent(BILLING_EVENTS.PROPERTY_LIMIT_REACHED, {
         current_plan: plan.toLowerCase(),
       });
     }
-  }, [isAtLimit, subscriptionStatus, dismissed, plan, posthog]);
+  }, [isAtLimit, subscriptionStatus, dismissed, plan]);
 
   const handleDismiss = () => {
-    sessionStorage.setItem(DISMISSAL_KEY, 'true');
+    sessionStorage.setItem(DISMISSAL_KEY, "true");
     setDismissed(true);
   };
 
   const handleUpgrade = () => {
-    router.push('/dashboard/settings');
+    router.push("/dashboard/settings");
   };
 
   const isSubscriptionActive = subscriptionStatus === "ACTIVE";
@@ -74,7 +73,8 @@ export function PropertyLimitBanner({
               <Badge variant="destructive">{plan} Plan</Badge>
             </div>
             <span className="text-sm">
-              Upgrade your plan to add more properties and continue growing your portfolio.
+              Upgrade your plan to add more properties and continue growing your
+              portfolio.
             </span>
           </div>
         </div>

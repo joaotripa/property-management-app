@@ -20,7 +20,6 @@ import {
   getPasswordStrength,
 } from "@/lib/validations/auth";
 import { Loading } from "@/components/ui/loading";
-import { usePostHog } from "posthog-js/react";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { AUTH_EVENTS } from "@/lib/analytics/events";
 
@@ -30,13 +29,12 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const posthog = usePostHog();
 
   useEffect(() => {
-    trackEvent(posthog, AUTH_EVENTS.SIGNUP_STARTED, {
+    trackEvent(AUTH_EVENTS.SIGNUP_STARTED, {
       method: "email",
     });
-  }, [posthog]);
+  }, []);
 
   const {
     register,

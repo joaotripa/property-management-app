@@ -6,8 +6,7 @@ import { TopPropertiesCard } from "@/components/dashboard/overview/TopProperties
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
-import { PageViewTracker } from "@/components/analytics/PageViewTracker";
-import { DASHBOARD_EVENTS } from "@/lib/analytics/events";
+import { DashboardPageClient } from "./DashboardPageClient";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -26,13 +25,13 @@ export default async function DashboardPage() {
       previousTopProperties,
       recentActivities,
     },
-    userCurrencyCode
+    userCurrencyCode,
   ] = await Promise.all([
     getOverviewPageData(session.user.id),
-    UserSettingsService.getUserCurrency(session.user.id)
+    UserSettingsService.getUserCurrency(session.user.id),
   ]);
   return (
-    <PageViewTracker event={DASHBOARD_EVENTS.DASHBOARD_VIEWED}>
+    <DashboardPageClient>
       <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
         {/* Welcome Section */}
         <div className="flex flex-col gap-2">
@@ -67,6 +66,6 @@ export default async function DashboardPage() {
           <RecentActivity activities={recentActivities} />
         </section>
       </div>
-    </PageViewTracker>
+    </DashboardPageClient>
   );
 }

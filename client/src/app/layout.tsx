@@ -12,6 +12,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       data-scroll-behavior="smooth"
       className={GeistSans.className}
     >
+      <head>
+        <script
+          defer
+          src={`${process.env.NEXT_PUBLIC_UMAMI_HOST}/script.js`}
+          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+        />
+      </head>
       <body suppressHydrationWarning>
         <AppProviders>
           <Toaster richColors closeButton theme="light" />

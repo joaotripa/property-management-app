@@ -15,7 +15,7 @@ import { Property } from "@/types/properties";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { deletePropertyWithTransactions } from "@/lib/services/client/propertiesService";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { PROPERTY_EVENTS } from "@/lib/analytics/events";
 import { useUserProperties } from "@/hooks/useUserProperties";
@@ -37,7 +37,6 @@ export function DeletePropertyConfirmDialog({
 }: DeletePropertyConfirmDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string>("");
-  const posthog = usePostHog();
   const { properties } = useUserProperties();
 
   const handleConfirm = async (e: React.MouseEvent) => {
@@ -56,7 +55,7 @@ export function DeletePropertyConfirmDialog({
         setOperationStatus("Refreshing property data...");
         await onConfirm();
 
-        trackEvent(posthog, PROPERTY_EVENTS.PROPERTY_DELETED, {
+        trackEvent(PROPERTY_EVENTS.PROPERTY_DELETED, {
           property_count: Math.max(0, properties.length - 1),
         });
 
@@ -92,7 +91,8 @@ export function DeletePropertyConfirmDialog({
             </span>
             <span className="block text-foreground/80">
               Are you sure you want to delete the property{" "}
-              <span className="font-semibold">&quot;{property.name}&quot;</span>?
+              <span className="font-semibold">&quot;{property.name}&quot;</span>
+              ?
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>

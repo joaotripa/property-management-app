@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import DashboardPreview from "@/components/landing/DashboardPreview";
@@ -7,25 +10,27 @@ import Footer from "@/components/landing/Footer";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
-import { PageViewTracker } from "@/components/analytics/PageViewTracker";
+import { trackEvent } from "@/lib/analytics/tracker";
 import { MARKETING_EVENTS } from "@/lib/analytics/events";
 
 export default function Home() {
+  useEffect(() => {
+    trackEvent(MARKETING_EVENTS.LANDING_PAGE_VIEWED);
+  }, []);
+
   return (
-    <PageViewTracker event={MARKETING_EVENTS.LANDING_PAGE_VIEWED}>
-      <div className="h-full w-full">
-        <Navbar />
-        <main className="flex flex-col">
-          <Hero />
-          <DashboardPreview />
-          <Problem />
-          <Solution />
-          <Pricing />
-          <FAQ />
-          <CTA />
-          <Footer />
-        </main>
-      </div>
-    </PageViewTracker>
+    <div className="h-full w-full">
+      <Navbar />
+      <main className="flex flex-col">
+        <Hero />
+        <DashboardPreview />
+        <Problem />
+        <Solution />
+        <Pricing />
+        <FAQ />
+        <CTA />
+        <Footer />
+      </main>
+    </div>
   );
 }

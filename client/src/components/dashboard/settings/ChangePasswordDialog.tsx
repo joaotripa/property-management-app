@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { SETTINGS_EVENTS } from "@/lib/analytics/events";
 import {
@@ -21,19 +21,21 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
-  confirmPassword: z.string().min(1, "Please confirm your new password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string().min(1, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
@@ -42,12 +44,14 @@ interface ChangePasswordDialogProps {
   onClose: () => void;
 }
 
-export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogProps) {
+export function ChangePasswordDialog({
+  isOpen,
+  onClose,
+}: ChangePasswordDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const posthog = usePostHog();
 
   const {
     register,
@@ -78,13 +82,15 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
         throw new Error(error.message || "Failed to change password");
       }
 
-      trackEvent(posthog, SETTINGS_EVENTS.PASSWORD_CHANGED);
+      trackEvent(SETTINGS_EVENTS.PASSWORD_CHANGED);
 
       toast.success("Password changed successfully");
       handleClose();
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to change password");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +123,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
                 type={showCurrentPassword ? "text" : "password"}
                 placeholder="Enter your current password"
                 {...register("currentPassword")}
-                className={errors.currentPassword ? "border-destructive pr-10" : "pr-10"}
+                className={
+                  errors.currentPassword ? "border-destructive pr-10" : "pr-10"
+                }
               />
               <Button
                 type="button"
@@ -134,7 +142,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
               </Button>
             </div>
             {errors.currentPassword && (
-              <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.currentPassword.message}
+              </p>
             )}
           </div>
 
@@ -146,7 +156,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
                 type={showNewPassword ? "text" : "password"}
                 placeholder="Enter your new password"
                 {...register("newPassword")}
-                className={errors.newPassword ? "border-destructive pr-10" : "pr-10"}
+                className={
+                  errors.newPassword ? "border-destructive pr-10" : "pr-10"
+                }
               />
               <Button
                 type="button"
@@ -163,7 +175,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
               </Button>
             </div>
             {errors.newPassword && (
-              <p className="text-sm text-destructive">{errors.newPassword.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.newPassword.message}
+              </p>
             )}
           </div>
 
@@ -175,7 +189,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your new password"
                 {...register("confirmPassword")}
-                className={errors.confirmPassword ? "border-destructive pr-10" : "pr-10"}
+                className={
+                  errors.confirmPassword ? "border-destructive pr-10" : "pr-10"
+                }
               />
               <Button
                 type="button"
@@ -192,7 +208,9 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
               </Button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -216,7 +234,11 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="min-w-[100px]">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="min-w-[100px]"
+            >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (

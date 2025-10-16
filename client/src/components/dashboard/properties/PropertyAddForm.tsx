@@ -38,7 +38,7 @@ import {
   MultiImageUpload,
   type FileWithPreview,
 } from "@/components/ui/multi-image-upload";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { PROPERTY_EVENTS } from "@/lib/analytics/events";
 import { useUserProperties } from "@/hooks/useUserProperties";
@@ -70,7 +70,6 @@ export function PropertyAddForm({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const propertyTypeOptions = getPropertyTypeOptions();
-  const posthog = usePostHog();
   const { properties } = useUserProperties();
 
   const form = useForm<PropertyFormInput>({
@@ -149,7 +148,7 @@ export function PropertyAddForm({
 
       const createdProperty = result.property;
 
-      trackEvent(posthog, PROPERTY_EVENTS.PROPERTY_CREATED, {
+      trackEvent(PROPERTY_EVENTS.PROPERTY_CREATED, {
         property_count: properties.length + 1,
         is_first: properties.length === 0,
       });

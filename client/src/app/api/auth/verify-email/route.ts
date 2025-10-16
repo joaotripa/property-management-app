@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendWelcomeEmail } from "@/lib/services/server/emailService"
-import { trackServerEvent } from "@/lib/analytics/server-tracker"
+import { trackServerEvent } from "@/lib/analytics/tracker"
 import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export async function POST(request: NextRequest) {

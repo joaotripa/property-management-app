@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { usePostHog } from "posthog-js/react";
 import { identifyUser, resetUser, trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
+import { useBillingData } from "@/hooks/queries/useBillingQueries";
 
 /**
  * Analytics Identifier Component
  *
- * Identifies authenticated users with PostHog.
+ * Identifies authenticated users with Umami and tracks trial events.
  * Must be nested inside SessionProvider to access session.
  */
 export function AnalyticsIdentifier({
@@ -18,8 +18,9 @@ export function AnalyticsIdentifier({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
-  const posthog = usePostHog();
-  const [trialTracked, setTrialTracked] = useState(false);
+  const { data: billingData } = useBillingData();
+  const [trialStartTracked, setTrialStartTracked] = useState(false);
+  const [trialEndingTracked, setTrialEndingTracked] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -27,88 +28,65 @@ export function AnalyticsIdentifier({
 
       if (!id) return;
 
-      identifyUser(posthog, id, {
+      identifyUser(id, {
         email: email || "",
         name: name || "",
       });
     } else if (status === "unauthenticated") {
-      resetUser(posthog);
+      resetUser();
     }
-  }, [status, session, posthog]);
+  }, [status, session]);
 
   useEffect(() => {
-    const checkAndTrackTrial = async () => {
-      if (status !== "authenticated" || !session?.user?.id || trialTracked) {
-        return;
-      }
+    if (status !== "authenticated" || !session?.user?.id || !billingData) {
+      return;
+    }
 
-      const trialTrackedKey = `trial_tracked_${session.user.id}`;
+    const userId = session.user.id;
+    const { subscription } = billingData;
+
+    if (
+      !trialStartTracked &&
+      subscription.status === "TRIAL" &&
+      subscription.trialEndsAt
+    ) {
+      const trialTrackedKey = `trial_tracked_${userId}`;
       const hasTracked = localStorage.getItem(trialTrackedKey);
 
-      if (hasTracked) {
-        setTrialTracked(true);
-        return;
+      if (!hasTracked) {
+        trackEvent(BILLING_EVENTS.TRIAL_STARTED, {
+          trial_days: subscription.trialDaysRemaining || 14,
+        });
+
+        localStorage.setItem(trialTrackedKey, "true");
+        setTrialStartTracked(true);
+      } else {
+        setTrialStartTracked(true);
       }
+    }
 
-      try {
-        const response = await fetch("/api/billing/usage");
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        if (data.subscription.status === "TRIAL" && data.subscription.trialEndsAt) {
-          trackEvent(posthog, BILLING_EVENTS.TRIAL_STARTED, {
-            trial_days: data.subscription.trialDaysRemaining || 14,
-          });
-
-          localStorage.setItem(trialTrackedKey, "true");
-          setTrialTracked(true);
-        }
-      } catch (error) {
-        console.error("[Analytics] Failed to check trial status:", error);
-      }
-    };
-
-    checkAndTrackTrial();
-  }, [status, session, posthog, trialTracked]);
-
-  useEffect(() => {
-    const checkTrialEndingSoon = async () => {
-      if (status !== "authenticated" || !session?.user?.id) {
-        return;
-      }
-
-      const trialEndingKey = `trial_ending_tracked_${session.user.id}`;
+    if (
+      !trialEndingTracked &&
+      subscription.status === "TRIAL" &&
+      subscription.trialDaysRemaining !== null &&
+      subscription.trialDaysRemaining !== undefined
+    ) {
+      const trialEndingKey = `trial_ending_tracked_${userId}`;
       const hasTrackedEnding = localStorage.getItem(trialEndingKey);
+      const daysRemaining = subscription.trialDaysRemaining;
 
-      if (hasTrackedEnding) {
-        return;
+      if (!hasTrackedEnding && daysRemaining <= 3 && daysRemaining >= 0) {
+        trackEvent(BILLING_EVENTS.TRIAL_ENDING_SOON, {
+          days_remaining: daysRemaining,
+        });
+
+        localStorage.setItem(trialEndingKey, "true");
+        setTrialEndingTracked(true);
+      } else if (hasTrackedEnding) {
+        setTrialEndingTracked(true);
       }
-
-      try {
-        const response = await fetch("/api/billing/usage");
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        if (data.subscription.status === "TRIAL" && data.subscription.trialDaysRemaining !== null) {
-          const daysRemaining = data.subscription.trialDaysRemaining;
-
-          if (daysRemaining <= 3 && daysRemaining >= 0) {
-            trackEvent(posthog, BILLING_EVENTS.TRIAL_ENDING_SOON, {
-              days_remaining: daysRemaining,
-            });
-
-            localStorage.setItem(trialEndingKey, "true");
-          }
-        }
-      } catch (error) {
-        console.error("[Analytics] Failed to check trial ending:", error);
-      }
-    };
-
-    checkTrialEndingSoon();
-  }, [status, session, posthog]);
+    }
+  }, [status, session, billingData, trialStartTracked, trialEndingTracked]);
 
   return <>{children}</>;
 }

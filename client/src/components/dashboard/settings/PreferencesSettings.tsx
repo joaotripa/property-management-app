@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { usePostHog } from "posthog-js/react";
+
 import { trackEvent } from "@/lib/analytics/tracker";
 import { SETTINGS_EVENTS } from "@/lib/analytics/events";
 import {
@@ -31,9 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Settings } from "lucide-react";
-import {
-  useUpdateUserSettings,
-} from "@/hooks/queries/usePreferencesQueries";
+import { useUpdateUserSettings } from "@/hooks/queries/usePreferencesQueries";
 import {
   UserSettingsFormInput,
   userSettingsFormSchema,
@@ -54,7 +52,6 @@ export function PreferencesSettings({
   timezones,
 }: PreferencesSettingsProps) {
   const updateMutation = useUpdateUserSettings();
-  const posthog = usePostHog();
 
   const form = useForm<UserSettingsFormInput>({
     resolver: zodResolver(userSettingsFormSchema),
@@ -75,7 +72,7 @@ export function PreferencesSettings({
       },
       {
         onSuccess: () => {
-          trackEvent(posthog, SETTINGS_EVENTS.PREFERENCES_UPDATED, {
+          trackEvent(SETTINGS_EVENTS.PREFERENCES_UPDATED, {
             currency: selectedCurrency?.code || null,
             timezone: selectedTimezone?.iana || null,
           });
