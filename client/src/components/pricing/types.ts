@@ -13,8 +13,8 @@ export const PRICING_PLANS: Plan[] = [
   {
     name: "Starter",
     description: "Perfect for getting started",
-    monthlyPrice: 9,
-    yearlyPrice: 7.5, // $90/year = $7.5/month
+    monthlyPrice: 8.99,
+    yearlyPrice: 89.90,
     features: [
       "Up to 10 properties",
       "Complete property portfolio management",
@@ -32,8 +32,8 @@ export const PRICING_PLANS: Plan[] = [
   {
     name: "Pro",
     description: "Most popular for growing portfolios",
-    monthlyPrice: 29,
-    yearlyPrice: 24.17, // $290/year = $24.17/month
+    monthlyPrice: 24.99,
+    yearlyPrice: 249.90, 
     features: [
       "Up to 50 properties",
       "Everything in Starter plan",
@@ -46,8 +46,8 @@ export const PRICING_PLANS: Plan[] = [
   {
     name: "Business",
     description: "For serious property investors",
-    monthlyPrice: 49,
-    yearlyPrice: 40.83, // $490/year = $40.83/month
+    monthlyPrice: 44.99,
+    yearlyPrice: 449.90, 
     features: [
       "Unlimited properties",
       "Everything in Pro plan",

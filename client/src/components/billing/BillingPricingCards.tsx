@@ -95,7 +95,7 @@ export function BillingPricingCards({
                 </div>
               )}
 
-              <CardHeader className="text-center pb-4 mt-2">
+              <CardHeader className="text-center mt-2">
                 <CardTitle className="text-2xl font-semibold">
                   {plan.name}
                 </CardTitle>
@@ -103,15 +103,11 @@ export function BillingPricingCards({
 
                 <div className="py-4">
                   <div className="text-4xl font-semibold">
-                    $
-                    {isYearly ? plan.yearlyPrice.toFixed(2) : plan.monthlyPrice}
-                    <span className="text-lg font-normal">/month</span>
+                    €{isYearly ? plan.yearlyPrice : plan.monthlyPrice}
+                    <span className="text-lg font-normal">
+                      {isYearly ? "/year" : "/month"}
+                    </span>
                   </div>
-                  {isYearly && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Billed ${(plan.yearlyPrice * 12).toFixed(0)}/year
-                    </div>
-                  )}
                 </div>
               </CardHeader>
 

@@ -79,7 +79,7 @@ export function PricingCards({
               </div>
             )}
 
-            <CardHeader className="text-center pb-4 mt-2">
+            <CardHeader className="text-center mt-2">
               <CardTitle className="text-2xl font-semibold">
                 {plan.name}
               </CardTitle>
@@ -87,14 +87,11 @@ export function PricingCards({
 
               <div className="py-4">
                 <div className="text-4xl font-semibold">
-                  ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
-                  <span className="text-lg font-normal">/month</span>
+                  €{isYearly ? plan.yearlyPrice : plan.monthlyPrice}
+                  <span className="text-lg font-normal">
+                    {isYearly ? "/year" : "/month"}
+                  </span>
                 </div>
-                {isYearly && plan.monthlyPrice > 0 && (
-                  <div className="text-sm mt-1">
-                    ${plan.monthlyPrice}/month billed monthly
-                  </div>
-                )}
               </div>
             </CardHeader>
 
