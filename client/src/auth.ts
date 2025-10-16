@@ -5,6 +5,8 @@ import { prisma } from "@/lib/config/database"
 import bcrypt from "bcryptjs"
 import { AuthLogger } from "@/lib/utils/auth"
 import authConfig from "./auth.config"
+import { trackServerEvent } from "@/lib/analytics/server-tracker"
+import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -55,4 +57,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     })
   ],
+  events: {
+    ...authConfig.events,
+    async signIn(params) {
+      if (authConfig.events?.signIn) {
+        await authConfig.events.signIn(params)
+      }
+
+      const { user, account, isNewUser } = params
+
+      if (!user.id) return
+
+      const provider = account?.provider || 'credentials'
+      const method = provider === 'credentials' ? 'email' : provider
+
+      if (provider === 'google' && isNewUser) {
+        await trackServerEvent(user.id, AUTH_EVENTS.SIGNUP_COMPLETED, {
+          method,
+        })
+      } else if (provider === 'google' || provider === 'credentials') {
+        await trackServerEvent(user.id, AUTH_EVENTS.LOGIN_COMPLETED, {
+          method,
+        })
+      }
+    },
+  },
 })

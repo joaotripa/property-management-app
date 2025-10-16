@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendWelcomeEmail } from "@/lib/services/server/emailService"
+import { trackServerEvent } from "@/lib/analytics/server-tracker"
+import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,10 +37,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { email },
       data: {
         emailVerified: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
       }
     })
 
@@ -52,6 +58,10 @@ export async function POST(request: NextRequest) {
     })
 
     AuthLogger.emailVerificationSuccess(email)
+
+    await trackServerEvent(user.id, AUTH_EVENTS.SIGNUP_COMPLETED, {
+      method: 'email',
+    })
 
     await sendWelcomeEmail(email)
 

@@ -74,10 +74,6 @@ const SignupPage = () => {
         throw new Error(responseData.error || "Failed to create account");
       }
 
-      trackEvent(posthog, AUTH_EVENTS.SIGNUP_COMPLETED, {
-        method: "email",
-      });
-
       toast.success(
         "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
       );
@@ -94,9 +90,6 @@ const SignupPage = () => {
   const handleGoogleSignup = async () => {
     setLoading(true);
     try {
-      trackEvent(posthog, AUTH_EVENTS.SIGNUP_STARTED, {
-        method: "google",
-      });
       await signIn("google", { callbackUrl: "/dashboard" });
     } catch (err) {
       console.error("Google sign-up error:", err);

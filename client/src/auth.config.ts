@@ -35,7 +35,8 @@ export const authConfig = {
       AuthLogger.info({ action: 'user_created', email: user.email || undefined})
     },
     async signIn({ user, account }) {
-      AuthLogger.signInSuccess(user.email || 'unknown', account?.provider || 'credentials')
+      const provider = account?.provider || 'credentials'
+      AuthLogger.signInSuccess(user.email || 'unknown', provider)
     },
   },
 } satisfies NextAuthConfig

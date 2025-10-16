@@ -17,9 +17,6 @@ import {
   ErrorMessage,
   getErrorMessageConfig,
 } from "@/components/auth/ErrorMessage";
-import { usePostHog } from "posthog-js/react";
-import { trackEvent } from "@/lib/analytics/tracker";
-import { AUTH_EVENTS } from "@/lib/analytics/events";
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -30,7 +27,6 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
-  const posthog = usePostHog();
 
   function renderAlertMessage(message: string | null) {
     const config = getErrorMessageConfig(message);
@@ -62,9 +58,6 @@ function LoginContent() {
         setError(msg);
         toast.error(msg);
       } else if (result?.ok) {
-        trackEvent(posthog, AUTH_EVENTS.LOGIN_COMPLETED, {
-          method: "email",
-        });
         toast.success("Welcome back! Redirecting to your dashboard.");
         router.push("/dashboard");
       }
@@ -80,9 +73,6 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      trackEvent(posthog, AUTH_EVENTS.LOGIN_COMPLETED, {
-        method: "google",
-      });
       await signIn("google", { callbackUrl: "/dashboard" });
     } catch (err) {
       console.error("Google sign-in error:", err);
