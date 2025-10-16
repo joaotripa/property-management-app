@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendWelcomeEmail } from "@/lib/services/server/emailService"
-import { trackServerEvent } from "@/lib/analytics/tracker"
-import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,15 +35,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { email },
       data: {
         emailVerified: new Date(),
       },
-      select: {
-        id: true,
-        email: true,
-      }
     })
 
     await prisma.verificationToken.delete({
@@ -59,9 +53,8 @@ export async function POST(request: NextRequest) {
 
     AuthLogger.emailVerificationSuccess(email)
 
-    await trackServerEvent(user.id, AUTH_EVENTS.SIGNUP_COMPLETED, {
-      method: 'email',
-    })
+    // Note: Email verification events are tracked client-side after redirect
+    // This ensures reliable tracking with Umami Cloud
 
     await sendWelcomeEmail(email)
 

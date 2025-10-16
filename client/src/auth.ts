@@ -5,8 +5,6 @@ import { prisma } from "@/lib/config/database"
 import bcrypt from "bcryptjs"
 import { AuthLogger } from "@/lib/utils/auth"
 import authConfig from "./auth.config"
-import { trackServerEvent } from "@/lib/analytics/tracker"
-import { AUTH_EVENTS } from "@/lib/analytics/events"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -64,22 +62,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await authConfig.events.signIn(params)
       }
 
-      const { user, account, isNewUser } = params
-
-      if (!user.id) return
-
-      const provider = account?.provider || 'credentials'
-      const method = provider === 'credentials' ? 'email' : provider
-
-      if (provider === 'google' && isNewUser) {
-        await trackServerEvent(user.id, AUTH_EVENTS.SIGNUP_COMPLETED, {
-          method,
-        })
-      } else if (provider === 'google' || provider === 'credentials') {
-        await trackServerEvent(user.id, AUTH_EVENTS.LOGIN_COMPLETED, {
-          method,
-        })
-      }
+      // Note: Auth events are tracked client-side after successful login
+      // This ensures reliable tracking with Umami Cloud
     },
   },
 })

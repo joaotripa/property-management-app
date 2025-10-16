@@ -48,7 +48,7 @@ Important: Always ask before running database migration commands. Never reset th
 - **Auth**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 (no config file needed) with Radix UI primitives and shadcn/ui
 - **Storage**: Supabase for file uploads and AWS S3
-- **Analytics**: Umami Cloud (privacy-focused event tracking)
+- **Analytics**: Umami Cloud (privacy-focused, client-side tracking only)
 - **Payments**: Stripe for subscription management
 - **Validation**: Zod schemas
 - **Forms**: react-hook-form with Zod resolvers
@@ -183,9 +183,9 @@ All API operations use dedicated service functions:
 ### Analytics System (Umami)
 
 - **Provider**: Umami Cloud for privacy-focused analytics and event tracking
-- **Implementation**: Ultra-simple script tag + direct API calls (no npm packages)
+- **Implementation**: Pure client-side tracking (no server-side API calls)
 - **Architecture**: Single file approach in `/lib/analytics/`
-  - `tracker.ts`: Unified client + server tracking (replaces 3 PostHog files)
+  - `tracker.ts`: Client-side tracking only (simple, honest implementation)
   - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
   - `AnalyticsIdentifier.tsx`: User identification and trial tracking
 - **Script Integration**: Umami script tag in `app/layout.tsx` head
@@ -197,6 +197,7 @@ All API operations use dedicated service functions:
   - Billing: TRIAL_STARTED, TRIAL_ENDING_SOON, SUBSCRIPTION_UPGRADED, etc.
   - Properties: PROPERTY_CREATED, PROPERTY_DELETED
   - Transactions: TRANSACTION_CREATED, TRANSACTION_DELETED, TRANSACTION_EXPORTED
+- **Note**: Critical events tracked client-side after user actions complete
   - Settings: PREFERENCES_UPDATED, PASSWORD_CHANGED, ACCOUNT_DELETED
 - **Best Practices**:
   - Client-side tracking via `window.umami.track()`
@@ -319,7 +320,7 @@ All API operations use dedicated service functions:
 - **Database**: Supabase (PostgreSQL)
 - **File Storage**: Supabase Storage + AWS S3
 - **Payment Processing**: Stripe
-- **Analytics**: Umami Cloud (privacy-focused analytics with event tracking)
+- **Analytics**: Umami Cloud (privacy-focused, client-side tracking only)
 - **Domain**: domari.app
 - **Support Email**: support@domari.app
 
