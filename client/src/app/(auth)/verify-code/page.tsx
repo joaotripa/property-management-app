@@ -57,6 +57,7 @@ function VerifyCodeContent() {
               throw new Error(data.error || "Verification failed");
             }
 
+            trackEvent(AUTH_EVENTS.SIGNUP_COMPLETED, { method: "email" });
             trackEvent(AUTH_EVENTS.EMAIL_VERIFIED);
             toast.success("Email verified successfully! You can now sign in.");
             router.push("/login?message=email-verified");

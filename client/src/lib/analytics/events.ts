@@ -18,6 +18,7 @@ export const AUTH_EVENTS = {
   SIGNUP_COMPLETED: "signup_completed",
   EMAIL_VERIFIED: "email_verified",
   LOGIN_COMPLETED: "login_completed",
+  OAUTH_INITIATED: "oauth_initiated",
 } as const;
 
 export const ONBOARDING_EVENTS = {

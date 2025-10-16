@@ -17,6 +17,8 @@ import {
   ErrorMessage,
   getErrorMessageConfig,
 } from "@/components/auth/ErrorMessage";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { AUTH_EVENTS } from "@/lib/analytics/events";
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -58,6 +60,7 @@ function LoginContent() {
         setError(msg);
         toast.error(msg);
       } else if (result?.ok) {
+        trackEvent(AUTH_EVENTS.LOGIN_COMPLETED, { method: "email" });
         toast.success("Welcome back! Redirecting to your dashboard.");
         router.push("/dashboard");
       }
@@ -71,10 +74,22 @@ function LoginContent() {
   };
 
   const handleGoogleLogin = async () => {
+    localStorage.setItem('oauth_intent', JSON.stringify({
+      provider: 'google',
+      source_page: 'login',
+      timestamp: Date.now()
+    }));
+
+    trackEvent(AUTH_EVENTS.OAUTH_INITIATED, {
+      provider: "google",
+      source_page: "login"
+    });
+
     setLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/callback" });
     } catch (err) {
+      localStorage.removeItem('oauth_intent');
       console.error("Google sign-in error:", err);
       toast.error("Google sign-in failed. Please try again.");
       setLoading(false);

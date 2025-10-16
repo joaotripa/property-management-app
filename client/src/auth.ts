@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/config/database"
 import bcrypt from "bcryptjs"
 import { AuthLogger } from "@/lib/utils/auth"
+import { initializeUserAccount } from "@/lib/utils/userProvisioning"
 import authConfig from "./auth.config"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -57,6 +58,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   events: {
     ...authConfig.events,
+    async createUser({ user }) {
+      if (authConfig.events?.createUser) {
+        await authConfig.events.createUser({ user })
+      }
+
+      if (user.id) {
+        await initializeUserAccount(user.id);
+      }
+    },
     async signIn(params) {
       if (authConfig.events?.signIn) {
         await authConfig.events.signIn(params)

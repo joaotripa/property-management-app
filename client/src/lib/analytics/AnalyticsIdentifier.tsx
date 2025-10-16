@@ -10,6 +10,9 @@ import { useBillingData } from "@/hooks/queries/useBillingQueries";
  * Analytics Identifier Component
  *
  * Identifies authenticated users with Umami and tracks trial events.
+ * - Tracks TRIAL_STARTED when user begins trial (once per user)
+ * - Tracks TRIAL_ENDING_SOON when trial has 3 or fewer days remaining
+ *
  * Must be nested inside SessionProvider to access session.
  */
 export function AnalyticsIdentifier({

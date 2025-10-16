@@ -6,6 +6,7 @@ import {
   updateUserSettingsRequestSchema
 } from "@/lib/validations/userSettings";
 import { ZodError } from "zod";
+import { initializeUserAccount } from "@/lib/utils/userProvisioning";
 
 export async function GET() {
   try {
@@ -18,7 +19,25 @@ export async function GET() {
       );
     }
 
-    const userSettings = await getUserSettings(session.user.id);
+    let userSettings = await getUserSettings(session.user.id);
+
+    // Safety net: If settings don't exist, initialize account
+    if (!userSettings) {
+      console.warn(`UserSettings not found for userId: ${session.user.id} - initializing...`);
+
+      const initResult = await initializeUserAccount(session.user.id);
+
+      if (initResult.created.userSettings) {
+        userSettings = await getUserSettings(session.user.id);
+      }
+
+      if (!userSettings) {
+        return NextResponse.json(
+          { success: false, message: "Failed to initialize user settings" },
+          { status: 500 }
+        );
+      }
+    }
 
     return NextResponse.json(userSettings);
   } catch (error) {

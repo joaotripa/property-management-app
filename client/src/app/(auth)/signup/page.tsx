@@ -72,6 +72,10 @@ const SignupPage = () => {
         throw new Error(responseData.error || "Failed to create account");
       }
 
+      trackEvent(AUTH_EVENTS.SIGNUP_COMPLETED, {
+        method: "email"
+      });
+
       toast.success(
         "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
       );
@@ -86,10 +90,22 @@ const SignupPage = () => {
   };
 
   const handleGoogleSignup = async () => {
+    localStorage.setItem('oauth_intent', JSON.stringify({
+      provider: 'google',
+      source_page: 'signup',
+      timestamp: Date.now()
+    }));
+
+    trackEvent(AUTH_EVENTS.OAUTH_INITIATED, {
+      provider: "google",
+      source_page: "signup"
+    });
+
     setLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/callback" });
     } catch (err) {
+      localStorage.removeItem('oauth_intent');
       console.error("Google sign-up error:", err);
       toast.error("Google sign-up failed. Please try again.");
       setLoading(false);

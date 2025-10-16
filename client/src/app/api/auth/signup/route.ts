@@ -3,9 +3,8 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/config/database"
 import { AuthLogger } from "@/lib/utils/auth"
 import { sendVerificationEmail } from "@/lib/services/server/emailService"
-import { createSubscription } from "@/lib/stripe/server"
 import { signupSchema } from "@/lib/validations/auth"
-import { getDefaultCurrency, getDefaultTimezone } from "@/lib/db/preferences"
+import { initializeUserAccount } from "@/lib/utils/userProvisioning"
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,55 +42,29 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const [defaultCurrency, defaultTimezone] = await Promise.all([
-      getDefaultCurrency(),
-      getDefaultTimezone(),
-    ])
-
-    if (!defaultCurrency || !defaultTimezone) {
-      AuthLogger.signUpFailure(email, 'Default preferences not found')
-      return NextResponse.json(
-        { error: "System configuration error. Please try again later." },
-        { status: 500 }
-      )
-    }
-
-    const user = await prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: {
-          email: email,
-          passwordHash: hashedPassword,
-        },
-        select: {
-          id: true,
-          email: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      })
-
-      await tx.userSettings.create({
-        data: {
-          userId: newUser.id,
-          currencyId: defaultCurrency.id,
-          timezoneId: defaultTimezone.id,
-          hasCompletedOnboarding: false,
-        },
-      })
-
-      return newUser
+    const user = await prisma.user.create({
+      data: {
+        email: email,
+        passwordHash: hashedPassword,
+      },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true
+      }
     })
 
-    try {
-      await createSubscription(user.id);
-      AuthLogger.info({ action: 'subscription_created', email: user.email });
-    } catch (stripeError) {
+    // Initialize user account (settings + subscription)
+    const initResult = await initializeUserAccount(user.id);
+
+    if (!initResult.success) {
       AuthLogger.error({
-        action: 'subscription_creation_failed',
+        action: 'signup_initialization_failed',
         email: user.email,
-        error: stripeError instanceof Error ? stripeError.message : 'Unknown Stripe error'
+        error: initResult.errors?.join(', ') || 'Unknown initialization error'
       });
-      // Don't fail the signup if subscription creation fails
+      // Continue with signup - user can complete setup via onboarding
     }
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
