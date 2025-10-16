@@ -51,14 +51,14 @@ export function AnalyticsIdentifier({
       }
 
       try {
-        const response = await fetch("/api/billing/subscription");
+        const response = await fetch("/api/billing/usage");
         if (!response.ok) return;
 
         const data = await response.json();
 
-        if (data.status === "TRIAL" && data.trialEndsAt) {
+        if (data.subscription.status === "TRIAL" && data.subscription.trialEndsAt) {
           trackEvent(posthog, BILLING_EVENTS.TRIAL_STARTED, {
-            trial_days: data.trialDaysRemaining || 14,
+            trial_days: data.subscription.trialDaysRemaining || 14,
           });
 
           localStorage.setItem(trialTrackedKey, "true");
@@ -86,13 +86,13 @@ export function AnalyticsIdentifier({
       }
 
       try {
-        const response = await fetch("/api/billing/subscription");
+        const response = await fetch("/api/billing/usage");
         if (!response.ok) return;
 
         const data = await response.json();
 
-        if (data.status === "TRIAL" && data.trialDaysRemaining !== null) {
-          const daysRemaining = data.trialDaysRemaining;
+        if (data.subscription.status === "TRIAL" && data.subscription.trialDaysRemaining !== null) {
+          const daysRemaining = data.subscription.trialDaysRemaining;
 
           if (daysRemaining <= 3 && daysRemaining >= 0) {
             trackEvent(posthog, BILLING_EVENTS.TRIAL_ENDING_SOON, {
