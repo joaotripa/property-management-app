@@ -48,6 +48,8 @@ Important: Always ask before running database migration commands. Never reset th
 - **Auth**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 (no config file needed) with Radix UI primitives and shadcn/ui
 - **Storage**: Supabase for file uploads and AWS S3
+- **Analytics**: PostHog (client-side: posthog-js, server-side: posthog-node)
+- **Payments**: Stripe for subscription management
 - **Validation**: Zod schemas
 - **Forms**: react-hook-form with Zod resolvers
 
@@ -178,6 +180,32 @@ All API operations use dedicated service functions:
 - **Property Limits**: Enforced based on subscription plan
 - **Contact Email**: `support@domari.app` for all inquiries (billing, privacy, general support)
 
+### Analytics System (PostHog)
+
+- **Provider**: PostHog for product analytics and event tracking
+- **Client SDK**: `posthog-js` for browser-based tracking
+- **Server SDK**: `posthog-node` for reliable server-side tracking
+- **Implementation**: Direct SDK usage in `/lib/analytics/`
+  - `PostHogProvider.tsx`: Client-side initialization (autocapture disabled)
+  - `posthog-server.ts`: Server-side singleton instance
+  - `tracker.ts`: Client-side tracking helpers
+  - `server-tracker.ts`: Server-side tracking helpers
+  - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
+- **Architecture Pattern**: Server-side tracking for reliability
+  - Authentication events tracked in `auth.ts` (Node.js runtime)
+  - Email verification tracked in `/api/auth/verify-email`
+  - Billing events tracked in subscription webhooks
+  - User identification in `AnalyticsIdentifier.tsx`
+- **Edge Runtime Safety**: Analytics imports kept out of `auth.config.ts` to avoid Edge Runtime bundling issues
+- **Key Events**:
+  - Auth: SIGNUP_STARTED, SIGNUP_COMPLETED, LOGIN_COMPLETED
+  - Billing: TRIAL_STARTED, TRIAL_ENDING_SOON, SUBSCRIPTION_CREATED, etc.
+- **Best Practices**:
+  - Server-side tracking for critical events (signups, conversions)
+  - Client-side tracking for user interactions and funnel analysis
+  - Single source of truth approach (no double-tracking)
+  - Runtime-safe imports (Edge vs Node.js separation)
+
 ### Backend Rules & Patterns
 
 #### API Architecture
@@ -263,12 +291,20 @@ All API operations use dedicated service functions:
 
 ### Key Files to Understand
 
-- `/client/src/auth.ts`: NextAuth.js configuration
+- `/client/src/auth.ts`: NextAuth.js configuration with analytics tracking
+- `/client/src/auth.config.ts`: Edge-safe NextAuth configuration (used by middleware)
 - `/client/prisma/schema.prisma`: Database schema
 - `/client/src/lib/db/`: Database operation layers
 - `/client/src/lib/services/`: API service layers
 - `/client/src/lib/validations/`: Zod validation schemas
 - `/client/src/lib/stripe/`: Stripe subscription and billing logic
+- `/client/src/lib/analytics/`: PostHog analytics implementation
+  - `posthog-server.ts`: Server-side PostHog singleton
+  - `server-tracker.ts`: Server-side event tracking
+  - `tracker.ts`: Client-side event tracking
+  - `events.ts`: Event name constants
+- `/client/src/providers/PostHogProvider.tsx`: Client-side PostHog initialization
+- `/client/src/lib/analytics/AnalyticsIdentifier.tsx`: User identification and trial tracking
 - `/client/prisma/seed.ts`: Database seeding with property categories
 - `/client/src/app/(nondashboard)/privacy-policy/page.tsx`: Privacy Policy (GDPR/CCPA compliant)
 - `/client/src/app/(nondashboard)/terms-of-service/page.tsx`: Terms of Service with refund policy
@@ -287,7 +323,7 @@ All API operations use dedicated service functions:
 - **Database**: Supabase (PostgreSQL)
 - **File Storage**: Supabase Storage + AWS S3
 - **Payment Processing**: Stripe
-- **Analytics**: Umami (privacy-focused, cookie-free)
+- **Analytics**: PostHog (product analytics with event tracking)
 - **Domain**: domari.app
 - **Support Email**: support@domari.app
 
@@ -295,7 +331,7 @@ All API operations use dedicated service functions:
 
 - **Privacy Policy**: Located at `/privacy-policy` - GDPR and CCPA compliant
 - **Terms of Service**: Located at `/terms-of-service` - includes 14-day trial and refund policy
-- **Cookie Policy**: Not needed - uses cookie-free Umami analytics, only session cookies (strictly necessary)
+- **Cookie Policy**: Uses session cookies for authentication (strictly necessary) and PostHog analytics cookies for product insights
 - **Refund Policy**: 14-day trial for exploration, no refunds after purchase except for billing errors
 - **Data Ownership**: Users retain full ownership of their data
 - **Contact**: All legal/privacy/billing inquiries go to `support@domari.app`
@@ -368,9 +404,10 @@ All API operations use dedicated service functions:
   ### Examples of Good Simplicity
 
   - ✅ Stripe integration: 4-5 files, direct SDK usage, ~500 lines total
+  - ✅ PostHog analytics: Direct SDK usage, Edge/Node.js separation via auth.config.ts vs auth.ts
   - ✅ API routes: Directly call Prisma, validate with Zod, return JSON
   - ✅ Components: Colocate state, handlers, and JSX in same file
-  - ✅ Types: Import from `@prisma/client` and `stripe`, extend only when needed
+  - ✅ Types: Import from `@prisma/client`, `stripe`, `posthog-node`, extend only when needed
 
   ### When Complexity Is Justified
 
