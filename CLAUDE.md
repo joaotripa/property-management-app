@@ -191,7 +191,7 @@ All API operations use dedicated service functions:
 - **Script Integration**: Umami script tag in `app/layout.tsx` head
 - **Environment Variables**:
   - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: Your Umami website ID
-  - `NEXT_PUBLIC_UMAMI_HOST`: Umami Cloud URL (https://cloud.umami.is)
+  - `NEXT_PUBLIC_UMAMI_SCRIPT_URL`: Umami Cloud URL (https://cloud.umami.is/script.js)
 - **Key Events**:
   - Auth: SIGNUP_STARTED, SIGNUP_COMPLETED, LOGIN_COMPLETED, EMAIL_VERIFIED
   - Billing: TRIAL_STARTED, TRIAL_ENDING_SOON, SUBSCRIPTION_UPGRADED, etc.

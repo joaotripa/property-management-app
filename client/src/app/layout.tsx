@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script
           defer
-          src={`${process.env.NEXT_PUBLIC_UMAMI_HOST}/script.js`}
+          src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
           data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
         />
       </head>
