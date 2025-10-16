@@ -11,6 +11,13 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
       person_profiles: "identified_only",
       defaults: "2025-05-24",
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: true,
+      session_recording: {
+        maskAllInputs: true,
+        maskTextSelector: "[data-private]",
+      },
     });
   }, []);
 
