@@ -6,6 +6,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CreditCard, X } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { BILLING_EVENTS } from "@/lib/analytics/events";
 
 interface PropertyLimitBannerProps {
   propertyCount: number;
@@ -25,6 +28,7 @@ export function PropertyLimitBanner({
 }: PropertyLimitBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const router = useRouter();
+  const posthog = usePostHog();
 
   useEffect(() => {
     const sessionDismissed = sessionStorage.getItem(DISMISSAL_KEY);
@@ -32,6 +36,15 @@ export function PropertyLimitBanner({
       setDismissed(true);
     }
   }, []);
+
+  useEffect(() => {
+    const isSubscriptionActive = subscriptionStatus === "ACTIVE";
+    if (isAtLimit && isSubscriptionActive && !dismissed) {
+      trackEvent(posthog, BILLING_EVENTS.PROPERTY_LIMIT_REACHED, {
+        current_plan: plan.toLowerCase(),
+      });
+    }
+  }, [isAtLimit, subscriptionStatus, dismissed, plan, posthog]);
 
   const handleDismiss = () => {
     sessionStorage.setItem(DISMISSAL_KEY, 'true');

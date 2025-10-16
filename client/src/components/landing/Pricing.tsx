@@ -1,8 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { PricingCards } from "@/components/pricing/PricingCards";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { BILLING_EVENTS } from "@/lib/analytics/events";
 
 const Pricing = () => {
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    trackEvent(posthog, BILLING_EVENTS.PRICING_VIEWED, {
+      source: "landing",
+      billing_period: "monthly",
+    });
+  }, [posthog]);
+
   return (
     <section id="pricing" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

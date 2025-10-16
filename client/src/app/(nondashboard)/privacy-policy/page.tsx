@@ -217,14 +217,18 @@ const PrivacyPolicy = () => {
                   Usage Analytics
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  We use Umami Analytics, a privacy-focused analytics tool that:
+                  We use PostHog for product analytics to understand how users interact with our platform. PostHog collects:
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-2">
-                  <li>Does not use cookies</li>
-                  <li>Does not track personal information</li>
-                  <li>Collects only anonymous usage statistics</li>
-                  <li>Is GDPR compliant</li>
+                  <li>User interactions and feature usage patterns</li>
+                  <li>Page views and navigation paths</li>
+                  <li>User account identifiers (email, user ID) to track authenticated users</li>
+                  <li>Browser and device information</li>
+                  <li>Session recordings and user behavior analytics</li>
                 </ul>
+                <p className="text-muted-foreground leading-relaxed mt-2">
+                  PostHog is GDPR and CCPA compliant. You can opt out of analytics tracking by contacting us at support@domari.app.
+                </p>
               </section>
 
               <section id="how-we-use" className="mb-12 scroll-mt-24">
@@ -354,11 +358,18 @@ const PrivacyPolicy = () => {
                 </p>
 
                 <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
-                  Umami Analytics
+                  PostHog
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Privacy-focused, cookie-free analytics. No personal data is
-                  collected or tracked.
+                  Product analytics and user behavior tracking to improve our services. Collects user identifiers, feature usage, and behavioral data. Privacy policy:{" "}
+                  <a
+                    href="https://posthog.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    posthog.com/privacy
+                  </a>
                 </p>
               </section>
 

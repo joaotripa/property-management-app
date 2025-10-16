@@ -6,6 +6,8 @@ import { TopPropertiesCard } from "@/components/dashboard/overview/TopProperties
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
+import { DASHBOARD_EVENTS } from "@/lib/analytics/events";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,39 +32,41 @@ export default async function DashboardPage() {
     UserSettingsService.getUserCurrency(session.user.id)
   ]);
   return (
-    <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
-      {/* Welcome Section */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl md:text-4xl font-bold">Welcome back,</h1>
-        <p className="text-muted-foreground">
-          Here&apos;s what&apos;s happening with your properties today
-        </p>
+    <PageViewTracker event={DASHBOARD_EVENTS.DASHBOARD_VIEWED}>
+      <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
+        {/* Welcome Section */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl md:text-4xl font-bold">Welcome back,</h1>
+          <p className="text-muted-foreground">
+            Here&apos;s what&apos;s happening with your properties today
+          </p>
+        </div>
+
+        {/* KPI Cards */}
+        <section>
+          <OverviewKPIs
+            previousKpis={previousKpis}
+            properties={properties}
+            monthlyStats={monthlyStats}
+            currencyCode={userCurrencyCode}
+          />
+        </section>
+
+        {/* Middle Section: Cash Flow & Top Properties */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CashFlowTrendChart initialData={cashFlowTrend} />
+          <TopPropertiesCard
+            topProperties={topProperties}
+            previousTopProperties={previousTopProperties}
+            currencyCode={userCurrencyCode}
+          />
+        </section>
+
+        {/* Bottom Section: Recent Activity */}
+        <section>
+          <RecentActivity activities={recentActivities} />
+        </section>
       </div>
-
-      {/* KPI Cards */}
-      <section>
-        <OverviewKPIs
-          previousKpis={previousKpis}
-          properties={properties}
-          monthlyStats={monthlyStats}
-          currencyCode={userCurrencyCode}
-        />
-      </section>
-
-      {/* Middle Section: Cash Flow & Top Properties */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CashFlowTrendChart initialData={cashFlowTrend} />
-        <TopPropertiesCard
-          topProperties={topProperties}
-          previousTopProperties={previousTopProperties}
-          currencyCode={userCurrencyCode}
-        />
-      </section>
-
-      {/* Bottom Section: Recent Activity */}
-      <section>
-        <RecentActivity activities={recentActivities} />
-      </section>
-    </div>
+    </PageViewTracker>
   );
 }

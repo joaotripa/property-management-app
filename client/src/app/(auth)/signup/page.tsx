@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,9 @@ import {
   getPasswordStrength,
 } from "@/lib/validations/auth";
 import { Loading } from "@/components/ui/loading";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { AUTH_EVENTS } from "@/lib/analytics/events";
 
 const SignupPage = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -27,6 +30,13 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    trackEvent(posthog, AUTH_EVENTS.SIGNUP_STARTED, {
+      method: "email",
+    });
+  }, [posthog]);
 
   const {
     register,
@@ -64,6 +74,10 @@ const SignupPage = () => {
         throw new Error(responseData.error || "Failed to create account");
       }
 
+      trackEvent(posthog, AUTH_EVENTS.SIGNUP_COMPLETED, {
+        method: "email",
+      });
+
       toast.success(
         "We've sent a verification code to your email. Please check your inbox and enter the code to verify your account."
       );
@@ -80,6 +94,9 @@ const SignupPage = () => {
   const handleGoogleSignup = async () => {
     setLoading(true);
     try {
+      trackEvent(posthog, AUTH_EVENTS.SIGNUP_STARTED, {
+        method: "google",
+      });
       await signIn("google", { callbackUrl: "/dashboard" });
     } catch (err) {
       console.error("Google sign-up error:", err);

@@ -15,6 +15,10 @@ import { Property } from "@/types/properties";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { deletePropertyWithTransactions } from "@/lib/services/client/propertiesService";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { PROPERTY_EVENTS } from "@/lib/analytics/events";
+import { useUserProperties } from "@/hooks/useUserProperties";
 
 interface DeletePropertyConfirmDialogProps {
   property: Property | null;
@@ -33,6 +37,8 @@ export function DeletePropertyConfirmDialog({
 }: DeletePropertyConfirmDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string>("");
+  const posthog = usePostHog();
+  const { properties } = useUserProperties();
 
   const handleConfirm = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,6 +55,10 @@ export function DeletePropertyConfirmDialog({
       if (result.success) {
         setOperationStatus("Refreshing property data...");
         await onConfirm();
+
+        trackEvent(posthog, PROPERTY_EVENTS.PROPERTY_DELETED, {
+          property_count: Math.max(0, properties.length - 1),
+        });
 
         toast.success(result.message);
         onClose();

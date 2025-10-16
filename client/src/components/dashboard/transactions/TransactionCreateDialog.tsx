@@ -12,6 +12,10 @@ import { CategoryOption, PropertyOption } from "@/types/transactions";
 import { toast } from "sonner";
 import { createTransaction } from "@/lib/services/client/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
+import { useSession } from "next-auth/react";
 
 interface TransactionCreateDialogProps {
   isOpen: boolean;
@@ -29,11 +33,28 @@ export function TransactionCreateDialog({
   categories,
 }: TransactionCreateDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const posthog = usePostHog();
+  const { data: session } = useSession();
 
   const handleSubmit = async (data: TransactionFormOutput) => {
     setIsSubmitting(true);
     try {
       await createTransaction(data);
+
+      const userId = session?.user?.id;
+      const storageKey = `first_transaction_created_${userId}`;
+      const isFirstTransaction = userId ? !localStorage.getItem(storageKey) : false;
+
+      trackEvent(posthog, TRANSACTION_EVENTS.TRANSACTION_CREATED, {
+        type: data.type,
+        has_receipt: false,
+        is_first: isFirstTransaction,
+      });
+
+      if (isFirstTransaction && userId) {
+        localStorage.setItem(storageKey, "true");
+      }
+
       toast.success("Transaction created successfully");
       onTransactionCreated();
       onClose();

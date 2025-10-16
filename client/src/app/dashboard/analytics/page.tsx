@@ -3,6 +3,8 @@ import { getAnalyticsPageData } from "@/lib/services/server/analyticsService";
 import { UserSettingsService } from "@/lib/services/server/userSettingsService";
 import { redirect } from "next/navigation";
 import { TimeRangeSelector } from "@/components/dashboard/analytics/TimeRangeSelector";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
+import { DASHBOARD_EVENTS } from "@/lib/analytics/events";
 import {
   KPICards,
   KPICardConfig,
@@ -96,7 +98,14 @@ export default async function AnalyticsPage({
   const kpiConfigs = getAnalyticsKPIConfigs();
 
   return (
-    <div className="flex flex-col px-3 sm:px-4 lg:px-6 pb-4 sm:pb-6 gap-4 sm:gap-6 lg:gap-8 min-h-0">
+    <PageViewTracker
+      event={DASHBOARD_EVENTS.ANALYTICS_VIEWED}
+      properties={{
+        time_range: timeRange,
+        property_filter: propertyId || null,
+      }}
+    >
+      <div className="flex flex-col px-3 sm:px-4 lg:px-6 pb-4 sm:pb-6 gap-4 sm:gap-6 lg:gap-8 min-h-0">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:gap-4">
         <div className="flex flex-col gap-1 sm:gap-2">
@@ -146,5 +155,6 @@ export default async function AnalyticsPage({
         </div>
       </section>
     </div>
+    </PageViewTracker>
   );
 }

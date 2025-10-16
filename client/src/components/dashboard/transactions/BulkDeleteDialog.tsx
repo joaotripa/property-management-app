@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
 
 interface BulkDeleteDialogProps {
   isOpen: boolean;
@@ -40,11 +43,18 @@ export function BulkDeleteDialog({
   const { data: userCurrency } = useUserCurrency();
   const timezone = userTimezone || getSystemTimezone();
   const currency = userCurrency || getDefaultCurrency();
+  const posthog = usePostHog();
 
   const handleConfirm = async () => {
     try {
       setIsDeleting(true);
       await onConfirm(transactions);
+
+      trackEvent(posthog, TRANSACTION_EVENTS.TRANSACTION_DELETED, {
+        is_bulk: true,
+        count: transactions.length,
+      });
+
       onClose();
     } catch (error) {
       console.error("Failed to delete transactions:", error);

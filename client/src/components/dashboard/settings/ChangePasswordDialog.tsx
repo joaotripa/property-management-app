@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { SETTINGS_EVENTS } from "@/lib/analytics/events";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +47,7 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const posthog = usePostHog();
 
   const {
     register,
@@ -56,7 +60,7 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
 
   const onSubmit = async (data: PasswordFormData) => {
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/user/password", {
         method: "PUT",
@@ -73,6 +77,8 @@ export function ChangePasswordDialog({ isOpen, onClose }: ChangePasswordDialogPr
         const error = await response.json();
         throw new Error(error.message || "Failed to change password");
       }
+
+      trackEvent(posthog, SETTINGS_EVENTS.PASSWORD_CHANGED);
 
       toast.success("Password changed successfully");
       handleClose();

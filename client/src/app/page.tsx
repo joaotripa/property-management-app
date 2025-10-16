@@ -7,21 +7,25 @@ import Footer from "@/components/landing/Footer";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
+import { MARKETING_EVENTS } from "@/lib/analytics/events";
 
 export default function Home() {
   return (
-    <div className="h-full w-full">
-      <Navbar />
-      <main className="flex flex-col">
-        <Hero />
-        <DashboardPreview />
-        <Problem />
-        <Solution />
-        <Pricing />
-        <FAQ />
-        <CTA />
-        <Footer />
-      </main>
-    </div>
+    <PageViewTracker event={MARKETING_EVENTS.LANDING_PAGE_VIEWED}>
+      <div className="h-full w-full">
+        <Navbar />
+        <main className="flex flex-col">
+          <Hero />
+          <DashboardPreview />
+          <Problem />
+          <Solution />
+          <Pricing />
+          <FAQ />
+          <CTA />
+          <Footer />
+        </main>
+      </div>
+    </PageViewTracker>
   );
 }

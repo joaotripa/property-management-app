@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
 
 interface ExportButtonProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -11,6 +14,7 @@ interface ExportButtonProps {
 
 export function ExportButton({ searchParams }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const posthog = usePostHog();
 
   const handleExport = async () => {
     try {
@@ -23,6 +27,8 @@ export function ExportButton({ searchParams }: ExportButtonProps) {
           params.set(key, String(value));
         }
       });
+
+      const hasFilters = params.toString().length > 0;
 
       const response = await fetch(
         `/api/transactions/export?${params.toString()}`
@@ -47,6 +53,11 @@ export function ExportButton({ searchParams }: ExportButtonProps) {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      trackEvent(posthog, TRANSACTION_EVENTS.TRANSACTION_EXPORTED, {
+        filter_applied: hasFilters,
+        row_count: null,
+      });
 
       toast.success("Your tax report has been exported to CSV.");
     } catch (error) {

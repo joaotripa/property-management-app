@@ -3,6 +3,8 @@ import { stripeConfig } from './config';
 import { getLimit } from './plans';
 import { prisma } from '@/lib/config/database';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
+import { trackServerEvent } from '@/lib/analytics/server-tracker';
+import { BILLING_EVENTS } from '@/lib/analytics/events';
 
 const apiKey = process.env.STRIPE_SECRET_KEY;
 if (!apiKey && typeof window === 'undefined') {
@@ -276,6 +278,10 @@ export async function syncSubscription(
     }
   }
 
+  const existingSubscription = await prisma.subscription.findUnique({
+    where: { userId },
+  });
+
   await prisma.subscription.upsert({
     where: { userId },
     create: {
@@ -307,6 +313,13 @@ export async function syncSubscription(
       scheduledPlanDate,
     },
   });
+
+  if (existingSubscription && existingSubscription.plan !== plan && status === 'ACTIVE') {
+    await trackServerEvent(userId, BILLING_EVENTS.SUBSCRIPTION_UPGRADED, {
+      old_plan: existingSubscription.plan.toLowerCase(),
+      new_plan: plan.toLowerCase(),
+    });
+  }
 }
 
 export async function getSubscriptionInfo(userId: string) {
@@ -559,10 +572,20 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     userId = user.id;
   }
 
+  const existingSub = await prisma.subscription.findUnique({
+    where: { userId },
+  });
+
   await prisma.subscription.update({
     where: { userId },
     data: { status: 'CANCELED', cancelAtPeriodEnd: false },
   });
+
+  if (existingSub) {
+    await trackServerEvent(userId, BILLING_EVENTS.SUBSCRIPTION_CANCELLED, {
+      previous_plan: existingSub.plan.toLowerCase(),
+    });
+  }
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {

@@ -9,6 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { DASHBOARD_EVENTS } from "@/lib/analytics/events";
 
 import { TIME_RANGES } from "@/lib/utils/dateRange";
 
@@ -22,10 +25,15 @@ export function TimeRangeSelector({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const posthog = usePostHog();
 
   const currentTimeRange = searchParams.get("timeRange") || defaultValue;
 
   const handleTimeRangeChange = (value: string) => {
+    trackEvent(posthog, DASHBOARD_EVENTS.TIME_RANGE_CHANGED, {
+      time_range: value,
+    });
+
     startTransition(() => {
       const params = new URLSearchParams(searchParams);
 

@@ -10,6 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { SETTINGS_EVENTS } from "@/lib/analytics/events";
 import {
   Form,
   FormControl,
@@ -51,6 +54,7 @@ export function PreferencesSettings({
   timezones,
 }: PreferencesSettingsProps) {
   const updateMutation = useUpdateUserSettings();
+  const posthog = usePostHog();
 
   const form = useForm<UserSettingsFormInput>({
     resolver: zodResolver(userSettingsFormSchema),
@@ -61,10 +65,23 @@ export function PreferencesSettings({
   });
 
   const onSubmit = async (data: UserSettingsFormInput) => {
-    updateMutation.mutate({
-      currencyId: data.currencyId,
-      timezoneId: data.timezoneId,
-    });
+    const selectedCurrency = currencies.find((c) => c.id === data.currencyId);
+    const selectedTimezone = timezones.find((t) => t.id === data.timezoneId);
+
+    updateMutation.mutate(
+      {
+        currencyId: data.currencyId,
+        timezoneId: data.timezoneId,
+      },
+      {
+        onSuccess: () => {
+          trackEvent(posthog, SETTINGS_EVENTS.PREFERENCES_UPDATED, {
+            currency: selectedCurrency?.code || null,
+            timezone: selectedTimezone?.iana || null,
+          });
+        },
+      }
+    );
   };
 
   const onCancel = () => {

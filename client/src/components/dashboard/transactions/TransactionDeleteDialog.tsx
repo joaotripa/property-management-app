@@ -20,6 +20,9 @@ import { deleteTransaction } from "@/lib/services/client/transactionsService";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
 
 interface TransactionDeleteDialogProps {
   transaction: Transaction | null;
@@ -39,6 +42,7 @@ export function TransactionDeleteDialog({
   const { data: userCurrency } = useUserCurrency();
   const timezone = userTimezone || getSystemTimezone();
   const currency = userCurrency || getDefaultCurrency();
+  const posthog = usePostHog();
 
   const handleConfirm = useCallback(async () => {
     if (!transaction) return;
@@ -46,6 +50,12 @@ export function TransactionDeleteDialog({
     try {
       setIsDeleting(true);
       await deleteTransaction(transaction.id);
+
+      trackEvent(posthog, TRANSACTION_EVENTS.TRANSACTION_DELETED, {
+        is_bulk: false,
+        count: 1,
+      });
+
       toast.success("Transaction deleted successfully");
       onTransactionDeleted();
       onClose();
@@ -57,7 +67,7 @@ export function TransactionDeleteDialog({
     } finally {
       setIsDeleting(false);
     }
-  }, [transaction, onTransactionDeleted, onClose]);
+  }, [transaction, onTransactionDeleted, onClose, posthog]);
 
   if (!transaction) return null;
 

@@ -38,6 +38,10 @@ import {
   UserSettingsFormInput,
   userSettingsFormSchema,
 } from "@/lib/validations/userSettings";
+import { usePostHog } from "posthog-js/react";
+import { trackEvent } from "@/lib/analytics/tracker";
+import { ONBOARDING_EVENTS } from "@/lib/analytics/events";
+import { useEffect } from "react";
 
 interface OnboardingPreferencesDialogProps {
   isOpen: boolean;
@@ -48,6 +52,8 @@ export function OnboardingPreferencesDialog({
   isOpen,
   onComplete,
 }: OnboardingPreferencesDialogProps) {
+  const posthog = usePostHog();
+
   const {
     data: currencies = [],
     isLoading: currenciesLoading,
@@ -62,7 +68,16 @@ export function OnboardingPreferencesDialog({
 
   const updateMutation = useUpdateUserSettings();
 
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(posthog, ONBOARDING_EVENTS.ONBOARDING_STARTED);
+    }
+  }, [isOpen, posthog]);
+
   const onSubmit = async (data: UserSettingsFormInput) => {
+    const selectedCurrency = currencies.find((c) => c.id === data.currencyId);
+    const selectedTimezone = timezones.find((t) => t.id === data.timezoneId);
+
     updateMutation.mutate(
       {
         currencyId: data.currencyId,
@@ -70,6 +85,10 @@ export function OnboardingPreferencesDialog({
       },
       {
         onSuccess: () => {
+          trackEvent(posthog, ONBOARDING_EVENTS.ONBOARDING_COMPLETED, {
+            currency: selectedCurrency?.code || "unknown",
+            timezone: selectedTimezone?.iana || "unknown",
+          });
           onComplete();
         },
       }
