@@ -1,20 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PricingCards } from "@/components/pricing/PricingCards";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
 
 const Pricing = () => {
+  const pricingRef = useRef<HTMLElement>(null);
+  const [hasTracked, setHasTracked] = useState(false);
+
   useEffect(() => {
-    trackEvent(BILLING_EVENTS.PRICING_VIEWED, {
-      source: "landing",
-      billing_period: "monthly",
-    });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasTracked) {
+          trackEvent(BILLING_EVENTS.PRICING_VIEWED, {
+            source: "landing",
+            billing_period: "monthly",
+          });
+          setHasTracked(true);
+        }
+      },
+      {
+        threshold: 0.5,
+        rootMargin: "0px",
+      }
+    );
+
+    if (pricingRef.current) {
+      observer.observe(pricingRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <section id="pricing" className="py-24 bg-background">
+    <section ref={pricingRef} id="pricing" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-6">

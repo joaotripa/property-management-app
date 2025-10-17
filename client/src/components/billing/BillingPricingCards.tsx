@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
@@ -22,12 +22,6 @@ export function BillingPricingCards({
   onPlanSelect,
 }: BillingPricingCardsProps) {
   const [isYearly, setIsYearly] = useState(initialIsYearly);
-  useEffect(() => {
-    trackEvent(BILLING_EVENTS.PRICING_VIEWED, {
-      source: "settings",
-      billing_period: isYearly ? "yearly" : "monthly",
-    });
-  }, [isYearly]);
 
   const handlePlanClick = (planName: string) => {
     const plan = planName.toUpperCase() as SubscriptionPlan;

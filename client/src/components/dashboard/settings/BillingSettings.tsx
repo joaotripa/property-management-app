@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -57,7 +57,8 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
           " " +
           new Date(subscription.trialEndsAt).toLocaleTimeString(),
         description: description,
-        variant: daysRemaining < 0 ? ("destructive" as const) : ("secondary" as const),
+        variant:
+          daysRemaining < 0 ? ("destructive" as const) : ("secondary" as const),
       };
     }
 
@@ -191,23 +192,24 @@ export function BillingSettings({ subscription }: BillingSettingsProps) {
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Subscription Plans</CardTitle>
-          <CardDescription>
-            Choose the plan that best fits your property portfolio needs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BillingPricingCards
-            currentPlan={subscription.plan}
-            currentStatus={subscription.status}
-            trialDaysRemaining={subscription.trialDaysRemaining}
-            onPlanSelect={handlePlanSelect}
-          />
-        </CardContent>
-      </Card>
+      {!hasActivePaidSubscription && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Plans</CardTitle>
+            <CardDescription>
+              Choose the plan that best fits your property portfolio needs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BillingPricingCards
+              currentPlan={subscription.plan}
+              currentStatus={subscription.status}
+              trialDaysRemaining={subscription.trialDaysRemaining}
+              onPlanSelect={handlePlanSelect}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

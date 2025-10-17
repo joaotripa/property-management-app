@@ -1,8 +1,8 @@
 /**
- * PostHog Analytics Events
+ * Umami Analytics Events
  *
  * Centralized event definitions for type-safe analytics tracking.
- * Follow PostHog naming convention: snake_case for event names.
+ * Follow Umami naming convention: snake_case for event names.
  */
 
 // ==========================================

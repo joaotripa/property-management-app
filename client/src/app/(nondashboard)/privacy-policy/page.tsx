@@ -217,17 +217,22 @@ const PrivacyPolicy = () => {
                   Usage Analytics
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  We use PostHog for product analytics to understand how users interact with our platform. PostHog collects:
+                  We use Umami for product analytics to understand how users
+                  interact with our platform. Umami collects:
                 </p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-2">
                   <li>User interactions and feature usage patterns</li>
                   <li>Page views and navigation paths</li>
-                  <li>User account identifiers (email, user ID) to track authenticated users</li>
+                  <li>
+                    User account identifiers (email, user ID) to track
+                    authenticated users
+                  </li>
                   <li>Browser and device information</li>
                   <li>Session recordings and user behavior analytics</li>
                 </ul>
                 <p className="text-muted-foreground leading-relaxed mt-2">
-                  PostHog is GDPR and CCPA compliant. You can opt out of analytics tracking by contacting us at support@domari.app.
+                  Umami is GDPR and CCPA compliant. You can opt out of analytics
+                  tracking by contacting us at support@domari.app.
                 </p>
               </section>
 
@@ -358,17 +363,19 @@ const PrivacyPolicy = () => {
                 </p>
 
                 <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
-                  PostHog
+                  Umami
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Product analytics and user behavior tracking to improve our services. Collects user identifiers, feature usage, and behavioral data. Privacy policy:{" "}
+                  Product analytics and user behavior tracking to improve our
+                  services. Collects user identifiers, feature usage, and
+                  behavioral data. Privacy policy:{" "}
                   <a
-                    href="https://posthog.com/privacy"
+                    href="https://umami.is/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    posthog.com/privacy
+                    umami.is/privacy
                   </a>
                 </p>
               </section>
