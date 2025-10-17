@@ -1,4 +1,4 @@
-import { FileStack, Target, CalendarClock, EyeOff } from "lucide-react";
+import { FileStack, Coins, CalendarClock, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Problem = () => {
@@ -18,10 +18,10 @@ const Problem = () => {
       color: "from-destructive/70 to-rose-500",
     },
     {
-      icon: Target,
-      title: "Your Profits Are Hiding",
+      icon: Coins,
+      title: "Unclear Profitability",
       description:
-        "You collect rent every month, but between repairs, property taxes, and random fees, you're not sure what's actually left. Without tracking it all, you can't tell if you're building wealth or just breaking even.",
+        "Rent comes in, but after repairs, taxes, insurance, and fees, you're not sure what's actually left. Are you building wealth or breaking even?",
       color: "from-destructive/70 to-rose-500",
     },
     {

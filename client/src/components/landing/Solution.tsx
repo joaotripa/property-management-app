@@ -7,28 +7,28 @@ const Solution = () => {
       icon: ReceiptText,
       title: "Track Every Transaction",
       description:
-        "Log rent payments, maintenance costs, and property expenses in seconds. Organize with built-in categories and find any transaction fast—no more digging through piles of receipts.",
+        "Log income and expenses in seconds with built-in categories. Search and filter any transaction instantly. Everything organized in one place, not scattered across spreadsheets.",
       color: "from-primary/80 to-primary",
     },
     {
       icon: Building2,
-      title: "Manage Your Portfolio",
+      title: "Manage Multiple Properties",
       description:
-        "See all your properties in one place. Compare performance, identify your best earners, and make smarter decisions about where to invest next.",
+        "Track each property's income and expenses separately. See profit margins at a glance and identify which properties perform best. All your portfolio data in one dashboard.",
       color: "from-primary/80 to-primary",
     },
     {
       icon: BarChart3,
       title: "Visualize Your Performance",
       description:
-        "Watch your cash flow over time, see exactly where your money goes, and compare properties side-by-side. All the insights, none of the spreadsheet headaches.",
+        "Charts show your income and expenses over time. Track monthly trends and see exactly where your money goes with category breakdowns. Clear insights, no spreadsheet formulas.",
       color: "from-primary/80 to-primary",
     },
     {
       icon: FileText,
-      title: "Tax Season Made Simple",
+      title: "Export for Tax Time",
       description:
-        "Export all your transactions instantly. Give your accountant organized data instead of chaos, and make tax season the easiest part of your year.",
+        "Export all transactions with categories, dates, and amounts in a clean format. Give your accountant organized data instead of scattered receipts and bank statements.",
       color: "from-primary/80 to-primary",
     },
   ];
