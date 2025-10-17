@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
-import { PRICING_PLANS } from "@/components/pricing/types";
+import { PRICING_PLANS } from "@/lib/stripe/plans";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
 

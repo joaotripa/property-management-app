@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { Plan, PRICING_PLANS } from "./types";
+import { Plan, PRICING_PLANS } from "@/lib/stripe/plans";
 
 interface PricingCardsProps {
   plans?: Plan[];
