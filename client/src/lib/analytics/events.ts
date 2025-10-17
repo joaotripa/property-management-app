@@ -9,10 +9,6 @@
 // 1. USER ACQUISITION & ONBOARDING
 // ==========================================
 
-export const MARKETING_EVENTS = {
-  LANDING_PAGE_VIEWED: "landing_page_viewed",
-} as const;
-
 export const AUTH_EVENTS = {
   SIGNUP_STARTED: "signup_started",
   SIGNUP_COMPLETED: "signup_completed",
