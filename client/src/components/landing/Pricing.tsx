@@ -1,23 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { PricingCards } from "@/components/pricing/PricingCards";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { BILLING_EVENTS } from "@/lib/analytics/events";
 
 const Pricing = () => {
   const pricingRef = useRef<HTMLElement>(null);
-  const [hasTracked, setHasTracked] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasTracked) {
+        if (entry.isIntersecting) {
           trackEvent(BILLING_EVENTS.PRICING_VIEWED, {
             source: "landing",
             billing_period: "monthly",
           });
-          setHasTracked(true);
+          observer.disconnect();
         }
       },
       {
