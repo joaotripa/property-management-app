@@ -1,8 +1,8 @@
 # Domari
 
-**Simple, powerful property finance management for small landlords.**
+**Simple, powerful rental property investment tracking for property owners.**
 
-Domari eliminates spreadsheet chaos by providing an intuitive platform to track rental income, expenses, and generate tax-ready reports—all in one place.
+Domari eliminates spreadsheet chaos by providing an intuitive platform to track rental income, expenses, and understand your investment performance—all in one place.
 
 🌐 **Live App:** [domari.app](https://domari.app)
 
@@ -10,11 +10,12 @@ Domari eliminates spreadsheet chaos by providing an intuitive platform to track 
 
 ## 🎯 What is Domari?
 
-A property finance management tool designed for small landlords and property managers who want to:
-- **Track transactions** - Record rent payments, expenses, and maintenance costs
-- **Visualize performance** - Cash flow trends, expense breakdowns, and property comparisons
+A rental property investment tracker designed for property owners who want to:
+
+- **Track investment performance** - Monitor ROI, cash flow, and profitability across your portfolio
+- **Understand your returns** - Clear analytics on income, expenses, and property performance
 - **Export for taxes** - Download transaction data as CSV for your accountant
-- **Make better decisions** - Data-driven insights across your entire portfolio
+- **Make smarter decisions** - Data-driven insights to optimize your rental property investments
 
 ---
 
@@ -47,19 +48,22 @@ All application code lives in the `/client` directory. This is a mono-repo struc
 ## ✨ Key Features
 
 ### Core Functionality
-- ✅ **Multi-property portfolio management** - Track multiple rental properties
+
+- ✅ **Multi-property portfolio tracking** - Track multiple rental properties
+- ✅ **Investment analytics** - ROI, cash flow trends, expense breakdowns, property rankings
 - ✅ **Transaction tracking** - Income & expenses with pre-built categories
-- ✅ **Analytics dashboard** - Cash flow trends, expense breakdowns, property rankings
 - ✅ **CSV export** - Export transactions for tax preparation
 - ✅ **Property images** - Upload and manage property photos
 
 ### Financial Features
+
 - ✅ **Multi-currency support** - EUR, USD, GBP, AUD, CAD, CHF
 - ✅ **Real-time calculations** - Cash flow, ROI, expense ratios
-- ✅ **Property comparison** - Compare performance across your portfolio
-- ✅ **Monthly metrics** - Automated tracking of monthly performance
+- ✅ **Property comparison** - Compare investment performance across your portfolio
+- ✅ **Monthly metrics** - Automated tracking of monthly investment performance
 
 ### Subscription & Access
+
 - ✅ **3-tier pricing** - Starter (10 properties), Pro (50 properties), Business (unlimited)
 - ✅ **14-day free trial** - No credit card required
 - ✅ **Stripe billing** - Managed subscriptions with payment portal
@@ -71,22 +75,26 @@ All application code lives in the `/client` directory. This is a mono-repo struc
 ### For Developers
 
 1. **Navigate to the client directory:**
+
    ```bash
    cd client
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment:**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your credentials
    ```
 
 4. **Set up database:**
+
    ```bash
    npm run db:generate
    npm run db:push
@@ -128,4 +136,4 @@ For product support, contact: support@domari.app
 
 ---
 
-Built for landlords who deserve better financial tools.
+Built for property investors who deserve better financial tools.

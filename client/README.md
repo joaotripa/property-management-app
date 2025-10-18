@@ -1,6 +1,6 @@
-# Domari - Property Management App
+# Domari - Rental Property Investment Tracker
 
-Domari is a simple, powerful **property finance management tool** designed specifically for small landlords and property managers. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and generate tax-friendly reports** — all in one place.
+Domari is a simple, powerful **rental property investment tracker** designed specifically for property owners and real estate investors. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and understand your investment performance** — all in one place.
 
 ## 🏗 Tech Stack
 
@@ -238,11 +238,11 @@ client/
 
 ### Core Functionality
 
-- **Property Management**: Add, edit, and track rental properties with images
+- **Property Investment Tracking**: Add, edit, and track rental properties with images
+- **Investment Analytics**: Monitor ROI, cash flow trends, expense breakdowns, and property performance comparison
 - **Transaction Tracking**: Record income and expenses with pre-built categories
-- **Analytics Dashboard**: Cash flow trends, expense breakdowns, and property performance comparison
 - **CSV Export**: Export transactions for tax preparation and accounting
-- **Recent Activity Feed**: Track all changes across your portfolio
+- **Recent Activity Feed**: Track all changes across your investment portfolio
 
 ### Financial Features
 
