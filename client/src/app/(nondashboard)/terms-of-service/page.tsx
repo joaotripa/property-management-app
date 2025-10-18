@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { ChevronRight, List } from "lucide-react";
 import Link from "next/link";
 
+const LAST_UPDATED = new Date("2025-10-18");
+
 const sections = [
   { id: "agreement", title: "1. Agreement to Terms" },
   { id: "description", title: "2. Description of Service" },
@@ -60,9 +62,9 @@ const TermsOfService = () => {
           </h1>
           <p className="text-lg text-muted-foreground">
             Last updated:{" "}
-            {new Date().toLocaleDateString("en-US", {
-              month: "long",
+            {LAST_UPDATED.toLocaleDateString("en-GB", {
               day: "numeric",
+              month: "long",
               year: "numeric",
             })}
           </p>

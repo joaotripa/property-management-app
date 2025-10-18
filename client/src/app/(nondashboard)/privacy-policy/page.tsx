@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { ChevronRight, List } from "lucide-react";
 import Link from "next/link";
 
+const LAST_UPDATED = new Date("2025-10-18");
+
 const sections = [
   { id: "introduction", title: "1. Introduction" },
   { id: "information-collected", title: "2. Information We Collect" },
@@ -57,9 +59,9 @@ const PrivacyPolicy = () => {
           </h1>
           <p className="text-lg text-muted-foreground">
             Last updated:{" "}
-            {new Date().toLocaleDateString("en-US", {
-              month: "long",
+            {LAST_UPDATED.toLocaleDateString("en-GB", {
               day: "numeric",
+              month: "long",
               year: "numeric",
             })}
           </p>
