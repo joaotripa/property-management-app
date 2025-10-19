@@ -57,7 +57,7 @@ export const metadata: Metadata = {
       "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions.",
     images: [
       {
-        url: "/domari-logo.png",
+        url: "/domari-logo-icon.png",
         width: 1200,
         height: 630,
         alt: "Domari Logo",
@@ -69,9 +69,9 @@ export const metadata: Metadata = {
     title: "Domari - Track Your Rental Property Investments",
     description:
       "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions.",
-    images: ["/domari-logo.png"],
-    creator: "@joaotripaa",
-    site: "@joaotripaa",
+    images: ["/domari-logo-icon.png"],
+    creator: "@joaotripa",
+    site: "@joaotripa",
   },
   icons: {
     icon: "/domari-logo-icon.png",

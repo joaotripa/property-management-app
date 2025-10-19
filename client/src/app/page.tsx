@@ -18,7 +18,7 @@ export default function Home() {
     description:
       "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions with clear analytics.",
     url: "https://domari.app",
-    logo: "https://domari.app/domari-logo.png",
+    logo: "https://domari.app/domari-logo-icon.png",
     sameAs: [
       "https://www.linkedin.com/in/joaotripa/",
       "https://x.com/joaotripaa",
