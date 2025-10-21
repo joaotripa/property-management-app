@@ -70,8 +70,8 @@ export const metadata: Metadata = {
     description:
       "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions.",
     images: ["/domari-logo-icon.png"],
-    creator: "@joaotripa",
-    site: "@joaotripa",
+    creator: "@joaotripaa",
+    site: "@joaotripaa",
   },
   icons: {
     icon: "/domari-logo-icon.png",
