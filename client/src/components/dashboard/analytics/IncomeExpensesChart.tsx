@@ -50,15 +50,10 @@ export function IncomeExpensesChart({
         </CardTitle>
       </CardHeader>
       <CardContent className="min-h-0">
-        {chartData.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            No income or expenses data available for the selected period.
-          </div>
-        ) : (
-          <ChartContainer
-            config={chartConfig}
-            className="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full"
-          >
+        <ChartContainer
+          config={chartConfig}
+          className="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] w-full"
+        >
             <LineChart
               accessibilityLayer
               data={chartData}
@@ -119,8 +114,7 @@ export function IncomeExpensesChart({
                 dot={false}
               />
             </LineChart>
-          </ChartContainer>
-        )}
+        </ChartContainer>
       </CardContent>
     </Card>
   );

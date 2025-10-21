@@ -1,37 +1,32 @@
 import {
   getPortfolioKPIs,
   getCashFlowTrend,
+  getCashFlowTrendWeekly,
   getExpenseBreakdown,
   getPropertyRanking
 } from "@/lib/db/analytics/queries";
 import { getUserProperties } from "@/lib/db/properties/queries";
 import {
   KPIMetrics,
-  CashFlowTrendData,
   ExpenseBreakdownData,
-  PropertyRankingData
+  PropertyRankingData,
 } from "@/lib/db/analytics/queries";
 import { PropertyOption } from "@/types/transactions";
 import {
   calculateDateRange,
   calculatePreviousPeriod
 } from "@/lib/utils/dateRange";
+import { AnyTimeSeriesData } from "@/lib/types/granularity";
 
 export interface AnalyticsPageData {
   kpis: KPIMetrics;
   previousKpis: KPIMetrics;
-  cashFlowTrend: CashFlowTrendData[];
+  cashFlowTrend: AnyTimeSeriesData[];
   expenseBreakdown: ExpenseBreakdownData[];
   propertyRanking: PropertyRankingData[];
   properties: PropertyOption[];
 }
 
-// These functions are now replaced by the TimeRangeSelector utilities
-
-/**
- * Server-side service to fetch all analytics page data
- * Fetches all required data in parallel for optimal performance
- */
 export async function getAnalyticsPageData(
   userId: string,
   timeRange: string = "semester",
@@ -40,6 +35,8 @@ export async function getAnalyticsPageData(
   try {
     const { dateFrom, dateTo, monthsBack } = calculateDateRange(timeRange);
     const { dateFrom: prevDateFrom, dateTo: prevDateTo } = calculatePreviousPeriod(timeRange);
+
+    const useWeeklyData = timeRange === 'current' || timeRange === 'quarter';
 
     const [
       kpis,
@@ -51,7 +48,9 @@ export async function getAnalyticsPageData(
     ] = await Promise.all([
       getPortfolioKPIs(userId, propertyId, dateFrom, dateTo),
       getPortfolioKPIs(userId, propertyId, prevDateFrom, prevDateTo),
-      getCashFlowTrend(userId, propertyId, monthsBack),
+      useWeeklyData
+        ? getCashFlowTrendWeekly(userId, propertyId, monthsBack, dateFrom, dateTo)
+        : getCashFlowTrend(userId, propertyId, monthsBack, dateFrom, dateTo),
       getExpenseBreakdown(userId, propertyId, dateFrom, dateTo),
       getPropertyRanking(userId, dateFrom, dateTo),
       getUserProperties(userId)

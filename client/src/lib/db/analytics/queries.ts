@@ -64,9 +64,7 @@ export interface ChartsResponse {
   expenseBreakdown?: ExpenseBreakdownData[];
 }
 
-/**
- * Get comprehensive KPI metrics for a user's portfolio using monthly metrics for better performance
- */
+
 export async function getPortfolioKPIs(
   userId: string,
   propertyId?: string,
@@ -130,9 +128,7 @@ export async function getPortfolioKPIs(
   }
 }
 
-/**
- * Get KPI metrics for individual properties using monthly metrics for better performance
- */
+
 export async function getPropertyKPIs(
   userId: string,
   propertyId?: string,
@@ -196,9 +192,7 @@ export async function getPropertyKPIs(
   }
 }
 
-/**
- * Calculate ISO week number and week start date
- */
+
 function calculateISOWeek(date: Date): { weekNum: number; year: number; weekStart: Date } {
   const tempDate = new Date(date.getTime());
   tempDate.setHours(0, 0, 0, 0);
@@ -219,13 +213,79 @@ function calculateISOWeek(date: Date): { weekNum: number; year: number; weekStar
   };
 }
 
-/**
- * Get weekly cash flow trend data for short-term analysis
- */
+
+function generateMonthlyPeriods(dateFrom: Date, dateTo: Date): Map<string, CashFlowTrendData> {
+  const periods = new Map<string, CashFlowTrendData>();
+  const current = new Date(dateFrom.getFullYear(), dateFrom.getMonth(), 1);
+  const end = new Date(dateTo.getFullYear(), dateTo.getMonth(), 1);
+
+  while (current <= end) {
+    const year = current.getFullYear();
+    const month = current.getMonth() + 1;
+    const period = `${year}-${month.toString().padStart(2, '0')}`;
+
+    periods.set(period, {
+      granularity: 'monthly',
+      periodStart: new Date(current),
+      period,
+      income: 0,
+      expenses: 0,
+      cashFlow: 0,
+      cumulativeCashFlow: 0,
+      month: period,
+      year,
+      monthNum: month,
+    });
+
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  return periods;
+}
+
+function generateWeeklyPeriods(dateFrom: Date, dateTo: Date): Map<string, WeeklyCashFlowTrendData> {
+  const periods = new Map<string, WeeklyCashFlowTrendData>();
+  const current = new Date(dateFrom);
+  current.setHours(0, 0, 0, 0);
+
+  const dayOfWeek = (current.getDay() + 6) % 7;
+  current.setDate(current.getDate() - dayOfWeek);
+
+  const end = new Date(dateTo);
+  end.setHours(23, 59, 59, 999);
+
+  while (current <= end) {
+    const { weekNum, year, weekStart } = calculateISOWeek(current);
+    const period = `${year}-W${weekNum.toString().padStart(2, '0')}`;
+
+    if (!periods.has(period)) {
+      periods.set(period, {
+        granularity: 'weekly',
+        periodStart: new Date(weekStart),
+        period,
+        income: 0,
+        expenses: 0,
+        cashFlow: 0,
+        cumulativeCashFlow: 0,
+        week: period,
+        weekStart: new Date(weekStart),
+        year,
+        weekNum,
+      });
+    }
+
+    current.setDate(current.getDate() + 7);
+  }
+
+  return periods;
+}
+
 export async function getCashFlowTrendWeekly(
   userId: string,
   propertyId?: string,
-  monthsBack: number | null = 2
+  monthsBack: number | null = 2,
+  dateFrom?: Date,
+  dateTo?: Date
 ): Promise<WeeklyCashFlowTrendData[]> {
   try {
     if (!userId || typeof userId !== 'string') {
@@ -240,23 +300,23 @@ export async function getCashFlowTrendWeekly(
       throw new Error('Invalid propertyId provided');
     }
 
-    let transactionWhere: Prisma.TransactionWhereInput = {
+    const now = new Date();
+    const startDate = dateFrom || (monthsBack !== null
+      ? new Date(now.getFullYear(), now.getMonth() - monthsBack, 1)
+      : new Date(1900, 0, 1));
+    const endDate = dateTo || new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const periods = generateWeeklyPeriods(startDate, endDate);
+
+    const transactionWhere: Prisma.TransactionWhereInput = {
       userId,
       deletedAt: null,
       ...(propertyId && { propertyId }),
+      transactionDate: {
+        gte: startDate,
+        lte: endDate,
+      },
     };
-
-    // Add date filter only if monthsBack is specified (not null for full history)
-    if (monthsBack !== null) {
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - monthsBack);
-      startDate.setDate(1);
-
-      transactionWhere = {
-        ...transactionWhere,
-        transactionDate: { gte: startDate },
-      };
-    }
 
     const transactions = await prisma.transaction.findMany({
       where: transactionWhere,
@@ -268,9 +328,6 @@ export async function getCashFlowTrendWeekly(
       orderBy: { transactionDate: 'asc' },
     });
 
-    // Group by ISO week
-    const weeklyData = new Map<string, { income: number; expenses: number; weekStart: Date; year: number; weekNum: number }>();
-
     transactions.forEach((transaction) => {
       try {
         const date = new Date(transaction.transactionDate);
@@ -280,14 +337,12 @@ export async function getCashFlowTrendWeekly(
           return;
         }
 
-        const { weekNum, year, weekStart } = calculateISOWeek(date);
+        const { weekNum, year } = calculateISOWeek(date);
         const key = `${year}-W${weekNum.toString().padStart(2, '0')}`;
 
-        if (!weeklyData.has(key)) {
-          weeklyData.set(key, { income: 0, expenses: 0, weekStart, year, weekNum });
-        }
+        const period = periods.get(key);
+        if (!period) return;
 
-        const data = weeklyData.get(key)!;
         const amount = Number(transaction.amount);
 
         if (isNaN(amount) || amount < 0) {
@@ -296,30 +351,20 @@ export async function getCashFlowTrendWeekly(
         }
 
         if (transaction.type === TransactionType.INCOME) {
-          data.income += amount;
+          period.income += amount;
         } else if (transaction.type === TransactionType.EXPENSE) {
-          data.expenses += amount;
+          period.expenses += amount;
         }
+
+        period.cashFlow = period.income - period.expenses;
       } catch (error) {
         console.warn('Error processing transaction:', error);
       }
     });
 
-    const sortedData = Array.from(weeklyData.entries())
-      .map(([key, data]) => ({
-        granularity: 'weekly' as const,
-        periodStart: data.weekStart,
-        period: key,
-        income: data.income,
-        expenses: data.expenses,
-        cashFlow: data.income - data.expenses,
-        cumulativeCashFlow: 0, 
-        week: key,
-        weekStart: data.weekStart,
-        year: data.year,
-        weekNum: data.weekNum,
-      }))
-      .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
+    const sortedData = Array.from(periods.values()).sort(
+      (a, b) => a.weekStart.getTime() - b.weekStart.getTime()
+    );
 
     let cumulativeTotal = 0;
     const result: WeeklyCashFlowTrendData[] = sortedData.map(item => {
@@ -340,48 +385,42 @@ export async function getCashFlowTrendWeekly(
   }
 }
 
-/**
- * Get cash flow trend data for charts
- */
 export async function getCashFlowTrend(
   userId: string,
   propertyId?: string,
-  monthsBack: number | null = 12
+  monthsBack: number | null = 12,
+  dateFrom?: Date,
+  dateTo?: Date
 ): Promise<CashFlowTrendData[]> {
   try {
-    let dateFrom: Date | undefined;
-    let dateTo: Date | undefined;
+    const now = new Date();
+    const startDate = dateFrom || (monthsBack !== null
+      ? new Date(now.getFullYear(), now.getMonth() - monthsBack, 1)
+      : new Date(1900, 0, 1));
+    const endDate = dateTo || new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    if (monthsBack !== null) {
-      const now = new Date();
-      dateFrom = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
-      dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
+    const periods = generateMonthlyPeriods(startDate, endDate);
 
     const monthlyMetrics = await getAggregatedMonthlyMetrics(
       userId,
       propertyId,
-      dateFrom,
-      dateTo
+      startDate,
+      endDate
     );
 
-    const sortedData = monthlyMetrics.map(metric => {
-      const periodStart = new Date(metric.year, metric.month - 1, 1);
-      return {
-        granularity: 'monthly' as const,
-        periodStart,
-        period: metric.period,
-        income: metric.totalIncome,
-        expenses: metric.totalExpenses,
-        cashFlow: metric.cashFlow,
-        cumulativeCashFlow: 0, 
-        month: metric.period,
-        year: metric.year,
-        monthNum: metric.month,
-      };
+    monthlyMetrics.forEach(metric => {
+      const existing = periods.get(metric.period);
+      if (existing) {
+        existing.income = metric.totalIncome;
+        existing.expenses = metric.totalExpenses;
+        existing.cashFlow = metric.cashFlow;
+      }
     });
 
-    // Calculate cumulative net income
+    const sortedData = Array.from(periods.values()).sort(
+      (a, b) => a.periodStart.getTime() - b.periodStart.getTime()
+    );
+
     let cumulativeTotal = 0;
     const result: CashFlowTrendData[] = sortedData.map(item => {
       cumulativeTotal += item.cashFlow;
@@ -398,9 +437,6 @@ export async function getCashFlowTrend(
   }
 }
 
-/**
- * Get expense breakdown by category
- */
 export async function getExpenseBreakdown(
   userId: string,
   propertyId?: string,
@@ -465,10 +501,6 @@ export async function getExpenseBreakdown(
   }
 }
 
-
-/**
- * Get property profitability ranking using monthly metrics for better performance
- */
 export async function getPropertyRanking(
   userId: string,
   dateFrom?: Date,
@@ -491,7 +523,6 @@ export async function getPropertyRanking(
       getPropertyMetrics(userId, undefined, dateFrom, dateTo),
     ]);
 
-    // Create a map for quick lookup of metrics by propertyId
     const metricsMap = new Map(
       propertyMetrics.map(metric => [metric.propertyId, metric])
     );

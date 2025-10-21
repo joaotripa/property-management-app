@@ -17,6 +17,7 @@ import { CashFlowTrendData } from "@/lib/db/analytics/queries";
 import { formatCompactCurrency, formatCurrency } from "@/lib/utils/formatting";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { createChartTooltipFormatter } from "@/lib/utils/analytics";
+import { formatDataLabel } from "@/lib/types/granularity";
 
 const chartConfig = {
   cashFlow: {
@@ -24,36 +25,6 @@ const chartConfig = {
     color: "var(--color-primary)",
   },
 } as const;
-
-function formatMonthYear(monthString: string): string {
-  const [year, month] = monthString.split("-");
-  const date = new Date(parseInt(year), parseInt(month) - 1);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    year: "2-digit",
-  });
-}
-
-function generateEmptyChartData(): Array<{
-  month: string;
-  cashFlow: number;
-  monthLabel: string;
-}> {
-  const data = [];
-  const now = new Date();
-
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    data.push({
-      month: monthString,
-      cashFlow: 0,
-      monthLabel: formatMonthYear(monthString),
-    });
-  }
-
-  return data;
-}
 
 interface CashFlowTrendChartProps {
   initialData: CashFlowTrendData[];
@@ -63,13 +34,10 @@ export function CashFlowTrendChart({ initialData }: CashFlowTrendChartProps) {
   const { data: userCurrency } = useUserCurrency();
   const currency = userCurrency || getDefaultCurrency();
 
-  const chartData =
-    initialData.length > 0
-      ? initialData.map((item) => ({
-          ...item,
-          monthLabel: formatMonthYear(item.month),
-        }))
-      : generateEmptyChartData();
+  const chartData = initialData.map((item) => ({
+    ...item,
+    monthLabel: formatDataLabel(item),
+  }));
 
   return (
     <Card>
