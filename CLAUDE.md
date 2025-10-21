@@ -142,7 +142,8 @@ All API operations use dedicated service functions:
 - **Modularity**: Build components for reuse across contexts
 - **Accessibility**: Ensure ARIA labels and keyboard navigation
 - **Code Formatting**: Use Prettier for consistent formatting
-- **Comments**: Avoid comments in the middle of code unless the code is too complex and requires explanation. Only add relevant and necessary comments that help understand complex logic or business requirements
+- **Comments**: No comments allowed except for line comments explaining calculations (e.g., `// Convert Sunday=0 to Monday=0`). Code should be self-explanatory through clear naming and structure
+- **Function Complexity**: Any longer and complex function should be split into smaller, modular and simpler functions to avoid complexity and make it easier to read, with clear structure and self-explanatory naming. Ask yourself if the code is self-explanatory - if not, restructure it to be
 
 #### Form Components
 

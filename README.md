@@ -10,12 +10,16 @@ Domari eliminates spreadsheet chaos by providing an intuitive platform to track 
 
 ## 🎯 What is Domari?
 
-A rental property investment tracker designed for property owners who want to:
+Domari transforms rental property management from chaotic spreadsheet juggling into clear, actionable insights. Built specifically for property owners who are tired of losing track of their investments.
 
-- **Track investment performance** - Monitor ROI, cash flow, and profitability across your portfolio
-- **Understand your returns** - Clear analytics on income, expenses, and property performance
-- **Export for taxes** - Download transaction data as CSV for your accountant
-- **Make smarter decisions** - Data-driven insights to optimize your rental property investments
+The reality is that most landlords are flying blind—rent comes in, but after repairs, taxes, and unexpected costs, they're not sure if they're actually building wealth or just breaking even. Domari changes that.
+
+Instead of scattered Excel files and tax season panic, Domari gives you:
+
+- **Real-time financial clarity** - Know exactly which properties are profitable and by how much
+- **Streamlined transaction management** - Categorize and track every income and expense effortlessly
+- **Portfolio-wide insights** - Compare performance across all your properties at a glance
+- **CSV export** - Download transaction data for your accountant to process
 
 ---
 
