@@ -346,9 +346,12 @@ All API operations use dedicated service functions:
 
   **CRITICAL**: Do not over-engineer any implementation. Follow these strict guidelines:
 
+  **IMPORTANT DISTINCTION**: Industry best practices are NOT over-engineering. Always follow proven industry standards (Next.js Image components, semantic HTML, proper TypeScript patterns, etc.). Over-engineering is when we create unnecessarily complex solutions that don't follow industry standards and provide no real value.
+
   ### Architecture
 
-  - **Keep it flat**: Avoid unnecessary abstraction layers (core/, services/, config/, utils/)
+  - **Follow industry best practices**: Use Next.js Image components, semantic HTML, proper component patterns, etc.
+  - **Keep it flat**: Avoid unnecessary abstraction layers (core/, services/, config/, utils/) when they don't add value
   - **Colocation**: Keep related code together in the same file when it makes sense for small features
   - **Single file solutions**: If a feature can be implemented in 1 file instead of 5, use 1 file
   - **No premature abstraction**: Only abstract when you have 3+ concrete use cases
@@ -357,6 +360,7 @@ All API operations use dedicated service functions:
 
   ### Code Structure
 
+  - **Follow industry standards**: Use Next.js Image components, semantic HTML, proper TypeScript patterns, Zod validation, etc.
   - **Direct over indirect**: Use Stripe SDK directly, don't wrap it in custom classes unless you need to abstract multiple payment providers
   - **Standard over custom**: Prefer built-in types over custom error classes
   - **Minimal files**: Aim for fewer, well-organized files rather than many small ones
@@ -366,6 +370,7 @@ All API operations use dedicated service functions:
 
   ### Type System
 
+  - **Follow TypeScript best practices**: Use proper typing, avoid `any`, use strict mode
   - **Use library types**: Don't recreate types that already exist (e.g., Stripe types)
   - **Extend, don't replace**: If you need custom types, extend existing ones with `interface` or type intersection
   - **No custom error hierarchies**: Use standard Error class with descriptive messages
@@ -374,6 +379,7 @@ All API operations use dedicated service functions:
 
   ### Logic
 
+  - **Follow React/Next.js patterns**: Use proper hooks, server components, proper data fetching patterns
   - **Straightforward flow**: Avoid complex state machines unless truly necessary
   - **Direct database access**: Don't abstract Prisma queries behind repositories unless you have multiple data sources
   - **Simple validation**: Zod schemas are enough; don't add validation layers
@@ -398,6 +404,8 @@ All API operations use dedicated service functions:
   - ❌ Building plugin systems that have 1 plugin
   - ❌ Implementing event buses for simple function calls
   - ❌ Using dependency injection containers for simple imports
+  - ❌ Avoiding industry best practices because they seem "too complex"
+  - ❌ Reinventing solutions that already exist and are proven
 
   ### Examples of Good Simplicity
 
@@ -406,6 +414,8 @@ All API operations use dedicated service functions:
   - ✅ API routes: Directly call Prisma, validate with Zod, return JSON
   - ✅ Components: Colocate state, handlers, and JSX in same file
   - ✅ Types: Import from `@prisma/client`, `stripe`, extend only when needed
+  - ✅ Blog images: Next.js Image component with semantic HTML (industry best practice)
+  - ✅ MDX setup: Custom components for consistency and optimization
 
   ### When Complexity Is Justified
 
@@ -414,7 +424,7 @@ All API operations use dedicated service functions:
   - ✅ Features that need comprehensive testing (organize for testability)
   - ✅ Abstractions that prevent widespread breaking changes (e.g., wrapping external APIs you don't control)
 
-  **Golden Rule**: Prefer simplicity, but never sacrifice correctness, scalability, or clarity when complexity is truly required by the problem domain. Complexity is a liability when avoidable, but a necessity when the domain demands it.
+  **Golden Rule**: Always follow industry best practices - they provide real value and are not over-engineering. Prefer simplicity, but never sacrifice correctness, scalability, clarity, or industry standards when complexity is truly required by the problem domain. Complexity is a liability when avoidable, but following proven patterns is always justified.
 
 ## Quality Checklist
 
