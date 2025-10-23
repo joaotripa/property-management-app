@@ -21,11 +21,12 @@ export default function QueryProvider({ children }: QueryProviderProps) {
         },
       })
   );
+  const showDevtools = process.env.NODE_ENV === "development";
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
+      {showDevtools && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

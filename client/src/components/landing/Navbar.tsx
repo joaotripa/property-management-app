@@ -8,6 +8,7 @@ import Logo from "@/components/branding/Logo";
 
 const navItems = [
   { label: "Features", href: "/#solution" },
+  { label: "Blog", href: "/blog" },
   { label: "Pricing", href: "/#pricing" },
   { label: "FAQ", href: "/#faq" },
 ];
