@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { Info, Shield, Trash2 } from "lucide-react";
 import { ProfileForm } from "./ProfileForm";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
@@ -39,7 +40,25 @@ export function AccountSettings({ accountInfo }: AccountSettingsProps) {
             Update your account details and personal information.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2 py-2">
+            <div className="flex items-center gap-2">
+              <Label>Email Address</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1.5 bg-muted rounded-md border border-border w-fit">
+                <span className="text-sm font-medium">{accountInfo.email}</span>
+              </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info size={20} className="text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>Email address cannot be changed</span>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
           <ProfileForm />
         </CardContent>
       </Card>
@@ -66,7 +85,7 @@ export function AccountSettings({ accountInfo }: AccountSettingsProps) {
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger>
-                  <Info size={20} />
+                  <Info size={20} className="text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <span>Password cannot be changed for Google accounts</span>

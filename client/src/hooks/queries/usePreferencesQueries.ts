@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 
 export interface AccountInfo {
+  email: string;
   hasGoogleAccount: boolean;
   hasPassword: boolean;
   canChangePassword: boolean;

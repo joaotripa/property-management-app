@@ -28,7 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getUserInitials } from "@/lib/utils";
+import { getUserInitials, maskEmail } from "@/lib/utils";
 
 export function NavUser({
   user,
@@ -62,6 +62,7 @@ export function NavUser({
 
   const userName = user?.name || "";
   const userEmail = user?.email || "";
+  const maskedEmail = maskEmail(userEmail);
   const userInitials = getUserInitials(userName);
 
   return (
@@ -81,7 +82,7 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{userName}</span>
-                <span className="truncate text-xs">{userEmail}</span>
+                <span className="truncate text-xs">{maskedEmail}</span>
               </div>
               <EllipsisVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -102,7 +103,7 @@ export function NavUser({
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{userName}</span>
-                  <span className="truncate text-xs">{userEmail}</span>
+                  <span className="truncate text-xs">{maskedEmail}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

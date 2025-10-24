@@ -26,6 +26,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: {
         passwordHash: true,
+        email: true,
       },
     });
 
@@ -33,6 +34,7 @@ export async function GET() {
     const hasPassword = !!user?.passwordHash;
 
     return NextResponse.json({
+      email: user?.email,
       accounts: accounts.map(account => ({
         provider: account.provider,
         type: account.type,
