@@ -1,6 +1,6 @@
 # Domari
 
-**Simple, powerful rental property investment tracking for property owners.**
+**Simple, powerful property investment tracker for landlords and property investors.**
 
 Domari eliminates spreadsheet chaos by providing an intuitive platform to track rental income, expenses, and understand your investment performance—all in one place.
 
@@ -10,16 +10,19 @@ Domari eliminates spreadsheet chaos by providing an intuitive platform to track 
 
 ## 🎯 What is Domari?
 
-Domari transforms rental property management from chaotic spreadsheet juggling into clear, actionable insights. Built specifically for property owners who are tired of losing track of their investments.
+Domari transforms property investment tracking from chaotic spreadsheet juggling into clear, actionable insights. Built specifically for landlords and property investors who are tired of losing track of their investments.
 
 The reality is that most landlords are flying blind—rent comes in, but after repairs, taxes, and unexpected costs, they're not sure if they're actually building wealth or just breaking even. Domari changes that.
 
 Instead of scattered Excel files and tax season panic, Domari gives you:
 
-- **Real-time financial clarity** - Know exactly which properties are profitable and by how much
-- **Streamlined transaction management** - Categorize and track every income and expense effortlessly
-- **Portfolio-wide insights** - Compare performance across all your properties at a glance
-- **CSV export** - Download transaction data for your accountant to process
+- **Track income and expenses** - Add properties, add transactions, keep everything organized
+- **Visualize performance** - Interactive charts for cash flow trends, income vs expenses, expense breakdowns
+- **Monitor ROI** - Automatic calculations of cash flow, ROI percentage, expense ratios per property
+- **Compare properties** - Property performance rankings to see which investments perform best
+- **Export for taxes** - CSV export with categories, dates, amounts for accountants
+
+**Geographic Focus:** While Domari focuses on serving the European market with EUR as the primary currency and localized features, we welcome and support landlords from the United States and other global markets. Our multi-currency support ensures the platform works effectively regardless of location.
 
 ---
 
@@ -54,16 +57,25 @@ All application code lives in the `/client` directory. This is a mono-repo struc
 ### Core Functionality
 
 - ✅ **Multi-property portfolio tracking** - Track multiple rental properties
-- ✅ **Investment analytics** - ROI, cash flow trends, expense breakdowns, property rankings
+- ✅ **Property tracking with images** - Upload and manage property photos
 - ✅ **Transaction tracking** - Income & expenses with pre-built categories
 - ✅ **CSV export** - Export transactions for tax preparation
-- ✅ **Property images** - Upload and manage property photos
+- ✅ **Dashboard overview** - KPIs and recent activity at a glance
+
+### Investment Analytics
+
+- ✅ **Cash flow trends** - Track income and expenses over time
+- ✅ **ROI calculation** - Automatic return on investment percentage per property
+- ✅ **Expense breakdown** - See where your money goes by category
+- ✅ **Property performance comparison** - Rank properties by investment performance
+- ✅ **Income vs expenses charts** - Visualize financial trends
+- ✅ **Time range filtering** - Analyze performance by semester or year
+- ✅ **Per-property or portfolio-wide views** - Drill down or see the big picture
 
 ### Financial Features
 
 - ✅ **Multi-currency support** - EUR, USD, GBP, AUD, CAD, CHF
 - ✅ **Real-time calculations** - Cash flow, ROI, expense ratios
-- ✅ **Property comparison** - Compare investment performance across your portfolio
 - ✅ **Monthly metrics** - Automated tracking of monthly investment performance
 
 ### Subscription & Access
@@ -140,4 +152,4 @@ For product support, contact: support@domari.app
 
 ---
 
-Built for property investors who deserve better financial tools.
+Built for landlords and property investors who want clarity, not complexity.
