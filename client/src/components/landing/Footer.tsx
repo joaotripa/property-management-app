@@ -22,8 +22,8 @@ const Footer = () => {
   return (
     <footer className="bg-primary-light/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-        <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-4 md:gap-8">
-          <div className="space-y-6">
+        <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-6 md:gap-8">
+          <div className="space-y-6 md:col-span-2">
             <div className="flex items-center text-xl text-foreground">
               <Logo />
             </div>
@@ -80,8 +80,8 @@ const Footer = () => {
                     Contact Us
                   </Link>
                 </li>
-                <li className="flex items-center">
-                  <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
+                <li className="flex items-center gap-1">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <a
                     href="mailto:support@domari.app"
                     className="hover:text-primary  transition-colors text-muted-foreground"

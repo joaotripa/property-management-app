@@ -19,17 +19,17 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-background backdrop-blur-sm shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0">
+        <div className="relative flex items-center h-16">
+          {/* Left section - Logo */}
+          <div className="flex-1 flex items-center">
             <Link href="/" className="text-2xl font-bold text-foreground">
               <Logo size="38px" />
             </Link>
           </div>
 
-          {/* Desktop Navigation & Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-6">
-            {/* Navigation Items */}
-            <div className="flex flex-row items-center gap-2">
+          {/* Middle section - Desktop Navigation Items (centered) */}
+          <div className="flex-1 flex justify-center items-center">
+            <div className="hidden lg:flex items-center gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
@@ -40,9 +40,12 @@ const Navbar = () => {
                 </Link>
               ))}
             </div>
+          </div>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-4">
+          {/* Right section - Auth Buttons + Mobile menu */}
+          <div className="flex-1 flex justify-end items-center">
+            {/* Auth Buttons - show on md screens and up */}
+            <div className="hidden md:flex items-center gap-4">
               <Link href="/login" passHref>
                 <Button className="bg-white border border-border hover:bg-muted text-md text-foreground font-normal !px-8 !py-4 rounded-full group">
                   Login{" "}
@@ -55,19 +58,19 @@ const Navbar = () => {
                 </Button>
               </Link>
             </div>
-          </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors duration-200"
-          >
-            {isOpen ? (
-              <X className="block h-6 w-6" />
-            ) : (
-              <Menu className="block h-6 w-6" />
-            )}
-          </button>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors duration-200"
+            >
+              {isOpen ? (
+                <X className="block h-6 w-6" />
+              ) : (
+                <Menu className="block h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
