@@ -7,6 +7,53 @@ import Footer from "@/components/landing/Footer";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Domari - Track Your Rental Property Investments",
+  description:
+    "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions with clear analytics. Start your 14-day free trial today.",
+  keywords: [
+    "rental property tracker",
+    "property investment tracker",
+    "rental income tracker",
+    "property expense tracker",
+    "cash flow tracker",
+    "ROI calculator",
+    "landlord tools",
+    "property management software",
+    "rental property analytics",
+    "real estate investment tracker",
+  ],
+  openGraph: {
+    title: "Domari - Track Your Rental Property Investments",
+    description:
+      "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions with clear analytics.",
+    url: "https://domari.app",
+    type: "website",
+    siteName: "Domari",
+    images: [
+      {
+        url: "/domari-logo-icon.png",
+        width: 1200,
+        height: 630,
+        alt: "Domari - Property Investment Tracker",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Domari - Track Your Rental Property Investments",
+    description:
+      "Track income, expenses, and cash flow for your rental properties. Understand ROI, profitability, and make smarter investment decisions.",
+    images: ["/domari-logo-icon.png"],
+    creator: "@joaotripaa",
+    site: "@joaotripaa",
+  },
+  alternates: {
+    canonical: "https://domari.app",
+  },
+};
 
 export default function Home() {
   const organizationSchema = {
