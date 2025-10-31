@@ -4,7 +4,7 @@ import ContactFormClient from "./ContactFormClient";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Have questions about Domari? Get in touch with our team for support, feedback, or inquiries about property finance management.",
+    "Have questions about Domari? Get in touch with our team for support, feedback, or inquiries about property investment tracking.",
   alternates: {
     canonical: "https://domari.app/contact",
   },
@@ -22,8 +22,7 @@ const ContactPage = () => {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "Contact Domari",
-    description:
-      "Contact page for Domari property finance management platform",
+    description: "Contact page for Domari property investment tracker platform",
     url: "https://domari.app/contact",
     mainEntity: {
       "@type": "Organization",

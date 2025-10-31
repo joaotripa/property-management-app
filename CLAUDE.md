@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## About Domari
 
-Domari is a simple, powerful **property finance management tool** designed specifically for small landlords and property managers. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and generate tax-ready reports** — all in one place.
+Domari is a simple, powerful **property investment tracker** designed specifically for landlords and property investors. We eliminate spreadsheet chaos by providing an intuitive platform to **track rental income, expenses, and understand your investment performance** — all in one place.
 
 This document establishes coding conventions and best practices to ensure **clarity, consistency, and maintainability** across the entire project.
 
