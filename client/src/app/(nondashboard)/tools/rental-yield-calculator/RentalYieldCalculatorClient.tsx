@@ -315,7 +315,7 @@ export default function RentalYieldCalculatorClient() {
                         cx="50%"
                         cy="50%"
                         label={(entry) => formatCurrency(entry.value)}
-                        innerRadius="40%"
+                        innerRadius="50%"
                         outerRadius="75%"
                         paddingAngle={2}
                         strokeWidth={1}
