@@ -14,6 +14,13 @@ const Footer = () => {
     { label: "FAQ", href: "/#faq" },
   ];
 
+  const toolsLinks = [
+    {
+      label: "Rental Yield Calculator",
+      href: "/tools/rental-yield-calculator",
+    },
+  ];
+
   const legalLinks = [
     { label: "Terms of Service", href: "/terms-of-service" },
     { label: "Privacy Policy", href: "/privacy-policy" },
@@ -44,6 +51,21 @@ const Footer = () => {
                     >
                       {link.label}
                     </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-semibold">Free tools</h3>
+              <ul className="flex flex-col gap-2 text-muted-foreground">
+                {toolsLinks.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

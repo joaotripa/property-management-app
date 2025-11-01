@@ -9,6 +9,7 @@ const LAST_MODIFIED = {
   privacyPolicy: new Date('2025-10-18'),
   contact: new Date('2025-10-18'),
   blog: new Date('2025-10-21'),
+  rentalYieldCalculator: new Date('2025-10-21'),
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -65,6 +66,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: LAST_MODIFIED.contact,
       changeFrequency: 'monthly',
       priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/tools/rental-yield-calculator`,
+      lastModified: LAST_MODIFIED.rentalYieldCalculator,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
   ]
 }
