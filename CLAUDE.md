@@ -45,6 +45,7 @@ Important: Always ask before running database migration commands. Never reset th
 
 - **Framework**: Next.js 15 with App Router
 - **Database**: PostgreSQL with Prisma ORM
+- **Data Fetching**: React Query (TanStack Query) for client-side caching and mutations
 - **Auth**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 (no config file needed) with Radix UI primitives and shadcn/ui
 - **Storage**: Supabase for file uploads and AWS S3
@@ -99,6 +100,88 @@ Key relationships:
 - Custom sign-in pages at `/login`
 - Prisma adapter for session management
 - User creation events logged via AuthLogger
+
+### Data Fetching Strategy (Hybrid SSR + React Query)
+
+**Principle**: Use Server-Side Rendering (SSR) for initial page load data, React Query for subsequent updates and mutations.
+
+#### Hybrid Approach Pattern
+
+The application uses a **hybrid pattern** that combines:
+
+- **Server-Side Rendering (SSR)**: Fetch initial data in server components for fast first paint
+- **React Query**: Handle subsequent updates, mutations, and cache management on the client
+
+**Why Hybrid?**
+
+- **Fast Initial Load**: SSR provides instant content with data embedded in HTML
+- **Fast Subsequent Navigation**: React Query cache eliminates duplicate fetches
+- **Automatic Updates**: Mutations automatically invalidate and refetch related data
+- **Better UX**: Client shows loading screens until data is available, then provides instant cache hits on navigation
+
+#### When to Use SSR vs React Query
+
+**Use SSR (Server Components) for:**
+
+- ✅ Initial page load data
+- ✅ SEO-sensitive content
+- ✅ URL-driven queries (pagination, filters in URL params)
+- ✅ Large datasets that benefit from server-side pagination
+- ✅ Data that rarely changes
+- ✅ Data needed for layout/static content
+
+**Use React Query (Client Components) for:**
+
+- ✅ Frequently updated data (after mutations)
+- ✅ Data needed across multiple routes
+- ✅ Optimistic updates
+- ✅ Client-side filtering/sorting without URL params
+- ✅ Real-time-like interactions
+- ✅ Background refetching
+
+**Always use Hybrid for:**
+
+- ✅ Dashboard pages with initial load + frequent updates
+- ✅ List pages (properties, transactions) that support CRUD operations
+- ✅ Detail pages that need instant load but also update after mutations
+
+#### Loading State Guidelines
+
+**Critical**: Client components must show loading screens until data is fetched.
+
+- ✅ **Always check `isLoading`**: Before rendering content, check if data is loading
+- ✅ **Show loading UI**: Display loading component/spinner while `isLoading` is true
+- ✅ **Empty state after load**: Only show empty states after `isLoading` is false and data is confirmed empty
+- ✅ **Initial data exception**: If server-fetched data is passed as `initialData`, check `isLoading` only when no `initialData` exists
+- ✅ **No premature empty states**: Never show empty states during loading - always wait for data fetch to complete
+
+#### Query Key Strategy
+
+Use hierarchical query keys for organized cache management:
+
+- Create query key constants with hierarchical structure (all, lists, detail, etc.)
+- Use consistent naming patterns across all query hooks
+- Group related queries under the same base key for easy invalidation
+- Document query key patterns in the query hook files
+
+#### Cache Invalidation Pattern
+
+Mutations must invalidate related queries:
+
+- Invalidate all affected query keys in mutation `onSuccess` callbacks
+- Use query key hierarchies to invalidate related data efficiently
+- Invalidate both specific queries (e.g., single property) and list queries when data changes
+- Consider analytics and aggregate data when invalidating - they may also need updates
+
+#### Best Practices
+
+- ✅ **Always pass initialData**: Server-fetched data should be passed to React Query as `initialData` to avoid duplicate fetches
+- ✅ **Avoid duplicate fetches**: Don't fetch the same data both server-side and client-side without using `initialData`
+- ✅ **Show loading states**: Always check `isLoading` before showing empty states - display loading UI until data arrives
+- ✅ **Invalidate related queries**: Mutations should invalidate all affected query keys (lists, details, analytics)
+- ✅ **Use staleTime appropriately**: Set `staleTime` based on data freshness needs (60s for properties, 2min for analytics)
+- ✅ **Consistent patterns**: Use the same pattern across similar pages (e.g., all list pages use hybrid approach)
+- ✅ **Client loading UI**: Client components must always show loading screens until data is available - never render empty states during fetch
 
 ### API Layer Architecture
 
@@ -160,10 +243,13 @@ All API operations use dedicated service functions:
 
 #### Data Flow
 
-- Parent components fetch shared data (categories, properties)
-- Data passed as props to child dialogs to eliminate duplicate API calls
-- Custom hooks for data fetching and state management
-- Prefer server components and Next.js caching where possible
+- **Server Components**: Fetch initial page data server-side for fast first render
+- **Initial Data Pattern**: Pass server-fetched data to React Query via `initialData` prop
+- **Client Components**: Use React Query hooks for data fetching with automatic caching
+- **Props to Dialogs**: Parent components pass shared data (categories, properties) as props to eliminate duplicate API calls
+- **Mutations**: Use React Query mutations with automatic cache invalidation
+- **Loading States**: Check `isLoading` before showing empty states; `initialData` eliminates loading on first render
+- **Cache Management**: Use hierarchical query keys for organized cache invalidation
 
 ### File Upload System
 
@@ -303,6 +389,11 @@ All API operations use dedicated service functions:
   - `tracker.ts`: Unified client + server event tracking
   - `events.ts`: Event name constants
 - `/client/src/lib/analytics/AnalyticsIdentifier.tsx`: User identification and trial tracking
+- `/client/src/hooks/queries/`: React Query hooks for data fetching and mutations
+  - `usePropertyQueries.ts`: Property data fetching and mutations
+  - `useTransactionQueries.ts`: Transaction mutations with cache invalidation
+  - `usePropertyAnalytics.ts`: Property analytics queries
+- `/client/src/lib/utils/prisma-transforms.ts`: Prisma Decimal to number transformations
 - `/client/prisma/seed.ts`: Database seeding with property categories
 - `/client/src/app/(nondashboard)/privacy-policy/page.tsx`: Privacy Policy (GDPR/CCPA compliant)
 - `/client/src/app/(nondashboard)/terms-of-service/page.tsx`: Terms of Service with refund policy

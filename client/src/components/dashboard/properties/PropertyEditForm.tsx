@@ -41,12 +41,8 @@ import {
 } from "@/components/ui/multi-image-upload";
 import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils/index";
-import { Loading } from "@/components/ui/loading";
-import {
-  getPropertyImages,
-  deletePropertyImage,
-} from "@/lib/services/client/imageService";
-import { ImageServiceError } from "@/lib/services/shared/imageUtils";
+import { deletePropertyImage, getPropertyImages } from "@/lib/services/client/imageService";
+import type { PropertyImage } from "@prisma/client";
 
 const getPropertyTypeOptions = () => {
   return Object.values(PropertyType).map((type) => ({
@@ -57,6 +53,7 @@ const getPropertyTypeOptions = () => {
 
 interface PropertyEditFormProps {
   property: Property;
+  existingImages?: PropertyImage[];
   onSave: (
     data: UpdatePropertyInput,
     images?: FileWithPreview[],
@@ -70,18 +67,20 @@ interface PropertyEditFormProps {
 
 export function PropertyEditForm({
   property,
+  existingImages = [],
   onSave,
   onCancel,
   onChange,
 }: PropertyEditFormProps) {
   const [newImages, setNewImages] = useState<FileWithPreview[]>([]);
-  const [existingImages, setExistingImages] = useState<ExistingImageItem[]>([]);
+  const [existingImageItems, setExistingImageItems] = useState<
+    ExistingImageItem[]
+  >([]);
   const [removedExistingImageIds, setRemovedExistingImageIds] = useState<
     Set<string>
   >(new Set());
   const [coverImageIndex, setCoverImageIndex] = useState(0);
   const [initialCoverImageIndex, setInitialCoverImageIndex] = useState(0);
-  const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const propertyTypeOptions = getPropertyTypeOptions();
@@ -105,54 +104,33 @@ export function PropertyEditForm({
   });
 
   useEffect(() => {
-    const loadExistingImages = async () => {
-      if (!property.id) return;
+    const imageItems: ExistingImageItem[] = existingImages
+      .filter((imgData: PropertyImage) => imgData.url !== null)
+      .map((imgData: PropertyImage) => ({
+        url: imgData.url!,
+        id: imgData.id,
+        filename: imgData.filename,
+        isCover: imgData.isCover,
+        isExisting: true as const,
+      }));
+    setExistingImageItems(imageItems);
 
-      setIsLoadingImages(true);
-      setImageError(null);
-
-      try {
-        const imageData = await getPropertyImages(property.id);
-        const existingImageItems: ExistingImageItem[] = imageData.map(
-          (imgData) => ({
-            url: imgData.url,
-            id: imgData.filename,
-            isExisting: true as const,
-          })
-        );
-        setExistingImages(existingImageItems);
-
-        const coverImageIndex = imageData.findIndex((img) => img.isCover);
-        if (coverImageIndex !== -1) {
-          setCoverImageIndex(coverImageIndex);
-          setInitialCoverImageIndex(coverImageIndex);
-        } else {
-          setCoverImageIndex(0);
-          setInitialCoverImageIndex(0);
-        }
-      } catch (error) {
-        console.error("Failed to load existing images:", error);
-
-        let errorMessage = "Failed to load existing images";
-        if (error instanceof ImageServiceError) {
-          errorMessage = error.message;
-        }
-
-        setImageError(errorMessage);
-      } finally {
-        setIsLoadingImages(false);
-      }
-    };
-
-    loadExistingImages();
-  }, [property.id]);
+    const coverIndex = existingImages.findIndex((img) => img.isCover);
+    if (coverIndex !== -1) {
+      setCoverImageIndex(coverIndex);
+      setInitialCoverImageIndex(coverIndex);
+    } else {
+      setCoverImageIndex(0);
+      setInitialCoverImageIndex(0);
+    }
+  }, [existingImages]);
 
   const handleRemoveExistingImage = (imageId: string) => {
     setImageError(null);
 
     setRemovedExistingImageIds((prev) => new Set(prev).add(imageId));
 
-    const visibleImages = existingImages.filter(
+    const visibleImages = existingImageItems.filter(
       (img) => !removedExistingImageIds.has(img.id)
     );
     const removedImageIndex = visibleImages.findIndex(
@@ -182,7 +160,7 @@ export function PropertyEditForm({
     try {
       const hasCoverImageChanged = coverImageIndex !== initialCoverImageIndex;
 
-      const visibleImages = existingImages.filter(
+      const visibleImages = existingImageItems.filter(
         (img) => !removedExistingImageIds.has(img.id)
       );
 
@@ -221,16 +199,18 @@ export function PropertyEditForm({
       // Reload images from server to get the updated state
       try {
         const imageData = await getPropertyImages(property.id!);
-        const existingImageItems: ExistingImageItem[] = imageData.map(
-          (imgData) => ({
-            url: imgData.url,
-            id: imgData.filename,
+        const existingImageItems: ExistingImageItem[] = imageData
+          .filter((imgData: PropertyImage) => imgData.url !== null)
+          .map((imgData: PropertyImage) => ({
+            url: imgData.url!,
+            id: imgData.id,
+            filename: imgData.filename,
+            isCover: imgData.isCover,
             isExisting: true as const,
-          })
-        );
-        setExistingImages(existingImageItems);
+          }));
+        setExistingImageItems(existingImageItems);
 
-        const newCoverImageIndex = imageData.findIndex((img) => img.isCover);
+        const newCoverImageIndex = imageData.findIndex((img: PropertyImage) => img.isCover);
         if (newCoverImageIndex !== -1) {
           setCoverImageIndex(newCoverImageIndex);
           setInitialCoverImageIndex(newCoverImageIndex);
@@ -462,15 +442,10 @@ export function PropertyEditForm({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoadingImages ? (
-              <div className="flex items-center justify-center p-6">
-                <Loading />
-              </div>
-            ) : (
-              <MultiImageUpload
+            <MultiImageUpload
                 files={newImages}
                 onFilesChange={setNewImages}
-                existingImages={existingImages.filter(
+                existingImages={existingImageItems.filter(
                   (img) => !removedExistingImageIds.has(img.id)
                 )}
                 onRemoveExistingImage={handleRemoveExistingImage}
@@ -481,7 +456,6 @@ export function PropertyEditForm({
                 maxSize={5 * 1024 * 1024}
                 disabled={isSaving}
               />
-            )}
           </CardContent>
         </Card>
 

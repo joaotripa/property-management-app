@@ -50,7 +50,7 @@ export async function getPropertyImages(propertyId: string, signal?: AbortSignal
  */
 export async function getPropertyImageUrls(propertyId: string, signal?: AbortSignal): Promise<string[]> {
   const images = await getPropertyImages(propertyId, signal);
-  return images.map(image => image.url);
+  return images.map(image => image.url).filter((url): url is string => url !== null);
 }
 
 /**

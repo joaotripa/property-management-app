@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import {
   CategoryOption,
   PropertyOption,
@@ -16,7 +15,7 @@ import { TransactionsPagination } from "@/components/dashboard/transactions/Tran
 import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
 import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
 import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
-import { bulkDeleteTransactions } from "@/lib/services/client/transactionsService";
+import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries";
 
 interface TransactionsClientProps {
   transactions: Transaction[];
@@ -44,6 +43,7 @@ export function TransactionsClient({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const bulkDeleteMutation = useBulkDeleteTransactions();
 
   const openDialog = (type: "create" | "edit" | "delete", transaction?: Transaction) => {
     setDialogType(type);
@@ -52,11 +52,6 @@ export function TransactionsClient({
 
   const closeDialog = () => {
     setDialogType(null);
-  };
-
-  const handleDataChange = () => {
-    // Refresh the page to get updated data
-    router.refresh();
   };
 
   const handlePageChange = (page: number) => {
@@ -87,27 +82,9 @@ export function TransactionsClient({
   const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
     try {
       const transactionIds = selectedTransactions.map(t => t.id);
-      const result = await bulkDeleteTransactions(transactionIds);
-
-      // Show success message
-      if (result.deletedCount > 0) {
-        toast.success(
-          `${result.deletedCount} transaction${result.deletedCount !== 1 ? 's' : ''} deleted successfully`
-        );
-      }
-
-      // Show warning for failed deletions
-      if (result.failedCount > 0) {
-        toast.warning(
-          `${result.failedCount} transaction${result.failedCount !== 1 ? 's' : ''} could not be deleted`
-        );
-      }
-
-      // Refresh the data
-      handleDataChange();
+      await bulkDeleteMutation.mutateAsync(transactionIds);
     } catch (error) {
-      console.error("Bulk delete failed:", error);
-      toast.error("Failed to delete transactions. Please try again.");
+      // Error handling is done in the mutation hook
       throw error; // Re-throw to let dialog handle loading state
     }
   };
@@ -162,7 +139,6 @@ export function TransactionsClient({
       <TransactionCreateDialog
         isOpen={dialogType === "create"}
         onClose={closeDialog}
-        onTransactionCreated={handleDataChange}
         properties={properties}
         categories={categories}
       />
@@ -171,7 +147,6 @@ export function TransactionsClient({
         transaction={selectedTransaction}
         isOpen={dialogType === "edit"}
         onClose={closeDialog}
-        onTransactionUpdated={handleDataChange}
         properties={properties}
         categories={categories}
       />
@@ -180,7 +155,6 @@ export function TransactionsClient({
         transaction={selectedTransaction}
         isOpen={dialogType === "delete"}
         onClose={closeDialog}
-        onTransactionDeleted={handleDataChange}
       />
     </>
   );

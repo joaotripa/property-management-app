@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -10,47 +11,32 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Euro, Users, Home } from "lucide-react";
-import { PropertyDetailsDialog } from "@/components/dashboard/properties/PropertyDetailsDialog";
 import { PropertyAddDialog } from "@/components/dashboard/properties/PropertyAddDialog";
 import { PropertyImage } from "@/components/dashboard/properties/PropertyImage";
 import { EmptyPropertiesState } from "@/components/dashboard/properties/EmptyPropertiesState";
+import { Loading } from "@/components/ui/loading";
 import { Property, OccupancyStatus } from "@/types/properties";
-import { useRouter } from "next/navigation";
+import { usePropertiesQuery } from "@/hooks/queries/usePropertyQueries";
 import { toast } from "sonner";
 
 interface PropertiesClientProps {
-  properties: Property[];
+  initialProperties?: Property[];
   canMutate?: boolean;
   isAtLimit?: boolean;
 }
 
 export function PropertiesClient({
-  properties,
+  initialProperties,
   canMutate = true,
   isAtLimit = false,
 }: PropertiesClientProps) {
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
-    null
-  );
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const router = useRouter();
+  const { data: properties = initialProperties || [], isFetching } =
+    usePropertiesQuery(initialProperties);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const openPropertyDialog = (property: Property) => {
-    setSelectedProperty(property);
-    setIsDetailsOpen(true);
-  };
-
-  const handleSaveProperty = async () => {
-    router.refresh();
-  };
-
-  const handleAddProperty = async () => {
-    router.refresh();
-  };
-
-  const handleDeleteProperty = async () => {
-    router.refresh();
+  const openPropertyPage = (property: Property) => {
+    router.push(`/dashboard/properties/${property.id}`);
   };
 
   const openAddDialog = () => {
@@ -68,7 +54,6 @@ export function PropertiesClient({
       return;
     }
     setIsAddDialogOpen(true);
-    console.log(isAddDialogOpen);
   };
 
   const closeAddDialog = () => {
@@ -76,6 +61,12 @@ export function PropertiesClient({
   };
 
   const isAddDisabled = !canMutate || isAtLimit;
+
+  if (isFetching) {
+    <div className="flex flex-col items-center justify-center h-full w-full">
+      <Loading />
+    </div>;
+  }
 
   if (properties.length === 0) {
     return (
@@ -87,7 +78,7 @@ export function PropertiesClient({
         <PropertyAddDialog
           isOpen={isAddDialogOpen}
           onClose={closeAddDialog}
-          onPropertyAdded={handleAddProperty}
+          onPropertyAdded={() => {}}
         />
       </>
     );
@@ -96,10 +87,10 @@ export function PropertiesClient({
   return (
     <>
       <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        {properties.map((property) => (
+        {(properties as Property[]).map((property) => (
           <Card
             key={property.id}
-            onClick={() => openPropertyDialog(property)}
+            onClick={() => openPropertyPage(property)}
             className="overflow-hidden p-0 cursor-pointer hover:shadow-md transition-shadow"
           >
             <div className="h-50 w-full bg-muted/20 overflow-hidden">
@@ -168,24 +159,11 @@ export function PropertiesClient({
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Property Details Dialog */}
-      <PropertyDetailsDialog
-        property={selectedProperty}
-        isOpen={isDetailsOpen}
-        onClose={() => {
-          setIsDetailsOpen(false);
-          setSelectedProperty(null);
-        }}
-        onSave={handleSaveProperty}
-        onDelete={handleDeleteProperty}
-        canMutate={canMutate}
-      />
-
       {/* Property Add Dialog */}
       <PropertyAddDialog
         isOpen={isAddDialogOpen}
         onClose={closeAddDialog}
-        onPropertyAdded={handleAddProperty}
+        onPropertyAdded={() => {}}
       />
     </>
   );

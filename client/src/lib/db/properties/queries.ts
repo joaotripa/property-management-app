@@ -3,6 +3,7 @@ import { PropertyFilters, propertyFiltersSchema } from "@/lib/validations/proper
 import { Property } from "@/types/properties";
 import { Prisma } from "@prisma/client";
 import { getTotalMetrics } from "@/lib/db/monthlyMetrics/queries";
+import { transformPrismaProperty, transformPrismaProperties } from "@/lib/utils/prisma-transforms";
 
 /**
  * Get all properties for a user with optional filtering
@@ -59,31 +60,12 @@ export async function getUserProperties(
 
     const properties = await prisma.property.findMany({
       where,
-      select: {
-        id: true,
-        name: true,
-        address: true,
-        city: true,
-        country: true,
-        purchasePrice: true,
-        type: true,
-        rent: true,
-        occupancy: true,
-        tenants: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    // Transform Decimal rent to number and handle null values for frontend
-    return properties.map((property) => ({
-      ...property,
-      rent: Number(property.rent),
-      city: property.city,
-      country: property.country,
-      purchasePrice: property.purchasePrice ? Number(property.purchasePrice) : null,
-    })) as Property[];
+    return transformPrismaProperties(properties);
   } catch (error) {
     console.error('Error fetching user properties:', error);
     throw new Error('Failed to fetch properties');
@@ -104,32 +86,13 @@ export async function getPropertyById(
         userId,
         deletedAt: null,
       },
-      select: {
-        id: true,
-        name: true,
-        address: true,
-        city: true,
-        country: true,
-        purchasePrice: true,
-        type: true,
-        rent: true,
-        occupancy: true,
-        tenants: true,
-      },
     });
 
     if (!property) {
       return null;
     }
 
-    // Transform Decimal rent to number and handle null values for frontend
-    return {
-      ...property,
-      rent: Number(property.rent),
-      city: property.city,
-      country: property.country,
-      purchasePrice: property.purchasePrice != null ? Number(property.purchasePrice) : null,
-    } as Property;
+    return transformPrismaProperty(property);
   } catch (error) {
     console.error('Error fetching property:', error);
     throw new Error('Failed to fetch property');

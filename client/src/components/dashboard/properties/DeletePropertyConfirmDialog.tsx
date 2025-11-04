@@ -18,29 +18,22 @@ import { deletePropertyWithTransactions } from "@/lib/services/client/properties
 
 import { trackEvent } from "@/lib/analytics/tracker";
 import { PROPERTY_EVENTS } from "@/lib/analytics/events";
-import { useUserProperties } from "@/hooks/useUserProperties";
 
 interface DeletePropertyConfirmDialogProps {
   property: Property | null;
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void | Promise<void>;
-  onCloseParent?: () => void;
+  onClose: (wasSuccessful?: boolean) => void;
 }
 
 export function DeletePropertyConfirmDialog({
   property,
   isOpen,
   onClose,
-  onConfirm,
-  onCloseParent,
 }: DeletePropertyConfirmDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string>("");
-  const { properties } = useUserProperties();
 
   const handleConfirm = async (e: React.MouseEvent) => {
-    e.preventDefault();
     if (!property) return;
 
     setIsDeleting(true);
@@ -52,16 +45,9 @@ export function DeletePropertyConfirmDialog({
       );
 
       if (result.success) {
-        setOperationStatus("Refreshing property data...");
-        await onConfirm();
-
-        trackEvent(PROPERTY_EVENTS.PROPERTY_DELETED, {
-          property_count: Math.max(0, properties.length - 1),
-        });
-
+        trackEvent(PROPERTY_EVENTS.PROPERTY_DELETED);
         toast.success(result.message);
-        onClose();
-        onCloseParent?.();
+        onClose(true);
       } else {
         toast.error(result.message);
       }
@@ -77,7 +63,14 @@ export function DeletePropertyConfirmDialog({
   if (!property) return null;
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={isDeleting ? undefined : onClose}>
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isDeleting) {
+          onClose(false);
+        }
+      }}
+    >
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-2">

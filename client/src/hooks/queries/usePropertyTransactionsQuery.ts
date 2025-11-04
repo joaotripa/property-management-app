@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { Transaction } from "@/types/transactions";
+import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
 
 interface PropertyTransactionsResponse {
   transactions: Array<
-    Omit<Transaction, 'transactionDate' | 'createdAt' | 'updatedAt'> & {
+    Omit<Transaction, "transactionDate" | "createdAt" | "updatedAt"> & {
       transactionDate: string;
       createdAt: string;
       updatedAt: string;
@@ -19,7 +20,9 @@ async function fetchPropertyTransactions(
   params.append("sortBy", "transactionDate");
   params.append("sortOrder", "desc");
 
-  const response = await fetch(`/api/properties/${propertyId}/transactions?${params.toString()}`);
+  const response = await fetch(
+    `/api/properties/${propertyId}/transactions?${params.toString()}`
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch transactions: ${response.statusText}`);
@@ -27,22 +30,32 @@ async function fetchPropertyTransactions(
 
   const data: PropertyTransactionsResponse = await response.json();
 
-  const transformedTransactions: Transaction[] = data.transactions.map((transaction) => ({
-    ...transaction,
-    transactionDate: new Date(transaction.transactionDate),
-    createdAt: new Date(transaction.createdAt),
-    updatedAt: new Date(transaction.updatedAt),
-  }));
+  const transformedTransactions: Transaction[] = data.transactions.map(
+    (transaction) => ({
+      ...transaction,
+      transactionDate: new Date(transaction.transactionDate),
+      createdAt: new Date(transaction.createdAt),
+      updatedAt: new Date(transaction.updatedAt),
+    })
+  );
 
   return transformedTransactions;
 }
 
 export function usePropertyTransactionsQuery(
-  propertyId: string | undefined
+  propertyId: string,
+  options?: Omit<
+    UseQueryOptions<Transaction[], Error>,
+    "queryKey" | "queryFn"
+  >
 ) {
   return useQuery({
-    queryKey: ["property-transactions", propertyId],
-    queryFn: () => fetchPropertyTransactions(propertyId!),
+    queryKey: PROPERTY_QUERY_KEYS.transactions(propertyId),
+    queryFn: () => fetchPropertyTransactions(propertyId),
     enabled: !!propertyId,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+    ...options,
   });
 }

@@ -41,7 +41,6 @@ import {
 
 import { trackEvent } from "@/lib/analytics/tracker";
 import { PROPERTY_EVENTS } from "@/lib/analytics/events";
-import { useUserProperties } from "@/hooks/useUserProperties";
 
 // Input type for the form (before Zod transforms)
 type PropertyFormInput = z.input<typeof propertyFormSchema>;
@@ -70,7 +69,6 @@ export function PropertyAddForm({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const propertyTypeOptions = getPropertyTypeOptions();
-  const { properties } = useUserProperties();
 
   const form = useForm<PropertyFormInput>({
     resolver: zodResolver(propertyFormSchema),
@@ -148,10 +146,7 @@ export function PropertyAddForm({
 
       const createdProperty = result.property;
 
-      trackEvent(PROPERTY_EVENTS.PROPERTY_CREATED, {
-        property_count: properties.length + 1,
-        is_first: properties.length === 0,
-      });
+      trackEvent(PROPERTY_EVENTS.PROPERTY_CREATED);
 
       if (selectedFiles.length > 0) {
         try {

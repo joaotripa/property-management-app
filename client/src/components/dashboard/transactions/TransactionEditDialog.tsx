@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,17 +12,15 @@ import {
   CategoryOption,
   PropertyOption,
 } from "@/types/transactions";
-import { toast } from "sonner";
 import { format } from "date-fns";
-import { updateTransaction } from "@/lib/services/client/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 import { TransactionType } from "@/types/transactions";
+import { useUpdateTransaction } from "@/hooks/queries/useTransactionQueries";
 
 interface TransactionEditDialogProps {
   transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
-  onTransactionUpdated: () => void;
   properties: PropertyOption[];
   categories: CategoryOption[];
 }
@@ -32,17 +29,10 @@ export function TransactionEditDialog({
   transaction,
   isOpen,
   onClose,
-  onTransactionUpdated,
   properties,
   categories,
 }: TransactionEditDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsSubmitting(false);
-    }
-  }, [isOpen]);
+  const updateTransactionMutation = useUpdateTransaction();
 
   if (!transaction) return null;
 
@@ -70,24 +60,19 @@ export function TransactionEditDialog({
       };
 
   const handleSubmit = async (data: TransactionFormOutput) => {
-    setIsSubmitting(true);
     try {
-      await updateTransaction(transaction.id, data);
-      toast.success("Transaction updated successfully");
-      onTransactionUpdated();
+      await updateTransactionMutation.mutateAsync({
+        id: transaction.id,
+        data,
+      });
       onClose();
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update transaction"
-      );
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      // Error handling is done in the mutation hook
     }
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && !isSubmitting) {
+    if (!open && !updateTransactionMutation.isPending) {
       onClose();
     }
   };
@@ -104,7 +89,7 @@ export function TransactionEditDialog({
           onCancel={onClose}
           properties={properties}
           categories={categories}
-          isSubmitting={isSubmitting}
+          isSubmitting={updateTransactionMutation.isPending}
           submitButtonText="Update Transaction"
         />
       </DialogContent>
