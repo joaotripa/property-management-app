@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   updateProperty,
   deleteProperty,
+  deletePropertyWithTransactions,
 } from "@/lib/services/client/propertiesService";
 import {
   getPropertyImages,
@@ -136,6 +137,30 @@ export function useDeleteProperty() {
     onError: (error) => {
       console.error("Error deleting property:", error);
       toast.error("Failed to delete property");
+    },
+  });
+}
+
+export function useDeletePropertyWithTransactions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      return await deletePropertyWithTransactions(id, name);
+    },
+
+    onSuccess: (result, { id }) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.lists() });
+        queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.detail(id) });
+        queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.transactions(id) });
+        queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.analytics.all(id) });
+        queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.images(id) });
+      }
+    },
+
+    onError: (error) => {
+      console.error("Error deleting property with transactions:", error);
     },
   });
 }

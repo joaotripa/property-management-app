@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +13,7 @@ import {
 import { Property } from "@/types/properties";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { deletePropertyWithTransactions } from "@/lib/services/client/propertiesService";
+import { useDeletePropertyWithTransactions } from "@/hooks/queries/usePropertyQueries";
 
 import { trackEvent } from "@/lib/analytics/tracker";
 import { PROPERTY_EVENTS } from "@/lib/analytics/events";
@@ -30,34 +29,30 @@ export function DeletePropertyConfirmDialog({
   isOpen,
   onClose,
 }: DeletePropertyConfirmDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [operationStatus, setOperationStatus] = useState<string>("");
+  const { mutate: deleteProperty, isPending } =
+    useDeletePropertyWithTransactions();
 
-  const handleConfirm = async (e: React.MouseEvent) => {
+  const handleConfirm = () => {
     if (!property) return;
 
-    setIsDeleting(true);
-    try {
-      setOperationStatus("Deleting property...");
-      const result = await deletePropertyWithTransactions(
-        property.id,
-        property.name
-      );
-
-      if (result.success) {
-        trackEvent(PROPERTY_EVENTS.PROPERTY_DELETED);
-        toast.success(result.message);
-        onClose(true);
-      } else {
-        toast.error(result.message);
+    deleteProperty(
+      { id: property.id, name: property.name },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            trackEvent(PROPERTY_EVENTS.PROPERTY_DELETED);
+            toast.success(result.message);
+            onClose(true);
+          } else {
+            toast.error(result.message || "Failed to delete property");
+          }
+        },
+        onError: (error) => {
+          console.error("Unexpected error deleting property:", error);
+          toast.error("An unexpected error occurred. Please try again.");
+        },
       }
-    } catch (error) {
-      console.error("Unexpected error deleting property:", error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsDeleting(false);
-      setOperationStatus("");
-    }
+    );
   };
 
   if (!property) return null;
@@ -66,7 +61,7 @@ export function DeletePropertyConfirmDialog({
     <AlertDialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open && !isDeleting) {
+        if (!open && !isPending) {
           onClose(false);
         }
       }}
@@ -91,16 +86,16 @@ export function DeletePropertyConfirmDialog({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={isDeleting}
+            disabled={isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? (
+            {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {operationStatus || "Deleting..."}
+                Deleting...
               </>
             ) : (
               "Delete Property"

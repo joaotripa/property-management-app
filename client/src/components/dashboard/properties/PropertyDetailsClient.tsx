@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ArrowLeft } from "lucide-react";
 import { PropertyDetailsView } from "./PropertyDetailsView";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
-import { Loading } from "@/components/ui/loading";
 import { Property } from "@/types/properties";
 import { usePropertyImages } from "@/hooks/queries/usePropertyQueries";
 import { usePropertyCurrentMonthMetrics } from "@/hooks/queries/usePropertyAnalytics";
@@ -39,8 +38,6 @@ export function PropertyDetailsClient({
     isLoading: isLoadingTransactions,
     error: transactionError,
   } = usePropertyTransactionsQuery(initialProperty.id);
-
-  const isLoadingAny = isLoadingImages || isLoadingTransactions;
 
   if (imagesError) {
     return (

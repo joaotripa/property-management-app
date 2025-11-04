@@ -14,7 +14,6 @@ import { Plus, MapPin, Euro, Users, Home } from "lucide-react";
 import { PropertyAddDialog } from "@/components/dashboard/properties/PropertyAddDialog";
 import { PropertyImage } from "@/components/dashboard/properties/PropertyImage";
 import { EmptyPropertiesState } from "@/components/dashboard/properties/EmptyPropertiesState";
-import { Loading } from "@/components/ui/loading";
 import { Property, OccupancyStatus } from "@/types/properties";
 import { usePropertiesQuery } from "@/hooks/queries/usePropertyQueries";
 import { toast } from "sonner";
@@ -31,7 +30,7 @@ export function PropertiesClient({
   isAtLimit = false,
 }: PropertiesClientProps) {
   const router = useRouter();
-  const { data: properties = initialProperties || [], isFetching } =
+  const { data: properties = initialProperties || [] } =
     usePropertiesQuery(initialProperties);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -61,12 +60,6 @@ export function PropertiesClient({
   };
 
   const isAddDisabled = !canMutate || isAtLimit;
-
-  if (isFetching) {
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <Loading />
-    </div>;
-  }
 
   if (properties.length === 0) {
     return (
