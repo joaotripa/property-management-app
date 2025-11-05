@@ -39,6 +39,7 @@ yarn-error.log*
 *.swo
 .DS_Store
 *.pem
+.cursor/rules/
 
 # TypeScript
 *.tsbuildinfo
