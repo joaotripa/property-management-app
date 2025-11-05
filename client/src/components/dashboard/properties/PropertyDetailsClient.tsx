@@ -10,14 +10,23 @@ import { Property } from "@/types/properties";
 import { usePropertyImages } from "@/hooks/queries/usePropertyQueries";
 import { usePropertyCurrentMonthMetrics } from "@/hooks/queries/usePropertyAnalytics";
 import { usePropertyTransactionsQuery } from "@/hooks/queries/usePropertyTransactionsQuery";
+import type { PropertyImage } from "@prisma/client";
+import type { Transaction } from "@/types/transactions";
+import type { MonthlyMetricsData } from "@/lib/db/monthlyMetrics/queries";
 
 interface PropertyDetailsClientProps {
   initialProperty: Property;
+  initialImages: PropertyImage[];
+  initialMetrics: MonthlyMetricsData | null;
+  initialTransactions: Transaction[];
   canMutate?: boolean;
 }
 
 export function PropertyDetailsClient({
   initialProperty,
+  initialImages,
+  initialMetrics,
+  initialTransactions,
   canMutate = true,
 }: PropertyDetailsClientProps) {
   const router = useRouter();
@@ -27,17 +36,20 @@ export function PropertyDetailsClient({
     data: propertyImages = [],
     isLoading: isLoadingImages,
     error: imagesError,
-  } = usePropertyImages(initialProperty.id);
+  } = usePropertyImages(initialProperty.id, { initialData: initialImages });
 
   const { data: currentMonthMetrics = null } = usePropertyCurrentMonthMetrics(
-    initialProperty.id
+    initialProperty.id,
+    { initialData: initialMetrics }
   );
 
   const {
     data: transactions = [],
     isLoading: isLoadingTransactions,
     error: transactionError,
-  } = usePropertyTransactionsQuery(initialProperty.id);
+  } = usePropertyTransactionsQuery(initialProperty.id, {
+    initialData: initialTransactions,
+  });
 
   if (imagesError) {
     return (

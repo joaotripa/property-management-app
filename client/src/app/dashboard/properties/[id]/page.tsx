@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { getPropertyById } from "@/lib/db/properties/queries";
+import { getPropertyDetailsData } from "@/lib/services/server/propertyDetailsService";
 import { PropertyDetailsClient } from "@/components/dashboard/properties/PropertyDetailsClient";
 import { redirect, notFound } from "next/navigation";
 import { canMutate } from "@/lib/stripe/server";
@@ -18,21 +18,25 @@ export default async function PropertyDetailsPage({
     redirect("/login");
   }
 
-  const [property, accessControl] = await Promise.all([
-    getPropertyById(id, session.user.id),
-    canMutate(session.user.id),
-  ]);
+  try {
+    const [detailsData, accessControl] = await Promise.all([
+      getPropertyDetailsData(id, session.user.id),
+      canMutate(session.user.id),
+    ]);
 
-  if (!property) {
+    return (
+      <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
+        <PropertyDetailsClient
+          initialProperty={detailsData.property}
+          initialImages={detailsData.images}
+          initialMetrics={detailsData.currentMonthMetrics}
+          initialTransactions={detailsData.recentTransactions}
+          canMutate={accessControl}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error loading property details:", error);
     notFound();
   }
-
-  return (
-    <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
-      <PropertyDetailsClient
-        initialProperty={property}
-        canMutate={accessControl}
-      />
-    </div>
-  );
 }
