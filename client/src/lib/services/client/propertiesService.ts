@@ -1,6 +1,6 @@
 import { PropertyOption } from "@/types/transactions";
 import { Property } from "@/types/properties";
-import { UpdatePropertyInput, ErrorResponse } from "@/lib/validations/property";
+import { UpdatePropertyInput, CreatePropertyInput, ErrorResponse } from "@/lib/validations/property";
 
 interface PropertiesResponse {
   success: boolean;
@@ -111,6 +111,67 @@ export async function getPropertyById(id: string, signal?: AbortSignal): Promise
 
     throw new PropertiesServiceError(
       'Network error while fetching property'
+    );
+  }
+}
+
+export async function createProperty(data: CreatePropertyInput, signal?: AbortSignal): Promise<Property> {
+  try {
+    const response = await fetch('/api/properties', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      signal,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to create property: ${response.statusText}`;
+
+      try {
+        const errorData: ErrorResponse = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+
+        if (errorData.errors) {
+          const fieldErrors = Object.entries(errorData.errors)
+            .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+            .join('; ');
+          errorMessage += ` (${fieldErrors})`;
+        }
+      } catch {
+        // If we can't parse the error response, use the default message
+      }
+
+      throw new PropertiesServiceError(errorMessage, response.status);
+    }
+
+    const responseData: PropertyResponse = await response.json();
+
+    if (!responseData.success) {
+      throw new PropertiesServiceError(
+        responseData.message || 'Failed to create property'
+      );
+    }
+
+    if (!responseData.property) {
+      throw new PropertiesServiceError('Property data missing from response');
+    }
+
+    return responseData.property;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new PropertiesServiceError('Request cancelled', 0);
+    }
+
+    if (error instanceof PropertiesServiceError) {
+      throw error;
+    }
+
+    throw new PropertiesServiceError(
+      'Network error while creating property'
     );
   }
 }

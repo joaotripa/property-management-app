@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { ImageDisplayItem } from "@/components/ui/image-display-item";
-import { getPropertyCoverImage } from "@/lib/services/client/imageService";
+import { usePropertyCoverImage } from "@/hooks/queries/usePropertyQueries";
 
 interface PropertyImageProps {
   propertyId: string;
@@ -21,59 +20,19 @@ export function PropertyImage({
   height = 200,
   aspectRatio = "video",
 }: PropertyImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [imageError, setImageError] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!propertyId) return;
-
-    const abortController = new AbortController();
-
-    const fetchCoverImage = async () => {
-      try {
-        setIsLoading(true);
-        setImageError(false);
-
-        const coverImageUrl = await getPropertyCoverImage(
-          propertyId,
-          abortController.signal
-        );
-
-        if (coverImageUrl) {
-          setImageSrc(coverImageUrl);
-          setImageError(false);
-        } else {
-          setImageError(true);
-        }
-      } catch {
-        if (!abortController.signal.aborted) {
-          setImageError(true);
-        }
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchCoverImage();
-
-    return () => {
-      abortController.abort();
-    };
-  }, [propertyId]);
+  const {
+    data: coverImageUrl = null,
+    isLoading,
+    error,
+  } = usePropertyCoverImage(propertyId);
 
   const handleImageError = () => {
-    if (!imageError) {
-      setImageError(true);
-      setIsLoading(false);
-    }
+    // ImageDisplayItem will handle the error state
   };
 
   return (
     <ImageDisplayItem
-      src={imageError ? "" : imageSrc}
+      src={coverImageUrl || ""}
       alt={propertyName}
       className={className}
       width={width}
@@ -81,7 +40,7 @@ export function PropertyImage({
       priority={true}
       aspectRatio={aspectRatio}
       isLoading={isLoading}
-      onError={imageError ? undefined : handleImageError}
+      onError={error ? undefined : handleImageError}
     />
   );
 }

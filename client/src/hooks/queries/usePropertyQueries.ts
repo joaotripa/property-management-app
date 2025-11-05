@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  createProperty,
   updateProperty,
   deleteProperty,
   deletePropertyWithTransactions,
@@ -9,20 +10,23 @@ import {
   uploadPropertyImages,
   updatePropertyCoverImage,
 } from "@/lib/services/client/imageService";
-import { UpdatePropertyInput } from "@/lib/validations/property";
+import { UpdatePropertyInput, CreatePropertyInput } from "@/lib/validations/property";
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
 import { toast } from "sonner";
 import type { Property } from "@/types/properties";
 import { transformPrismaProperty, transformPrismaProperties } from "@/lib/utils/prisma-transforms";
+import { QUERY_OPTIONS } from "./queryConfig";
 
+/**
+ * Hierarchical query keys for property-related queries
+ * Following ARCHITECTURE.md pattern for organized cache management
+ */
 export const PROPERTY_QUERY_KEYS = {
   all: ["properties"] as const,
   lists: () => [...PROPERTY_QUERY_KEYS.all, "list"] as const,
   detail: (id: string) => [...PROPERTY_QUERY_KEYS.all, "detail", id] as const,
-  images: (id: string) =>
-    [...PROPERTY_QUERY_KEYS.all, "images", id] as const,
-  transactions: (id: string) =>
-    [...PROPERTY_QUERY_KEYS.all, "transactions", id] as const,
+  images: (id: string) => [...PROPERTY_QUERY_KEYS.all, "images", id] as const,
+  transactions: (id: string) => [...PROPERTY_QUERY_KEYS.all, "transactions", id] as const,
   analytics: {
     all: (id: string) => [...PROPERTY_QUERY_KEYS.all, "analytics", id] as const,
     metrics: (propertyId: string, dateFrom?: string, dateTo?: string) =>
@@ -41,57 +45,79 @@ async function fetchProperties(): Promise<Property[]> {
   return transformPrismaProperties(data.properties);
 }
 
-async function fetchPropertyById(propertyId: string): Promise<Property> {
-  const response = await fetch(`/api/properties/${propertyId}`);
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error("Property not found");
-    }
-    throw new Error("Failed to fetch property");
-  }
-
-  const data = await response.json();
-  return transformPrismaProperty(data.property);
-}
-
+/**
+ * Query hook for properties list
+ *
+ * @param initialData - Optional SSR data passed from server component
+ * @returns Query result with properties list
+ */
 export function usePropertiesQuery(initialData?: Property[]) {
   return useQuery<Property[]>({
     queryKey: PROPERTY_QUERY_KEYS.lists(),
     queryFn: fetchProperties,
     initialData,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1,
+    ...QUERY_OPTIONS.properties,
   });
 }
 
-export function usePropertyQuery(
+/**
+ * Query hook for property images
+ *
+ * @param propertyId - The property ID
+ * @param options - Optional query options (initialData, enabled)
+ * @returns Query result with property images
+ */
+export function usePropertyImages(
   propertyId: string,
-  options?: { initialData?: Property; enabled?: boolean }
+  options?: { initialData?: any[]; enabled?: boolean }
 ) {
-  return useQuery<Property>({
-    queryKey: PROPERTY_QUERY_KEYS.detail(propertyId),
-    queryFn: () => fetchPropertyById(propertyId),
-    initialData: options?.initialData,
-    enabled: options?.enabled ?? !!propertyId,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1,
-  });
-}
-
-export function usePropertyImages(propertyId: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: PROPERTY_QUERY_KEYS.images(propertyId),
     queryFn: () => getPropertyImages(propertyId),
+    initialData: options?.initialData,
     enabled: options?.enabled ?? !!propertyId,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1,
+    ...QUERY_OPTIONS.images,
   });
 }
 
+/**
+ * Mutation hook for creating a new property
+ *
+ * Invalidates:
+ * - Properties list (to show new property)
+ *
+ * @returns Mutation function and state
+ */
+export function useCreateProperty() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreatePropertyInput) => {
+      return await createProperty(data);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.lists() });
+      toast.success("Property created successfully");
+    },
+
+    onError: (error) => {
+      console.error("Error creating property:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create property");
+    },
+  });
+}
+
+/**
+ * Mutation hook for updating a property
+ *
+ * Invalidates:
+ * - Properties list (to reflect updates)
+ * - Specific property detail (to refresh single property view)
+ * - Property analytics (financial data may have changed)
+ *
+ * @returns Mutation function and state
+ */
 export function useUpdateProperty() {
   const queryClient = useQueryClient();
 
@@ -108,6 +134,7 @@ export function useUpdateProperty() {
 
     onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.detail(id) });
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.analytics.all(id),
       });
@@ -121,6 +148,17 @@ export function useUpdateProperty() {
   });
 }
 
+/**
+ * Mutation hook for deleting a property
+ *
+ * Note: This is a simple delete. For deleting with transactions,
+ * use useDeletePropertyWithTransactions instead.
+ *
+ * Invalidates:
+ * - Properties list (to remove deleted property)
+ *
+ * @returns Mutation function and state
+ */
 export function useDeleteProperty() {
   const queryClient = useQueryClient();
 
@@ -141,6 +179,23 @@ export function useDeleteProperty() {
   });
 }
 
+/**
+ * Mutation hook for deleting a property with all associated data
+ *
+ * This is a comprehensive delete that removes:
+ * - All transactions
+ * - All images
+ * - The property itself
+ *
+ * Invalidates:
+ * - Properties list
+ * - Property detail
+ * - Property transactions
+ * - Property analytics
+ * - Property images
+ *
+ * @returns Mutation function and state
+ */
 export function useDeletePropertyWithTransactions() {
   const queryClient = useQueryClient();
 
@@ -165,6 +220,15 @@ export function useDeletePropertyWithTransactions() {
   });
 }
 
+/**
+ * Mutation hook for uploading property images
+ *
+ * Invalidates:
+ * - Property images (to show new images)
+ * - Properties list (cover image may have changed)
+ *
+ * @returns Mutation function and state
+ */
 export function useUploadPropertyImages() {
   const queryClient = useQueryClient();
 
@@ -185,6 +249,7 @@ export function useUploadPropertyImages() {
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.images(propertyId),
       });
+      queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.lists() });
     },
 
     onError: (error) => {
@@ -194,6 +259,15 @@ export function useUploadPropertyImages() {
   });
 }
 
+/**
+ * Mutation hook for updating property cover image
+ *
+ * Invalidates:
+ * - Property images (to reflect cover image change)
+ * - Properties list (cover image changed)
+ *
+ * @returns Mutation function and state
+ */
 export function useUpdateCoverImage() {
   const queryClient = useQueryClient();
 
@@ -212,6 +286,7 @@ export function useUpdateCoverImage() {
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.images(propertyId),
       });
+      queryClient.invalidateQueries({ queryKey: PROPERTY_QUERY_KEYS.lists() });
     },
 
     onError: (error) => {
@@ -220,4 +295,3 @@ export function useUpdateCoverImage() {
     },
   });
 }
-

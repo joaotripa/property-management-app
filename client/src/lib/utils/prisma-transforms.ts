@@ -1,14 +1,22 @@
 import type { Property as PrismaProperty } from "@prisma/client";
 import type { Property } from "@/types/properties";
 
+type PrismaPropertyWithImages = PrismaProperty & {
+  images?: Array<{ url: string | null }>;
+};
+
 /**
  * Transforms Prisma Decimal fields to numbers for frontend use
  * This ensures type safety without assertions
  *
  * Prisma uses Decimal type for financial fields (rent, purchasePrice, marketValue)
  * but the frontend expects plain numbers for calculations and display.
+ *
+ * Also extracts coverImageUrl from images relation if provided.
  */
-export function transformPrismaProperty(prismaProperty: PrismaProperty): Property {
+export function transformPrismaProperty(prismaProperty: PrismaPropertyWithImages): Property {
+  const coverImageUrl = prismaProperty.images?.[0]?.url ?? null;
+
   return {
     id: prismaProperty.id,
     name: prismaProperty.name,
@@ -28,12 +36,13 @@ export function transformPrismaProperty(prismaProperty: PrismaProperty): Propert
     updatedAt: prismaProperty.updatedAt,
     deletedAt: prismaProperty.deletedAt,
     userId: prismaProperty.userId,
+    coverImageUrl,
   };
 }
 
 /**
  * Transform array of Prisma properties
  */
-export function transformPrismaProperties(properties: PrismaProperty[]): Property[] {
+export function transformPrismaProperties(properties: PrismaPropertyWithImages[]): Property[] {
   return properties.map(transformPrismaProperty);
 }

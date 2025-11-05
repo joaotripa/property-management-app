@@ -60,6 +60,18 @@ export async function getUserProperties(
 
     const properties = await prisma.property.findMany({
       where,
+      include: {
+        images: {
+          where: {
+            isCover: true,
+            deletedAt: null,
+          },
+          take: 1,
+          select: {
+            url: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: 'desc',
       },

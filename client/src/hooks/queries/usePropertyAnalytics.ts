@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
+import { QUERY_OPTIONS } from "./queryConfig";
 
 interface PropertyMetrics {
   income: number;
@@ -39,12 +40,23 @@ async function fetchPropertyMetrics(
   };
 }
 
-export function usePropertyCurrentMonthMetrics(propertyId: string, options?: { enabled?: boolean }) {
-  // Stable UTC date calculation with day-level precision
+/**
+ * Query hook for current month property metrics
+ *
+ * Uses day-level precision for stable cache keys.
+ * Automatically recalculates date range on new day (not on every render).
+ *
+ * @param propertyId - The property ID
+ * @param options - Optional query options (initialData, enabled)
+ * @returns Query result with current month metrics
+ */
+export function usePropertyCurrentMonthMetrics(
+  propertyId: string,
+  options?: { initialData?: PropertyMetrics; enabled?: boolean }
+) {
   const { dateFrom, dateTo } = useMemo(() => {
     const now = new Date();
 
-    // Use explicit UTC methods for consistency across timezones
     const utcYear = now.getUTCFullYear();
     const utcMonth = now.getUTCMonth();
     const utcDate = now.getUTCDate();
@@ -53,7 +65,6 @@ export function usePropertyCurrentMonthMetrics(propertyId: string, options?: { e
     const today = new Date(Date.UTC(utcYear, utcMonth, utcDate));
 
     return {
-      // Day-level precision for stable cache keys
       dateFrom: firstDayOfMonth.toISOString().split('T')[0],
       dateTo: today.toISOString().split('T')[0],
     };
@@ -62,20 +73,8 @@ export function usePropertyCurrentMonthMetrics(propertyId: string, options?: { e
   return useQuery({
     queryKey: PROPERTY_QUERY_KEYS.analytics.metrics(propertyId, dateFrom, dateTo),
     queryFn: () => fetchPropertyMetrics(propertyId, dateFrom, dateTo),
+    initialData: options?.initialData,
     enabled: options?.enabled ?? !!propertyId,
-    staleTime: 2 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1,
-  });
-}
-
-export function usePropertyLifetimeMetrics(propertyId: string) {
-  return useQuery({
-    queryKey: PROPERTY_QUERY_KEYS.analytics.metrics(propertyId),
-    queryFn: () => fetchPropertyMetrics(propertyId),
-    enabled: !!propertyId,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1,
+    ...QUERY_OPTIONS.analytics,
   });
 }
