@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +44,11 @@ import { Save, X, Loader2 } from "lucide-react";
 import { toCamelCase } from "@/lib/utils/index";
 import { deletePropertyImage, getPropertyImages } from "@/lib/services/client/imageService";
 import type { PropertyImage } from "@prisma/client";
+import {
+  useUpdateProperty,
+  useUploadPropertyImages,
+  useUpdateCoverImage,
+} from "@/hooks/queries/usePropertyQueries";
 
 const getPropertyTypeOptions = () => {
   return Object.values(PropertyType).map((type) => ({
@@ -54,24 +60,19 @@ const getPropertyTypeOptions = () => {
 interface PropertyEditFormProps {
   property: Property;
   existingImages?: PropertyImage[];
-  onSave: (
-    data: UpdatePropertyInput,
-    images?: FileWithPreview[],
-    coverImageIndex?: number,
-    hasCoverImageChanged?: boolean,
-    selectedCoverImageFilename?: string
-  ) => Promise<void>;
-  onCancel: () => void;
   onChange?: (property: Property) => void;
 }
 
 export function PropertyEditForm({
   property,
   existingImages = [],
-  onSave,
-  onCancel,
   onChange,
 }: PropertyEditFormProps) {
+  const router = useRouter();
+  const updatePropertyMutation = useUpdateProperty();
+  const uploadImagesMutation = useUploadPropertyImages();
+  const updateCoverImageMutation = useUpdateCoverImage();
+
   const [newImages, setNewImages] = useState<FileWithPreview[]>([]);
   const [existingImageItems, setExistingImageItems] = useState<
     ExistingImageItem[]
@@ -152,7 +153,7 @@ export function PropertyEditForm({
     setRemovedExistingImageIds(new Set());
     setNewImages([]);
     setImageError(null);
-    onCancel();
+    router.push(`/dashboard/properties/${property.id}`);
   };
 
   const handleSave = form.handleSubmit(async (data) => {
@@ -169,13 +170,37 @@ export function PropertyEditForm({
         selectedCoverImageFilename = visibleImages[coverImageIndex].id; // id is the filename
       }
 
-      await onSave(
-        data,
-        newImages,
-        coverImageIndex,
-        hasCoverImageChanged,
+      await updatePropertyMutation.mutateAsync({ id: property.id, data });
+
+      if (
+        hasCoverImageChanged &&
+        !newImages?.length &&
         selectedCoverImageFilename
-      );
+      ) {
+        await updateCoverImageMutation.mutateAsync({
+          propertyId: property.id,
+          filename: selectedCoverImageFilename,
+        });
+      }
+
+      if (newImages && newImages.length > 0) {
+        const existingImageCount = existingImages.length;
+        let finalCoverImageIndex = 0;
+
+        if (coverImageIndex >= existingImageCount) {
+          finalCoverImageIndex = coverImageIndex - existingImageCount;
+        } else if (existingImageCount === 0) {
+          finalCoverImageIndex = 0;
+        } else {
+          finalCoverImageIndex = -1;
+        }
+
+        await uploadImagesMutation.mutateAsync({
+          propertyId: property.id,
+          images: newImages,
+          coverImageIndex: finalCoverImageIndex,
+        });
+      }
 
       if (removedExistingImageIds.size > 0) {
         const deletionPromises = Array.from(removedExistingImageIds).map(
@@ -221,8 +246,11 @@ export function PropertyEditForm({
       } catch (error) {
         console.error("Failed to reload images after save:", error);
       }
+
+      router.push(`/dashboard/properties/${property.id}`);
     } catch (error) {
       console.error("Error saving property:", error);
+      throw error;
     } finally {
       setIsSaving(false);
     }

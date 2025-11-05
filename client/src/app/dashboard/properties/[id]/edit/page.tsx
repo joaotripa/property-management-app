@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { getPropertyById } from "@/lib/db/properties/queries";
 import { getPropertyImages } from "@/lib/db/propertyImages/queries";
-import { PropertyEditFormWrapper } from "@/components/dashboard/properties/PropertyEditFormWrapper";
+import { PropertyEditForm } from "@/components/dashboard/properties/PropertyEditForm";
 import { redirect, notFound } from "next/navigation";
 import { canMutate } from "@/lib/stripe/server";
 
@@ -42,7 +42,7 @@ export default async function PropertyEditPage({
         </p>
       </div>
 
-      <PropertyEditFormWrapper property={property} existingImages={propertyImages} />
+      <PropertyEditForm property={property} existingImages={propertyImages} />
     </div>
   );
 }
