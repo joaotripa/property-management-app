@@ -761,9 +761,10 @@ export function transformProperty(property: Property): PropertyClient {
 
 ```tsx
 import dynamic from "next/dynamic";
+import { Loading } from "@/components/ui/loading";
 
 const HeavyChart = dynamic(() => import("@/components/HeavyChart"), {
-  loading: () => <ChartSkeleton />,
+  loading: () => <Loading />,
   ssr: false, // Only load on client
 });
 
@@ -961,27 +962,66 @@ retry: (failureCount, error) => {
 
 ## Loading States & UX
 
-### Loading Skeletons vs Spinners
+### Loading States: Spinners & Zero-First Approach
 
-**Use skeletons for content placeholders:**
+**Default: Use spinners for loading states:**
 
 ```tsx
-export function PropertyCardSkeleton() {
+import { Loading } from "@/components/ui/loading";
+import { Loader2 } from "lucide-react";
+
+// Full-page or section loading
+export function PropertiesLoading() {
   return (
-    <div className="animate-pulse">
-      <div className="h-48 bg-gray-200 rounded" />
-      <div className="h-4 bg-gray-200 rounded mt-2" />
-      <div className="h-4 bg-gray-200 rounded mt-2 w-3/4" />
+    <div className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center">
+      <Loading />
+    </div>
+  );
+}
+
+// Button loading state
+<button disabled={isLoading}>
+  {isLoading ? <Loader2 className="animate-spin" /> : "Submit"}
+</button>;
+```
+
+**For statistics and charts: Use zero-first approach:**
+
+```tsx
+export function PropertyStats({ propertyId }: { propertyId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["property-stats", propertyId],
+    queryFn: () => fetchPropertyStats(propertyId),
+  });
+
+  // Show zeros initially, update when data loads
+  const totalIncome = data?.totalIncome ?? 0;
+  const totalExpenses = data?.totalExpenses ?? 0;
+  const netProfit = data?.netProfit ?? 0;
+
+  return (
+    <div>
+      <StatCard label="Total Income" value={totalIncome} />
+      <StatCard label="Total Expenses" value={totalExpenses} />
+      <StatCard label="Net Profit" value={netProfit} />
     </div>
   );
 }
 ```
 
-**Use spinners for actions:**
+**Benefits:**
 
-```tsx
-<button disabled={isLoading}>{isLoading ? <Spinner /> : "Submit"}</button>
-```
+- ✅ Simpler to maintain (less skeleton code)
+- ✅ Consistent loading patterns across the app
+- ✅ No layout shift (structure visible immediately)
+- ✅ Clear loading indication (zeros update to real values)
+- ✅ Natural for metrics that start at zero
+
+**When to consider skeletons:**
+
+- Complex content-heavy layouts (e.g., article pages, detailed views)
+- Lists where structure preview significantly improves UX
+- Cases where perceived loading time is critical
 
 ### Suspense Boundaries
 
@@ -989,10 +1029,11 @@ export function PropertyCardSkeleton() {
 
 ```tsx
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/loading";
 
 export default function Page() {
   return (
-    <Suspense fallback={<PropertiesSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <PropertiesList />
     </Suspense>
   );
@@ -1004,11 +1045,14 @@ export default function Page() {
 **Load critical content first, then enhance:**
 
 ```tsx
+import { Suspense } from "react";
+import { Loading } from "@/components/ui/loading";
+
 export function Dashboard() {
   return (
     <>
-      <CriticalKPIs /> {/* Load immediately */}
-      <Suspense fallback={<ChartSkeleton />}>
+      <CriticalKPIs /> {/* Load immediately - shows zeros initially */}
+      <Suspense fallback={<Loading />}>
         <HeavyChart /> {/* Load after */}
       </Suspense>
     </>

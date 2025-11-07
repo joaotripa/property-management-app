@@ -298,7 +298,7 @@ All API operations use dedicated service functions:
 - Prisma-generated types for database entities
 - Zod schemas for runtime validation + TypeScript inference
 - Explicit typing for inputs/outputs
-- **No `any` or `unknown` types** - always use proper type definitions
+- **No `any` types** - always use proper type definitions
 - Remove unused imports, variables, and dead code
 
 #### Naming Conventions
