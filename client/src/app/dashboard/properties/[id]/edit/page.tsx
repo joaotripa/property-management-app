@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { getPropertyById } from "@/lib/db/properties/queries";
 import { getPropertyImages } from "@/lib/db/propertyImages/queries";
-import { PropertyEditForm } from "@/components/dashboard/properties/PropertyEditForm";
+import { PropertyEditForm } from "@/components/dashboard/properties/edit/PropertyEditForm";
 import { redirect, notFound } from "next/navigation";
 import { canMutate } from "@/lib/stripe/server";
 

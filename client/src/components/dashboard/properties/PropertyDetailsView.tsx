@@ -1,5 +1,3 @@
-"use client";
-
 import type { PropertyImage } from "@prisma/client";
 import { Property } from "@/types/properties";
 import { Transaction } from "@/types/transactions";

@@ -14,8 +14,9 @@ import { UpdatePropertyInput, CreatePropertyInput } from "@/lib/validations/prop
 import { FileWithPreview } from "@/components/ui/multi-image-upload";
 import { toast } from "sonner";
 import type { Property } from "@/types/properties";
-import { transformPrismaProperty, transformPrismaProperties } from "@/lib/utils/prisma-transforms";
+import { transformPrismaProperties } from "@/lib/utils/prisma-transforms";
 import { QUERY_OPTIONS } from "./queryConfig";
+import type { PropertyImage } from "@prisma/client";
 
 /**
  * Hierarchical query keys for property-related queries
@@ -69,7 +70,7 @@ export function usePropertiesQuery(initialData?: Property[]) {
  */
 export function usePropertyImages(
   propertyId: string,
-  options?: { initialData?: any[]; enabled?: boolean }
+  options?: { initialData?: PropertyImage[]; enabled?: boolean }
 ) {
   return useQuery({
     queryKey: PROPERTY_QUERY_KEYS.images(propertyId),

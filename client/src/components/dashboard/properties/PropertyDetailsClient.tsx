@@ -12,21 +12,25 @@ import { usePropertyCurrentMonthMetrics } from "@/hooks/queries/usePropertyAnaly
 import { usePropertyTransactionsQuery } from "@/hooks/queries/usePropertyTransactionsQuery";
 import type { PropertyImage } from "@prisma/client";
 import type { Transaction } from "@/types/transactions";
-import type { MonthlyMetricsData } from "@/lib/db/monthlyMetrics/queries";
 
 interface PropertyDetailsClientProps {
   initialProperty: Property;
   initialImages: PropertyImage[];
-  initialMetrics: MonthlyMetricsData | null;
   initialTransactions: Transaction[];
+  initialMetrics?: {
+    income: number;
+    expenses: number;
+    cashFlow: number;
+    roi: number;
+  };
   canMutate?: boolean;
 }
 
 export function PropertyDetailsClient({
   initialProperty,
   initialImages,
-  initialMetrics,
   initialTransactions,
+  initialMetrics,
   canMutate = true,
 }: PropertyDetailsClientProps) {
   const router = useRouter();

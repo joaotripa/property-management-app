@@ -88,7 +88,7 @@ export function PropertiesClient({
           >
             <div className="h-50 w-full bg-muted/20 overflow-hidden">
               <PropertyImage
-                propertyId={property.id}
+                coverImageUrl={property.coverImageUrl}
                 propertyName={property.name}
                 className="w-full h-full object-cover"
                 width={400}
