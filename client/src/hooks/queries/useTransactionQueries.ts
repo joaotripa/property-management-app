@@ -27,7 +27,7 @@ export function useCreateTransaction() {
 
       // Invalidate analytics for this property
       queryClient.invalidateQueries({
-        queryKey: ["propertyAnalytics", variables.propertyId],
+        queryKey: PROPERTY_QUERY_KEYS.analytics.all(variables.propertyId),
       });
 
       // Invalidate property list (for stats update)
@@ -69,7 +69,7 @@ export function useUpdateTransaction() {
 
       // Invalidate analytics for this property
       queryClient.invalidateQueries({
-        queryKey: ["propertyAnalytics", data.propertyId],
+        queryKey: PROPERTY_QUERY_KEYS.analytics.all(data.propertyId),
       });
 
       // Invalidate property list (for stats update)
@@ -105,7 +105,7 @@ export function useDeleteTransaction() {
 
       // Invalidate analytics for this property
       queryClient.invalidateQueries({
-        queryKey: ["propertyAnalytics", propertyId],
+        queryKey: PROPERTY_QUERY_KEYS.analytics.all(propertyId),
       });
 
       // Invalidate property list (for stats update)
@@ -142,7 +142,7 @@ export function useBulkDeleteTransactions() {
 
       // Invalidate all analytics (we don't know which properties were affected)
       queryClient.invalidateQueries({
-        queryKey: ["propertyAnalytics"],
+        queryKey: [...PROPERTY_QUERY_KEYS.all, "analytics"],
       });
 
       if (response.failedCount > 0) {

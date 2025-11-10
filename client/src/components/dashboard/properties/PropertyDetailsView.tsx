@@ -21,6 +21,8 @@ interface PropertyDetailsViewProps {
   isLoadingTransactions: boolean;
   transactionError?: { message: string } | null;
   onNavigateToTransactions?: (url: string) => void;
+  timezone: string;
+  currencyCode: string;
 }
 
 export function PropertyDetailsView({
@@ -32,6 +34,8 @@ export function PropertyDetailsView({
   isLoadingTransactions,
   transactionError,
   onNavigateToTransactions,
+  timezone,
+  currencyCode,
 }: PropertyDetailsViewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
@@ -59,6 +63,8 @@ export function PropertyDetailsView({
         isLoading={isLoadingTransactions}
         error={transactionError}
         onNavigate={onNavigateToTransactions}
+        timezone={timezone}
+        currencyCode={currencyCode}
       />
     </div>
   );

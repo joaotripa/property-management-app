@@ -16,6 +16,9 @@ import { TransactionCreateDialog } from "@/components/dashboard/transactions/Tra
 import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
 import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
 import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
+import { getSystemTimezone } from "@/lib/utils/timezone";
 
 interface TransactionsClientProps {
   transactions: Transaction[];
@@ -38,14 +41,28 @@ export function TransactionsClient({
   properties,
   canMutate,
 }: TransactionsClientProps) {
-  const [dialogType, setDialogType] = useState<"create" | "edit" | "delete" | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [dialogType, setDialogType] = useState<
+    "create" | "edit" | "delete" | null
+  >(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
   const bulkDeleteMutation = useBulkDeleteTransactions();
 
-  const openDialog = (type: "create" | "edit" | "delete", transaction?: Transaction) => {
+  const { data: userTimezone } = useUserTimezone();
+  const { data: userCurrency } = useUserCurrency();
+
+  const timezone = userTimezone || getSystemTimezone();
+  const currency = userCurrency || getDefaultCurrency();
+
+  const searchQuery = searchParams.get("search") || "";
+
+  const openDialog = (
+    type: "create" | "edit" | "delete",
+    transaction?: Transaction
+  ) => {
     setDialogType(type);
     setSelectedTransaction(transaction || null);
   };
@@ -58,9 +75,9 @@ export function TransactionsClient({
     startTransition(() => {
       const params = new URLSearchParams(searchParams);
       if (page === 1) {
-        params.delete('page');
+        params.delete("page");
       } else {
-        params.set('page', page.toString());
+        params.set("page", page.toString());
       }
       router.push(`?${params.toString()}`);
     });
@@ -69,11 +86,11 @@ export function TransactionsClient({
   const handlePageSizeChange = (newPageSize: number) => {
     startTransition(() => {
       const params = new URLSearchParams(searchParams);
-      params.delete('page'); // Reset to page 1
+      params.delete("page"); // Reset to page 1
       if (newPageSize === 25) {
-        params.delete('pageSize');
+        params.delete("pageSize");
       } else {
-        params.set('pageSize', newPageSize.toString());
+        params.set("pageSize", newPageSize.toString());
       }
       router.push(`?${params.toString()}`);
     });
@@ -81,11 +98,10 @@ export function TransactionsClient({
 
   const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
     try {
-      const transactionIds = selectedTransactions.map(t => t.id);
+      const transactionIds = selectedTransactions.map((t) => t.id);
       await bulkDeleteMutation.mutateAsync(transactionIds);
     } catch (error) {
-      // Error handling is done in the mutation hook
-      throw error; // Re-throw to let dialog handle loading state
+      throw error;
     }
   };
 
@@ -107,6 +123,9 @@ export function TransactionsClient({
             emptyMessage="No transactions found"
             readOnly={!canMutate}
             showSelection={canMutate}
+            initialGlobalFilter={searchQuery}
+            timezone={timezone}
+            currencyCode={currency.code}
           />
 
           {/* Pagination */}

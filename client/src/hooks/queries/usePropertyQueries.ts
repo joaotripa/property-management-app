@@ -31,7 +31,7 @@ export const PROPERTY_QUERY_KEYS = {
   analytics: {
     all: (id: string) => [...PROPERTY_QUERY_KEYS.all, "analytics", id] as const,
     metrics: (propertyId: string, dateFrom?: string, dateTo?: string) =>
-      [...PROPERTY_QUERY_KEYS.all, "analytics", propertyId, "metrics", { dateFrom, dateTo }] as const,
+      [...PROPERTY_QUERY_KEYS.all, "analytics", propertyId, "metrics", dateFrom, dateTo] as const,
   },
 } as const;
 

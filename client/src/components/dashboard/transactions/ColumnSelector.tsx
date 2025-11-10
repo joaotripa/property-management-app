@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Transaction } from "@/types/transactions";
-import { COLUMN_VISIBILITY_OPTIONS } from "./TransactionColumns";
+import { COLUMN_VISIBILITY_OPTIONS } from "./config/transaction-columns";
 
 interface ColumnSelectorProps {
   table: Table<Transaction>;

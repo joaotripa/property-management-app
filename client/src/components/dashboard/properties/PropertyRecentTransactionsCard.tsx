@@ -19,6 +19,8 @@ interface PropertyRecentTransactionsCardProps {
   isLoading: boolean;
   error?: { message: string } | null;
   onNavigate?: (url: string) => void;
+  timezone: string;
+  currencyCode: string;
 }
 
 export function PropertyRecentTransactionsCard({
@@ -28,6 +30,8 @@ export function PropertyRecentTransactionsCard({
   isLoading,
   error,
   onNavigate,
+  timezone,
+  currencyCode,
 }: PropertyRecentTransactionsCardProps) {
   const handleViewAllTransactions = () => {
     const url = `/dashboard/transactions?propertyId=${propertyId}`;
@@ -70,6 +74,8 @@ export function PropertyRecentTransactionsCard({
             showSelection={false}
             maxRows={25}
             className="space-y-0"
+            timezone={timezone}
+            currencyCode={currencyCode}
           />
         )}
       </CardContent>

@@ -1,37 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useMemo } from "react";
 import { Transaction } from "@/types/transactions";
-import { TransactionTableSkeleton } from "./TransactionTableSkeleton";
-import { ColumnSelector } from "./ColumnSelector";
-import {
-  getTransactionColumns,
-  DEFAULT_COLUMN_VISIBILITY,
-} from "./TransactionColumns";
-import { cn } from "@/lib/utils/index";
+import { TransactionTableSkeleton } from "./components/TransactionTableSkeleton";
+import { TransactionTableControls } from "./components/TransactionTableControls";
+import { TransactionTableBody } from "./components/TransactionTableBody";
 import { BulkDeleteDialog } from "./BulkDeleteDialog";
-import { Trash2 } from "lucide-react";
+import { getTransactionColumns } from "./config/transaction-columns";
+import { useTransactionTable } from "./hooks/useTransactionTable";
+import { cn } from "@/lib/utils/index";
 
 interface TransactionTableWithActionsProps {
   transactions: Transaction[];
@@ -45,9 +22,10 @@ interface TransactionTableWithActionsProps {
   readOnly?: boolean;
   maxRows?: number;
   showSelection?: boolean;
+  initialGlobalFilter?: string;
+  timezone: string;
+  currencyCode: string;
 }
-
-const COLUMN_VISIBILITY_KEY = "transaction-table-column-visibility";
 
 export function TransactionTableWithActions({
   transactions,
@@ -61,58 +39,48 @@ export function TransactionTableWithActions({
   readOnly = false,
   maxRows,
   showSelection,
+  initialGlobalFilter,
+  timezone,
+  currencyCode,
 }: TransactionTableWithActionsProps) {
-  const searchParams = useSearchParams();
-
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-        if (saved) {
-          try {
-            return JSON.parse(saved);
-          } catch {
-            return DEFAULT_COLUMN_VISIBILITY;
-          }
-        }
-      }
-      return DEFAULT_COLUMN_VISIBILITY;
-    }
-  );
-  const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState("");
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        COLUMN_VISIBILITY_KEY,
-        JSON.stringify(columnVisibility)
-      );
-    }
-  }, [columnVisibility]);
+  const shouldShowSelection = showSelection ?? !readOnly;
 
-  useEffect(() => {
-    setColumnVisibility((prev) => ({
-      ...prev,
-      property: showPropertyColumn,
-    }));
-  }, [showPropertyColumn]);
+  const columns = useMemo(
+    () =>
+      getTransactionColumns({
+        showPropertyColumn,
+        showSelection: shouldShowSelection,
+        onEdit: readOnly ? undefined : onEdit,
+        onDelete: readOnly ? undefined : onDelete,
+        timezone,
+        currencyCode,
+      }),
+    [
+      showPropertyColumn,
+      shouldShowSelection,
+      readOnly,
+      onEdit,
+      onDelete,
+      timezone,
+      currencyCode,
+    ]
+  );
 
-  useEffect(() => {
-    const urlSearch = searchParams.get("search") || "";
-    setGlobalFilter(urlSearch);
-  }, [searchParams]);
-
-  const handleGlobalFilterChange = (value: string) => {
-    setGlobalFilter(value);
-  };
-
-  const getSelectedTransactions = (): Transaction[] => {
-    return table.getFilteredSelectedRowModel().rows.map((row) => row.original);
-  };
+  const {
+    table,
+    globalFilter,
+    handleGlobalFilterChange,
+    getSelectedTransactions,
+    setRowSelection,
+  } = useTransactionTable({
+    transactions,
+    columns,
+    showPropertyColumn,
+    maxRows,
+    initialGlobalFilter,
+  });
 
   const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
     if (!onBulkDelete) return;
@@ -124,51 +92,6 @@ export function TransactionTableWithActions({
       console.error("Bulk delete failed:", error);
     }
   };
-
-  const shouldShowSelection = showSelection ?? !readOnly;
-
-  const columns = getTransactionColumns({
-    showPropertyColumn,
-    showSelection: shouldShowSelection,
-    onEdit: readOnly ? undefined : onEdit,
-    onDelete: readOnly ? undefined : onDelete,
-  });
-
-  const displayTransactions = maxRows
-    ? transactions.slice(0, maxRows)
-    : transactions;
-
-  const existingColumnIds = new Set(
-    columns.map(
-      (col) => col.id || (col as { accessorKey?: string }).accessorKey
-    )
-  );
-  const filteredColumnVisibility = Object.fromEntries(
-    Object.entries(columnVisibility).filter(([key]) =>
-      existingColumnIds.has(key)
-    )
-  );
-
-  const table = useReactTable({
-    data: displayTransactions,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: handleGlobalFilterChange,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility: filteredColumnVisibility,
-      rowSelection,
-      globalFilter,
-    },
-    globalFilterFn: "includesString",
-  });
 
   if (loading) {
     return (
@@ -184,114 +107,23 @@ export function TransactionTableWithActions({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Table controls - only show in non-read-only mode */}
       {!readOnly && (
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <Input
-              placeholder="Search transactions..."
-              value={globalFilter}
-              onChange={(event) => handleGlobalFilterChange(event.target.value)}
-              className="max-w-sm"
-            />
-            {selectedRowsCount > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {selectedRowsCount} of {totalRowsCount} row(s) selected
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRowSelection({})}
-                >
-                  Clear selection
-                </Button>
-                {onBulkDelete && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setShowBulkDeleteDialog(true)}
-                    disabled={loading}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete Selected ({selectedRowsCount})
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-          <ColumnSelector
-            table={table}
-            excludeColumns={showPropertyColumn ? [] : ["property"]}
-          />
-        </div>
+        <TransactionTableControls
+          table={table}
+          selectedCount={selectedRowsCount}
+          totalCount={totalRowsCount}
+          onBulkDelete={() => setShowBulkDeleteDialog(true)}
+          onClearSelection={() => setRowSelection({})}
+          showBulkDelete={!!onBulkDelete}
+          globalFilter={globalFilter}
+          onGlobalFilterChange={handleGlobalFilterChange}
+          showPropertyColumn={showPropertyColumn}
+          loading={loading}
+        />
       )}
 
-      {/* Table */}
-      <div className="rounded-lg border">
-        {!transactions.length ? (
-          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-            {emptyMessage}
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      style={{
-                        width:
-                          header.getSize() !== 150
-                            ? header.getSize()
-                            : undefined,
-                      }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+      <TransactionTableBody table={table} emptyMessage={emptyMessage} />
 
-      {/* Bulk Delete Dialog - only show in non-read-only mode */}
       {!readOnly && (
         <BulkDeleteDialog
           isOpen={showBulkDeleteDialog}

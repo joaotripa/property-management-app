@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Transaction } from "@/types/transactions";
 import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
 import { QUERY_OPTIONS } from "./queryConfig";
@@ -49,21 +49,18 @@ async function fetchPropertyTransactions(
  * Fetches the last 25 transactions for a property, sorted by date descending.
  *
  * @param propertyId - The property ID
- * @param options - Optional query options (initialData, enabled, etc.)
+ * @param options - Optional query options (initialData, enabled)
  * @returns Query result with property transactions
  */
 export function usePropertyTransactionsQuery(
   propertyId: string,
-  options?: Omit<
-    UseQueryOptions<Transaction[], Error>,
-    "queryKey" | "queryFn"
-  > & { initialData?: Transaction[] }
+  options?: { initialData?: Transaction[]; enabled?: boolean }
 ) {
   return useQuery({
     queryKey: PROPERTY_QUERY_KEYS.transactions(propertyId),
     queryFn: () => fetchPropertyTransactions(propertyId),
-    enabled: !!propertyId,
+    initialData: options?.initialData,
+    enabled: options?.enabled ?? !!propertyId,
     ...QUERY_OPTIONS.transactions,
-    ...options,
   });
 }

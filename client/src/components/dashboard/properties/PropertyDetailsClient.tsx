@@ -10,6 +10,9 @@ import { Property } from "@/types/properties";
 import { usePropertyImages } from "@/hooks/queries/usePropertyQueries";
 import { usePropertyCurrentMonthMetrics } from "@/hooks/queries/usePropertyAnalytics";
 import { usePropertyTransactionsQuery } from "@/hooks/queries/usePropertyTransactionsQuery";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
+import { getSystemTimezone } from "@/lib/utils/timezone";
 import type { PropertyImage } from "@prisma/client";
 import type { Transaction } from "@/types/transactions";
 
@@ -35,6 +38,12 @@ export function PropertyDetailsClient({
 }: PropertyDetailsClientProps) {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const { data: userTimezone } = useUserTimezone();
+  const { data: userCurrency } = useUserCurrency();
+
+  const timezone = userTimezone || getSystemTimezone();
+  const currency = userCurrency || getDefaultCurrency();
 
   const {
     data: propertyImages = [],
@@ -137,6 +146,8 @@ export function PropertyDetailsClient({
           isLoadingTransactions={isLoadingTransactions}
           transactionError={transactionError}
           onNavigateToTransactions={handleNavigateToTransactions}
+          timezone={timezone}
+          currencyCode={currency.code}
         />
       </div>
 
