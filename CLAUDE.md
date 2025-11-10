@@ -126,6 +126,8 @@ The application uses a **hybrid pattern** that combines:
 - ✅ Server Components fetch initial page data
 - ✅ Pass server data to Client Components as `initialData` to React Query
 - ✅ React Query handles subsequent updates and mutations
+- ❌ **Don't use useEffect for data fetching** (use Server Components or React Query)
+- ❌ **Don't use useState for server data** (use Server Components or React Query)
 - ✅ Always check `isLoading` before rendering content (unless `initialData` is provided)
 - ✅ Use hierarchical query keys for organized cache management
 - ✅ Invalidate queries selectively, not globally
@@ -184,7 +186,7 @@ All API operations use dedicated service functions:
 - **Modularity**: Build components for reuse across contexts
 - **Accessibility**: Ensure ARIA labels and keyboard navigation
 - **Code Formatting**: Use Prettier for consistent formatting
-- **Comments**: No comments allowed except for line comments explaining calculations (e.g., `// Convert Sunday=0 to Monday=0`). Code should be self-explanatory through clear naming and structure
+- **Comments**: No code comments allowed except for line comments explaining calculations (e.g., `// Convert Sunday=0 to Monday=0`). Code should be self-explanatory through clear naming and structure. JSDoc comments are allowed for function/type documentation but should be minimal and focused on essential information only (function purpose, parameters, return value). Avoid verbose explanations or implementation details in JSDoc
 - **Function Complexity**: Any longer and complex function should be split into smaller, modular and simpler functions to avoid complexity and make it easier to read, with clear structure and self-explanatory naming. Ask yourself if the code is self-explanatory - if not, restructure it to be
 
 #### Form Components
@@ -528,6 +530,8 @@ When working on this codebase:
 - ✅ Validate all inputs with Zod schemas
 - ✅ Use react-hook-form for all forms
 - ✅ Pass data as props to avoid redundant API calls
+- ✅ Don't use useEffect for data fetching (use Server Components or React Query)
+- ✅ Don't use useState for server data (use Server Components or React Query)
 - ✅ Follow feature-based organization
 - ✅ Use TypeScript strictly - no `any` types
 - ✅ Handle errors gracefully with consistent patterns

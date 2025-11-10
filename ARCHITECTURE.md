@@ -425,14 +425,28 @@ export const useTheme = () => useContext(ThemeContext);
 
 ### 5. React useState (Component-Local State)
 
-**Purpose:** State that is truly local to a single component.
+**Purpose:** State that is truly local to a single component and cannot be derived from server state.
 
 **When to Use:**
 
 - ✅ Form input values (before submission)
-- ✅ Component-specific UI state (hover, focus)
-- ✅ Temporary calculations
-- ✅ Component-level loading states
+- ✅ Component-specific UI state (hover, focus, expanded/collapsed)
+- ✅ Temporary calculations that don't need to persist
+- ✅ Component-level loading states (when not using React Query)
+
+**When NOT to Use:**
+
+- ❌ Server data (use Server Components or React Query)
+- ❌ Derived state that can be computed from props
+- ❌ State that should be shareable (use URL state or Zustand)
+- ❌ State that can be fetched server-side (use Server Components)
+
+**Before using useState, ask:**
+
+1. Can this be fetched server-side? → Use Server Component
+2. Can this be derived from props? → Compute in render
+3. Does this need to persist/share? → Use URL state or Zustand
+4. Is this truly local and ephemeral? → useState is appropriate
 
 **Example:**
 
@@ -483,6 +497,71 @@ export function TransactionFilters() {
   );
 }
 ```
+
+### 7. Avoiding useEffect for Data Fetching
+
+**❌ Don't use useEffect for data fetching:**
+
+```tsx
+// ❌ Bad: Using useEffect for data fetching
+"use client";
+export function PropertiesList() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/properties")
+      .then((res) => res.json())
+      .then((data) => {
+        setProperties(data);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Loading />;
+  return <List items={properties} />;
+}
+```
+
+**✅ Good: Use Server Components or React Query:**
+
+```tsx
+// ✅ Good: Server Component
+export default async function PropertiesPage() {
+  const properties = await getPropertiesData();
+  return <PropertiesClient initialProperties={properties} />;
+}
+
+// ✅ Good: React Query with initialData
+("use client");
+export function PropertiesClient({ initialProperties }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["properties"],
+    queryFn: fetchProperties,
+    initialData: initialProperties,
+  });
+
+  if (isLoading && !initialProperties) return <Loading />;
+  return <List items={data} />;
+}
+```
+
+**When useEffect is acceptable:**
+
+- ✅ Browser-only APIs (scroll position, window size, localStorage)
+- ✅ Subscribing to external events (WebSocket, window events)
+- ✅ Cleanup for subscriptions
+- ✅ Synchronizing with external systems (analytics, third-party libraries)
+- ❌ **NOT for data fetching** (use Server Components or React Query)
+
+**Why avoid useEffect for data fetching:**
+
+- ❌ Causes unnecessary client-side JavaScript
+- ❌ Slower initial load (data fetched after hydration)
+- ❌ No SSR benefits (empty state on first render)
+- ❌ More complex error handling
+- ❌ No automatic caching or refetching
+- ❌ Harder to manage loading states
 
 ---
 
@@ -1412,6 +1491,9 @@ export default function Page() {
 
 ### ❌ Don'ts
 
+- ❌ Don't use useEffect for data fetching (use Server Components or React Query)
+- ❌ Don't use useState for server data
+- ❌ Don't use useState when state can be derived from props
 - ❌ Don't put server data in Zustand
 - ❌ Don't use Context for frequently changing state
 - ❌ Don't invalidate all queries
