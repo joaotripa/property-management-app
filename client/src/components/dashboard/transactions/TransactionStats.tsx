@@ -15,7 +15,7 @@ const TransactionStats = () => {
     "current-month"
   );
 
-  const { data: stats, error, isLoading } = useTransactionStatsQuery(selectedPeriod);
+  const { data: stats, error } = useTransactionStatsQuery(selectedPeriod);
 
   if (error) {
     return (
@@ -43,9 +43,7 @@ const TransactionStats = () => {
     {
       title: "Cash Flow",
       value: (
-        <span
-          className={cashFlow >= 0 ? "text-success" : "text-destructive"}
-        >
+        <span className={cashFlow >= 0 ? "text-success" : "text-destructive"}>
           {cashFlow >= 0 ? "+" : ""}
           {formatCompactCurrency(cashFlow)}
         </span>

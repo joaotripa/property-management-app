@@ -2,15 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { Transaction } from "@/types/transactions";
-import { TransactionTableSkeleton } from "./components/TransactionTableSkeleton";
-import { TransactionTableControls } from "./components/TransactionTableControls";
-import { TransactionTableBody } from "./components/TransactionTableBody";
-import { BulkDeleteDialog } from "./BulkDeleteDialog";
-import { getTransactionColumns } from "./config/transaction-columns";
-import { useTransactionTable } from "./hooks/useTransactionTable";
+import { TransactionTableSkeleton } from "./TransactionTableSkeleton";
+import { TransactionTableControls } from "./TransactionTableControls";
+import { TransactionTableBody } from "./TransactionTableBody";
+import { BulkDeleteDialog } from "../dialogs/BulkDeleteDialog";
+import { getTransactionColumns } from "../../config/transaction-columns";
+import { useTransactionTable } from "../../hooks/useTransactionTable";
 import { cn } from "@/lib/utils/index";
 
-interface TransactionTableWithActionsProps {
+interface TransactionTableProps {
   transactions: Transaction[];
   loading?: boolean;
   showPropertyColumn?: boolean;
@@ -27,7 +27,7 @@ interface TransactionTableWithActionsProps {
   currencyCode: string;
 }
 
-export function TransactionTableWithActions({
+export function TransactionTable({
   transactions,
   loading = false,
   showPropertyColumn = true,
@@ -42,7 +42,7 @@ export function TransactionTableWithActions({
   initialGlobalFilter,
   timezone,
   currencyCode,
-}: TransactionTableWithActionsProps) {
+}: TransactionTableProps) {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   const shouldShowSelection = showSelection ?? !readOnly;
@@ -71,7 +71,7 @@ export function TransactionTableWithActions({
   const {
     table,
     globalFilter,
-    handleGlobalFilterChange,
+    setGlobalFilter,
     getSelectedTransactions,
     setRowSelection,
   } = useTransactionTable({
@@ -116,7 +116,7 @@ export function TransactionTableWithActions({
           onClearSelection={() => setRowSelection({})}
           showBulkDelete={!!onBulkDelete}
           globalFilter={globalFilter}
-          onGlobalFilterChange={handleGlobalFilterChange}
+          onGlobalFilterChange={setGlobalFilter}
           showPropertyColumn={showPropertyColumn}
           loading={loading}
         />

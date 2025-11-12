@@ -9,7 +9,7 @@ import { Transaction, TransactionType } from "@/types/transactions";
 import { cn } from "@/lib/utils/index";
 import { formatCurrency } from "@/lib/utils/formatting";
 import { formatDateForUser } from "@/lib/utils/timezone";
-import { TransactionActions } from "../components/TransactionActions";
+import { TransactionActions } from "../components/table/TransactionActions";
 
 interface GetColumnsProps {
   showPropertyColumn?: boolean;

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
+import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { Transaction } from "@/types/transactions";
 
 interface PropertyRecentTransactionsCardProps {
@@ -65,7 +65,7 @@ export function PropertyRecentTransactionsCard({
             <p className="text-sm text-destructive">{error.message}</p>
           </div>
         ) : (
-          <TransactionTableWithActions
+          <TransactionTable
             transactions={transactions}
             loading={isLoading}
             showPropertyColumn={false}

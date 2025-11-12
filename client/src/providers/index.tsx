@@ -2,13 +2,16 @@
 
 import { SessionProvider } from "next-auth/react";
 import QueryProvider from "./QueryProvider";
-import { AnalyticsIdentifier } from "@/lib/analytics/AnalyticsIdentifier";
+import { UmamiScript } from "@/components/analytics/UmamiScript";
+import { TrialEventTracker } from "@/components/analytics/TrialEventTracker";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <SessionProvider>
-        <AnalyticsIdentifier>{children}</AnalyticsIdentifier>
+        <UmamiScript />
+        <TrialEventTracker />
+        {children}
       </SessionProvider>
     </QueryProvider>
   );

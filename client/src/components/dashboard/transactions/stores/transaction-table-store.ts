@@ -17,8 +17,6 @@ interface TransactionTableState {
   columnVisibility: VisibilityState;
   setColumnVisibility: (visibility: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => void;
   resetColumnVisibility: () => void;
-  _hasHydrated: boolean;
-  setHasHydrated: (state: boolean) => void;
 }
 
 export const useTransactionTableStore = create<TransactionTableState>()(
@@ -34,8 +32,6 @@ export const useTransactionTableStore = create<TransactionTableState>()(
         })),
       resetColumnVisibility: () =>
         set({ columnVisibility: DEFAULT_COLUMN_VISIBILITY }),
-      _hasHydrated: false,
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "transaction-table-storage",
@@ -46,9 +42,6 @@ export const useTransactionTableStore = create<TransactionTableState>()(
           )
         ),
       }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-      },
     }
   )
 );

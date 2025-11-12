@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TransactionForm } from "./TransactionForm";
+import { TransactionForm } from "../forms/TransactionForm";
 import {
   Transaction,
   CategoryOption,

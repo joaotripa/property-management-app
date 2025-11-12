@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TransactionForm } from "./TransactionForm";
+import { TransactionForm } from "../forms/TransactionForm";
 import { CategoryOption, PropertyOption } from "@/types/transactions";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 import { trackEvent } from "@/lib/analytics/tracker";
@@ -36,9 +36,10 @@ export function TransactionCreateDialog({
 
       const userId = session?.user?.id;
       const storageKey = `first_transaction_created_${userId}`;
-      const isFirstTransaction = userId
-        ? !localStorage.getItem(storageKey)
-        : false;
+      const isFirstTransaction =
+        userId && typeof window !== "undefined"
+          ? !localStorage.getItem(storageKey)
+          : false;
 
       trackEvent(TRANSACTION_EVENTS.TRANSACTION_CREATED, {
         type: data.type,
@@ -46,7 +47,7 @@ export function TransactionCreateDialog({
         is_first: isFirstTransaction,
       });
 
-      if (isFirstTransaction && userId) {
+      if (isFirstTransaction && userId && typeof window !== "undefined") {
         localStorage.setItem(storageKey, "true");
       }
 

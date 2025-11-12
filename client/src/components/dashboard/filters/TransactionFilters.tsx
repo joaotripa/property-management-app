@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Filter, X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +26,8 @@ import { CategoryOption, PropertyOption } from "@/types/transactions";
 import { TransactionType } from "@/types/transactions";
 import { toCamelCase } from "@/lib/utils/index";
 import { Separator } from "@/components/ui/separator";
-import { DateRangePicker, DateRange } from "@/components/ui/date-range-picker";
-import { formatDateForInput } from "@/lib/utils/timezone";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { useTransactionFilters } from "@/components/dashboard/transactions/hooks/useTransactionFilters";
 
 interface TransactionFiltersProps {
   availableCategories: CategoryOption[];
@@ -42,176 +40,19 @@ export function TransactionFilters({
   availableProperties = [],
   showPropertyFilter = false,
 }: TransactionFiltersProps) {
-  const [isPending, startTransition] = useTransition();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const getCurrentFilters = useCallback(() => {
-    return {
-      type: searchParams.get("type") || "all",
-      dateFrom: searchParams.get("dateFrom") || "",
-      dateTo: searchParams.get("dateTo") || "",
-      amountMin: searchParams.get("amountMin") || "",
-      amountMax: searchParams.get("amountMax") || "",
-      categoryIds:
-        searchParams.get("categoryIds")?.split(",").filter(Boolean) || [],
-      propertyId: searchParams.get("propertyId") || "all",
-      sortBy: searchParams.get("sortBy") || "transactionDate",
-      sortOrder: searchParams.get("sortOrder") || "desc",
-    };
-  }, [searchParams]);
-
-  const [pendingFilters, setPendingFilters] = useState(() =>
-    getCurrentFilters()
-  );
-  const [hasChanges, setHasChanges] = useState(false);
-
-  const currentFilters = getCurrentFilters();
-
-  useEffect(() => {
-    const urlFilters = getCurrentFilters();
-    setPendingFilters(urlFilters);
-    setHasChanges(false);
-  }, [searchParams, getCurrentFilters]);
-
-  useEffect(() => {
-    const newDateRange: DateRange = {};
-    if (currentFilters.dateFrom) {
-      newDateRange.from = new Date(currentFilters.dateFrom);
-    }
-    if (currentFilters.dateTo) {
-      newDateRange.to = new Date(currentFilters.dateTo);
-    }
-
-    if (newDateRange.from || newDateRange.to) {
-      setDateRange(newDateRange);
-    } else {
-      setDateRange(undefined);
-    }
-  }, [currentFilters.dateFrom, currentFilters.dateTo]);
-
-  const updateURL = useCallback(
-    (updates: Record<string, string | undefined>) => {
-      const params = new URLSearchParams(searchParams);
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value && value !== "all") {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
-      });
-
-      params.delete("page");
-
-      router.push(`/dashboard/transactions?${params.toString()}`);
-    },
-    [router, searchParams]
-  );
-
-  const handleFilterChange = (key: string, value: string | undefined) => {
-    const newPendingFilters = { ...pendingFilters, [key]: value };
-    setPendingFilters(newPendingFilters);
-    setHasChanges(true);
-  };
-
-  const toggleCategory = (categoryId: string) => {
-    const currentCategories = pendingFilters.categoryIds;
-    const newCategories = currentCategories.includes(categoryId)
-      ? currentCategories.filter((id) => id !== categoryId)
-      : [...currentCategories, categoryId];
-
-    setPendingFilters({
-      ...pendingFilters,
-      categoryIds: newCategories,
-    });
-    setHasChanges(true);
-  };
-
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range);
-
-    if (!range || (range.from && range.to)) {
-      setPendingFilters({
-        ...pendingFilters,
-        dateFrom: range?.from ? formatDateForInput(range.from) : "",
-        dateTo: range?.to ? formatDateForInput(range.to) : "",
-      });
-      setHasChanges(true);
-    }
-  };
-
-  const applyFilters = () => {
-    startTransition(() => {
-      const updates: Record<string, string | undefined> = {};
-
-      Object.entries(pendingFilters).forEach(([key, value]) => {
-        if (key === "categoryIds") {
-          updates[key] =
-            (value as string[]).length > 0
-              ? (value as string[]).join(",")
-              : undefined;
-        } else {
-          updates[key] = (value as string) || undefined;
-        }
-      });
-
-      updateURL(updates);
-      setHasChanges(false);
-    });
-  };
-
-  const clearAllFilters = () => {
-    const defaultFilters = {
-      type: "all",
-      dateFrom: "",
-      dateTo: "",
-      amountMin: "",
-      amountMax: "",
-      categoryIds: [] as string[],
-      propertyId: "all",
-      sortBy: "transactionDate",
-      sortOrder: "desc",
-    };
-
-    setPendingFilters(defaultFilters);
-    setDateRange(undefined);
-
-    startTransition(() => {
-      router.push(
-        "/dashboard/transactions?sortBy=transactionDate&sortOrder=desc"
-      );
-      setHasChanges(false);
-    });
-  };
-
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (currentFilters.dateFrom || currentFilters.dateTo) count++;
-    if (currentFilters.type && currentFilters.type !== "all") count++;
-    if (currentFilters.amountMin || currentFilters.amountMax) count++;
-    if (currentFilters.categoryIds.length > 0) count++;
-    if (showPropertyFilter && currentFilters.propertyId !== "all") count++;
-
-    if (hasChanges) {
-      let pendingCount = 0;
-      if (pendingFilters.dateFrom || pendingFilters.dateTo) pendingCount++;
-      if (pendingFilters.type && pendingFilters.type !== "all") pendingCount++;
-      if (
-        (pendingFilters.amountMin && pendingFilters.amountMin.trim()) ||
-        (pendingFilters.amountMax && pendingFilters.amountMax.trim())
-      )
-        pendingCount++;
-      if (pendingFilters.categoryIds.length > 0) pendingCount++;
-      if (showPropertyFilter && pendingFilters.propertyId !== "all")
-        pendingCount++;
-      count = Math.max(count, pendingCount);
-    }
-
-    return count;
-  };
+  const {
+    isPending,
+    isExpanded,
+    setIsExpanded,
+    pendingFilters,
+    dateRange,
+    handleFilterChange,
+    toggleCategory,
+    handleDateRangeChange,
+    applyFilters,
+    clearAllFilters,
+    getActiveFiltersCount,
+  } = useTransactionFilters({ showPropertyFilter });
 
   return (
     <Card className="w-full">

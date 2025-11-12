@@ -10,11 +10,11 @@ import {
   PropertyOption,
   Transaction,
 } from "@/types/transactions";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
+import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
-import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
-import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
-import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
+import { TransactionCreateDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionCreateDialog";
+import { TransactionEditDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionEditDialog";
+import { TransactionDeleteDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionDeleteDialog";
 import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
@@ -142,7 +142,7 @@ export function TransactionsClient({
           <CardTitle>All Transactions</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
-          <TransactionTableWithActions
+          <TransactionTable
             transactions={transactions}
             loading={isPending || isLoadingTransactions}
             showPropertyColumn={true}

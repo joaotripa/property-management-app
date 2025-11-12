@@ -1,8 +1,6 @@
 import { auth } from "@/auth";
 import { getTransactionsPageData } from "@/lib/services/server/transactionsService";
 import { TransactionsClient } from "@/components/dashboard/transactions/TransactionsClient";
-import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
-import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
 import { ExportButton } from "@/components/dashboard/transactions/ExportButton";
 import { canMutate } from "@/lib/stripe/server";
 import { redirect } from "next/navigation";
@@ -49,17 +47,7 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         <ExportButton searchParams={params} />
       </div>
 
-      {/* Summary Cards */}
-      <TransactionStats />
-
-      {/* Beautiful shadcn/ui Filters with Instant Filtering */}
-      <TransactionFilters
-        availableCategories={categories}
-        availableProperties={properties}
-        showPropertyFilter={true}
-      />
-
-      {/* Client Component for Interactions */}
+      {/* Client Component - Single Boundary */}
       <TransactionsClient
         transactions={transactions}
         totalCount={totalCount}
