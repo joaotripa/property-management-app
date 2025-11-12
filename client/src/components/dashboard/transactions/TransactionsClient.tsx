@@ -19,6 +19,9 @@ import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries
 import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { getSystemTimezone } from "@/lib/utils/timezone";
+import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
+import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import { useTransactionList } from "./hooks/useTransactionList";
 
 interface TransactionsClientProps {
   transactions: Transaction[];
@@ -32,11 +35,11 @@ interface TransactionsClientProps {
 }
 
 export function TransactionsClient({
-  transactions,
-  totalCount,
-  totalPages,
-  currentPage,
-  pageSize,
+  transactions: initialTransactions,
+  totalCount: initialTotalCount,
+  totalPages: initialTotalPages,
+  currentPage: initialCurrentPage,
+  pageSize: initialPageSize,
   categories,
   properties,
   canMutate,
@@ -50,6 +53,22 @@ export function TransactionsClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const bulkDeleteMutation = useBulkDeleteTransactions();
+
+  const { data: transactionListData, isLoading: isLoadingTransactions } = useTransactionList({
+    initialTransactions,
+    initialTotalCount,
+    initialTotalPages,
+    initialCurrentPage,
+    initialPageSize,
+  });
+
+  const {
+    transactions,
+    totalCount,
+    totalPages,
+    currentPage,
+    pageSize,
+  } = transactionListData;
 
   const { data: userTimezone } = useUserTimezone();
   const { data: userCurrency } = useUserCurrency();
@@ -107,6 +126,16 @@ export function TransactionsClient({
 
   return (
     <>
+      {/* Summary Cards */}
+      <TransactionStats />
+
+      {/* Filters */}
+      <TransactionFilters
+        availableCategories={categories}
+        availableProperties={properties}
+        showPropertyFilter={true}
+      />
+
       {/* Transactions Table */}
       <Card>
         <CardHeader>
@@ -115,7 +144,7 @@ export function TransactionsClient({
         <CardContent className="p-4">
           <TransactionTableWithActions
             transactions={transactions}
-            loading={isPending}
+            loading={isPending || isLoadingTransactions}
             showPropertyColumn={true}
             onEdit={(transaction) => openDialog("edit", transaction)}
             onDelete={(transaction) => openDialog("delete", transaction)}
@@ -137,7 +166,7 @@ export function TransactionsClient({
               pageSize={pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
-              loading={isPending}
+              loading={isPending || isLoadingTransactions}
             />
           )}
         </CardContent>

@@ -11,7 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Transaction } from "@/types/transactions";
-import { useTransactionTableStore, DEFAULT_COLUMN_VISIBILITY } from "../stores/transaction-table-store";
+import { useTransactionTableStore } from "../stores/transaction-table-store";
 
 interface UseTransactionTableProps {
   transactions: Transaction[];
@@ -33,16 +33,8 @@ export function useTransactionTable({
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState(initialGlobalFilter);
 
-  const store = useTransactionTableStore();
-  const hasHydrated = store._hasHydrated;
-
-  const effectiveColumnVisibility = hasHydrated
-    ? store.columnVisibility
-    : DEFAULT_COLUMN_VISIBILITY;
-
-  const handleGlobalFilterChange = (value: string) => {
-    setGlobalFilter(value);
-  };
+  const columnVisibility = useTransactionTableStore((state) => state.columnVisibility);
+  const setColumnVisibility = useTransactionTableStore((state) => state.setColumnVisibility);
 
   const displayTransactions = useMemo(() => {
     return maxRows ? transactions.slice(0, maxRows) : transactions;
@@ -56,7 +48,7 @@ export function useTransactionTable({
 
   const tableColumnVisibility = useMemo(() => {
     const withPropertyColumn = {
-      ...effectiveColumnVisibility,
+      ...columnVisibility,
       property: showPropertyColumn,
     };
 
@@ -65,7 +57,7 @@ export function useTransactionTable({
         existingColumnIds.has(key)
       )
     );
-  }, [effectiveColumnVisibility, showPropertyColumn, existingColumnIds]);
+  }, [columnVisibility, showPropertyColumn, existingColumnIds]);
 
   const table = useReactTable({
     data: displayTransactions,
@@ -75,9 +67,9 @@ export function useTransactionTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: store.setColumnVisibility,
+    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: handleGlobalFilterChange,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
@@ -98,7 +90,7 @@ export function useTransactionTable({
     columnFilters,
     rowSelection,
     globalFilter,
-    handleGlobalFilterChange,
+    setGlobalFilter,
     getSelectedTransactions,
     setRowSelection,
   };

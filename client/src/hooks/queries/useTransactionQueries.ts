@@ -8,6 +8,7 @@ import {
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 import { toast } from "sonner";
 import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
+import { TRANSACTION_QUERY_KEYS } from "./transaction-query-keys";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
 
@@ -20,6 +21,11 @@ export function useCreateTransaction() {
     },
 
     onSuccess: (response, variables) => {
+      // Invalidate transaction list queries
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.lists(),
+      });
+
       // Invalidate transaction queries for this property
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.transactions(variables.propertyId),
@@ -33,6 +39,11 @@ export function useCreateTransaction() {
       // Invalidate property list (for stats update)
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.lists(),
+      });
+
+      // Invalidate transaction stats (all periods)
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.stats.all(),
       });
 
       toast.success("Transaction created successfully");
@@ -62,6 +73,11 @@ export function useUpdateTransaction() {
     },
 
     onSuccess: (response, { data }) => {
+      // Invalidate transaction list queries
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.lists(),
+      });
+
       // Invalidate transaction queries for this property
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.transactions(data.propertyId),
@@ -75,6 +91,11 @@ export function useUpdateTransaction() {
       // Invalidate property list (for stats update)
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.lists(),
+      });
+
+      // Invalidate transaction stats (all periods)
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.stats.all(),
       });
 
       toast.success("Transaction updated successfully");
@@ -98,6 +119,11 @@ export function useDeleteTransaction() {
     },
 
     onSuccess: (_response, { propertyId }) => {
+      // Invalidate transaction list queries
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.lists(),
+      });
+
       // Invalidate transaction queries for this property
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.transactions(propertyId),
@@ -111,6 +137,11 @@ export function useDeleteTransaction() {
       // Invalidate property list (for stats update)
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.lists(),
+      });
+
+      // Invalidate transaction stats (all periods)
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.stats.all(),
       });
 
       trackEvent(TRANSACTION_EVENTS.TRANSACTION_DELETED);
@@ -135,6 +166,11 @@ export function useBulkDeleteTransactions() {
     },
 
     onSuccess: (response) => {
+      // Invalidate transaction list queries
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.lists(),
+      });
+
       // Invalidate all transaction queries (we don't know which properties were affected)
       queryClient.invalidateQueries({
         queryKey: PROPERTY_QUERY_KEYS.all,
@@ -143,6 +179,11 @@ export function useBulkDeleteTransactions() {
       // Invalidate all analytics (we don't know which properties were affected)
       queryClient.invalidateQueries({
         queryKey: [...PROPERTY_QUERY_KEYS.all, "analytics"],
+      });
+
+      // Invalidate transaction stats (all periods)
+      queryClient.invalidateQueries({
+        queryKey: TRANSACTION_QUERY_KEYS.stats.all(),
       });
 
       if (response.failedCount > 0) {

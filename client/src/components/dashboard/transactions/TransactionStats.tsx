@@ -15,11 +15,7 @@ const TransactionStats = () => {
     "current-month"
   );
 
-  const {
-    data: stats,
-    isLoading,
-    error,
-  } = useTransactionStatsQuery(selectedPeriod);
+  const { data: stats, error, isLoading } = useTransactionStatsQuery(selectedPeriod);
 
   if (error) {
     return (
@@ -31,36 +27,27 @@ const TransactionStats = () => {
     );
   }
 
-  const kpiConfigs: KPICardConfig[] = isLoading || !stats ? [
+  const totalIncome = stats?.totalIncome ?? 0;
+  const totalExpenses = stats?.totalExpenses ?? 0;
+  const cashFlow = stats?.cashFlow ?? 0;
+
+  const kpiConfigs: KPICardConfig[] = [
     {
       title: "Income",
-      value: formatCompactCurrency(0),
+      value: formatCompactCurrency(totalIncome),
     },
     {
       title: "Expenses",
-      value: formatCompactCurrency(0),
-    },
-    {
-      title: "Cash Flow",
-      value: formatCompactCurrency(0),
-    },
-  ] : [
-    {
-      title: "Income",
-      value: formatCompactCurrency(stats.totalIncome),
-    },
-    {
-      title: "Expenses",
-      value: formatCompactCurrency(stats.totalExpenses),
+      value: formatCompactCurrency(totalExpenses),
     },
     {
       title: "Cash Flow",
       value: (
         <span
-          className={stats.cashFlow >= 0 ? "text-success" : "text-destructive"}
+          className={cashFlow >= 0 ? "text-success" : "text-destructive"}
         >
-          {stats.cashFlow >= 0 ? "+" : ""}
-          {formatCompactCurrency(stats.cashFlow)}
+          {cashFlow >= 0 ? "+" : ""}
+          {formatCompactCurrency(cashFlow)}
         </span>
       ),
     },
