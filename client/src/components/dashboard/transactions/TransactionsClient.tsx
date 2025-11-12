@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -12,8 +12,7 @@ import {
 } from "@/types/transactions";
 import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
-import { TransactionCreateDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionCreateDialog";
-import { TransactionEditDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionEditDialog";
+import { TransactionDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionDialog";
 import { TransactionDeleteDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionDeleteDialog";
 import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
@@ -34,6 +33,17 @@ interface TransactionsClientProps {
   canMutate: boolean;
 }
 
+interface FormatConfig {
+  timezone: string;
+  currencyCode: string;
+}
+
+interface TableActions {
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
+  onBulkDelete: (transactions: Transaction[]) => Promise<void>;
+}
+
 export function TransactionsClient({
   transactions: initialTransactions,
   totalCount: initialTotalCount,
@@ -45,7 +55,7 @@ export function TransactionsClient({
   canMutate,
 }: TransactionsClientProps) {
   const [dialogType, setDialogType] = useState<
-    "create" | "edit" | "delete" | null
+    "transaction" | "delete" | null
   >(null);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
@@ -73,13 +83,18 @@ export function TransactionsClient({
   const { data: userTimezone } = useUserTimezone();
   const { data: userCurrency } = useUserCurrency();
 
-  const timezone = userTimezone || getSystemTimezone();
-  const currency = userCurrency || getDefaultCurrency();
+  const formatConfig: FormatConfig = useMemo(
+    () => ({
+      timezone: userTimezone || getSystemTimezone(),
+      currencyCode: (userCurrency || getDefaultCurrency()).code,
+    }),
+    [userTimezone, userCurrency]
+  );
 
   const searchQuery = searchParams.get("search") || "";
 
   const openDialog = (
-    type: "create" | "edit" | "delete",
+    type: "transaction" | "delete",
     transaction?: Transaction
   ) => {
     setDialogType(type);
@@ -115,14 +130,33 @@ export function TransactionsClient({
     });
   };
 
-  const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
-    try {
-      const transactionIds = selectedTransactions.map((t) => t.id);
-      await bulkDeleteMutation.mutateAsync(transactionIds);
-    } catch (error) {
-      throw error;
-    }
-  };
+  const handleBulkDelete = useCallback(
+    async (selectedTransactions: Transaction[]) => {
+      try {
+        const transactionIds = selectedTransactions.map((t) => t.id);
+        const affectedPropertyIds = [
+          ...new Set(selectedTransactions.map((t) => t.propertyId)),
+        ];
+
+        await bulkDeleteMutation.mutateAsync({
+          transactionIds,
+          affectedPropertyIds,
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    [bulkDeleteMutation]
+  );
+
+  const tableActions: TableActions = useMemo(
+    () => ({
+      onEdit: (transaction: Transaction) => openDialog("transaction", transaction),
+      onDelete: (transaction: Transaction) => openDialog("delete", transaction),
+      onBulkDelete: handleBulkDelete,
+    }),
+    [handleBulkDelete]
+  );
 
   return (
     <>
@@ -146,15 +180,12 @@ export function TransactionsClient({
             transactions={transactions}
             loading={isPending || isLoadingTransactions}
             showPropertyColumn={true}
-            onEdit={(transaction) => openDialog("edit", transaction)}
-            onDelete={(transaction) => openDialog("delete", transaction)}
-            onBulkDelete={handleBulkDelete}
+            {...tableActions}
             emptyMessage="No transactions found"
             readOnly={!canMutate}
             showSelection={canMutate}
             initialGlobalFilter={searchQuery}
-            timezone={timezone}
-            currencyCode={currency.code}
+            {...formatConfig}
           />
 
           {/* Pagination */}
@@ -176,7 +207,7 @@ export function TransactionsClient({
       {canMutate && (
         <Button
           size="lg"
-          onClick={() => openDialog("create")}
+          onClick={() => openDialog("transaction")}
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
         >
           <Plus className="h-6 w-6" />
@@ -184,19 +215,12 @@ export function TransactionsClient({
       )}
 
       {/* Dialogs */}
-      <TransactionCreateDialog
-        isOpen={dialogType === "create"}
+      <TransactionDialog
+        isOpen={dialogType === "transaction"}
         onClose={closeDialog}
         properties={properties}
         categories={categories}
-      />
-
-      <TransactionEditDialog
         transaction={selectedTransaction}
-        isOpen={dialogType === "edit"}
-        onClose={closeDialog}
-        properties={properties}
-        categories={categories}
       />
 
       <TransactionDeleteDialog

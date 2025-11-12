@@ -161,24 +161,36 @@ export function useBulkDeleteTransactions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (transactionIds: string[]) => {
+    mutationFn: async ({
+      transactionIds,
+    }: {
+      transactionIds: string[];
+      affectedPropertyIds: string[];
+    }) => {
       return await bulkDeleteTransactions(transactionIds);
     },
 
-    onSuccess: (response) => {
+    onSuccess: (response, { affectedPropertyIds }) => {
       // Invalidate transaction list queries
       queryClient.invalidateQueries({
         queryKey: TRANSACTION_QUERY_KEYS.lists(),
       });
 
-      // Invalidate all transaction queries (we don't know which properties were affected)
-      queryClient.invalidateQueries({
-        queryKey: PROPERTY_QUERY_KEYS.all,
+      // Invalidate transaction queries for affected properties only
+      affectedPropertyIds.forEach((propertyId) => {
+        queryClient.invalidateQueries({
+          queryKey: PROPERTY_QUERY_KEYS.transactions(propertyId),
+        });
+
+        // Invalidate analytics for affected properties only
+        queryClient.invalidateQueries({
+          queryKey: PROPERTY_QUERY_KEYS.analytics.all(propertyId),
+        });
       });
 
-      // Invalidate all analytics (we don't know which properties were affected)
+      // Invalidate property list (for stats update)
       queryClient.invalidateQueries({
-        queryKey: [...PROPERTY_QUERY_KEYS.all, "analytics"],
+        queryKey: PROPERTY_QUERY_KEYS.lists(),
       });
 
       // Invalidate transaction stats (all periods)
