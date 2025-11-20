@@ -20,7 +20,6 @@ interface PropertyDetailsViewProps {
   transactions: Transaction[];
   isLoadingTransactions: boolean;
   transactionError?: { message: string } | null;
-  onNavigateToTransactions?: (url: string) => void;
   timezone: string;
   currencyCode: string;
 }
@@ -33,7 +32,6 @@ export function PropertyDetailsView({
   transactions,
   isLoadingTransactions,
   transactionError,
-  onNavigateToTransactions,
   timezone,
   currencyCode,
 }: PropertyDetailsViewProps) {
@@ -62,7 +60,6 @@ export function PropertyDetailsView({
         transactions={transactions}
         isLoading={isLoadingTransactions}
         error={transactionError}
-        onNavigate={onNavigateToTransactions}
         timezone={timezone}
         currencyCode={currencyCode}
       />

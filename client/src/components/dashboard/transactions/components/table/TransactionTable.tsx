@@ -25,6 +25,7 @@ interface TransactionTableProps {
   initialGlobalFilter?: string;
   timezone: string;
   currencyCode: string;
+  columnVisibilityOverrides?: Record<string, boolean>;
 }
 
 export function TransactionTable({
@@ -42,6 +43,7 @@ export function TransactionTable({
   initialGlobalFilter,
   timezone,
   currencyCode,
+  columnVisibilityOverrides,
 }: TransactionTableProps) {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
@@ -68,32 +70,30 @@ export function TransactionTable({
     ]
   );
 
-  const {
-    table,
-    globalFilter,
-    setGlobalFilter,
-    getSelectedTransactions,
-    setRowSelection,
-  } = useTransactionTable({
-    transactions,
-    columns,
-    showPropertyColumn,
-    maxRows,
-    initialGlobalFilter,
-  });
+  const { table, globalFilter, setGlobalFilter, getSelectedTransactions } =
+    useTransactionTable({
+      transactions,
+      columns,
+      maxRows,
+      initialGlobalFilter,
+      columnVisibilityOverrides,
+    });
 
   const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
     if (!onBulkDelete) return;
 
     try {
       await onBulkDelete(selectedTransactions);
-      setRowSelection({});
+      table.resetRowSelection();
     } catch (error) {
       console.error("Bulk delete failed:", error);
     }
   };
 
-  if (loading) {
+  const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
+  const totalRowsCount = table.getFilteredRowModel().rows.length;
+
+  if (loading && transactions.length === 0) {
     return (
       <TransactionTableSkeleton
         showPropertyColumn={showPropertyColumn}
@@ -101,9 +101,6 @@ export function TransactionTable({
       />
     );
   }
-
-  const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
-  const totalRowsCount = table.getFilteredRowModel().rows.length;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -113,11 +110,10 @@ export function TransactionTable({
           selectedCount={selectedRowsCount}
           totalCount={totalRowsCount}
           onBulkDelete={() => setShowBulkDeleteDialog(true)}
-          onClearSelection={() => setRowSelection({})}
+          onClearSelection={() => table.resetRowSelection()}
           showBulkDelete={!!onBulkDelete}
           globalFilter={globalFilter}
           onGlobalFilterChange={setGlobalFilter}
-          showPropertyColumn={showPropertyColumn}
           loading={loading}
         />
       )}

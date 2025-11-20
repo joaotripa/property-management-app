@@ -93,10 +93,6 @@ export function PropertyDetailsClient({
     }
   };
 
-  const handleNavigateToTransactions = (url: string) => {
-    router.push(url);
-  };
-
   return (
     <>
       <div className="flex flex-col gap-6">
@@ -145,7 +141,6 @@ export function PropertyDetailsClient({
           transactions={transactions}
           isLoadingTransactions={isLoadingTransactions}
           transactionError={transactionError}
-          onNavigateToTransactions={handleNavigateToTransactions}
           timezone={timezone}
           currencyCode={currency.code}
         />

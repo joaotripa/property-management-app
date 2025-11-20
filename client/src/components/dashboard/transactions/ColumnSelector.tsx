@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { Table } from "@tanstack/react-table";
 import { ChevronDown, Columns2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,22 +15,18 @@ import { COLUMN_VISIBILITY_OPTIONS } from "./config/transaction-columns";
 
 interface ColumnSelectorProps {
   table: Table<Transaction>;
-  excludeColumns?: string[];
 }
 
-export function ColumnSelector({ table, excludeColumns = [] }: ColumnSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const availableColumns = COLUMN_VISIBILITY_OPTIONS.filter((option) => {
-    if (excludeColumns.includes(option.id)) {
-      return false;
-    }
-    const column = table.getColumn(option.id);
-    return column && column.getCanHide();
-  });
+export function ColumnSelector({ table }: ColumnSelectorProps) {
+  const availableColumns = useMemo(() => {
+    return COLUMN_VISIBILITY_OPTIONS.filter((option) => {
+      const column = table.getColumn(option.id);
+      return column && column.getCanHide();
+    });
+  }, [table]);
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"

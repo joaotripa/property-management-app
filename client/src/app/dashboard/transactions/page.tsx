@@ -1,9 +1,12 @@
 import { auth } from "@/auth";
-import { getTransactionsPageData } from "@/lib/services/server/transactionsService";
+import { getTransactionsPageData, getTransactionStatsServerSide } from "@/lib/services/server/transactionsService";
 import { TransactionsClient } from "@/components/dashboard/transactions/TransactionsClient";
 import { ExportButton } from "@/components/dashboard/transactions/ExportButton";
 import { canMutate } from "@/lib/stripe/server";
 import { redirect } from "next/navigation";
+import { UserSettingsService } from "@/lib/services/server/userSettingsService";
+import { getSystemTimezone } from "@/lib/utils/timezone";
+import { getDefaultCurrency } from "@/hooks/useUserCurrency";
 
 interface TransactionsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -28,11 +31,19 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
       categories,
       properties
     },
-    accessControl
+    accessControl,
+    userSettings,
+    initialStats
   ] = await Promise.all([
     getTransactionsPageData(session.user.id, params),
-    canMutate(session.user.id)
+    canMutate(session.user.id),
+    UserSettingsService.getUserSettings(session.user.id),
+    getTransactionStatsServerSide(session.user.id, 'current-month')
   ]);
+
+  // Extract timezone and currency with fallbacks
+  const timezone = userSettings?.timezone.iana || getSystemTimezone();
+  const currencyCode = userSettings?.currency.code || getDefaultCurrency().code;
 
   return (
     <div className="flex flex-col max-w-7xl px-6 pb-6 gap-8 mx-auto">
@@ -57,6 +68,9 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         categories={categories}
         properties={properties}
         canMutate={accessControl}
+        timezone={timezone}
+        currencyCode={currencyCode}
+        initialStats={initialStats}
       />
     </div>
   );

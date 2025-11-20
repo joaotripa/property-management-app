@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition, useCallback, useMemo, useEffect } from "react";
+import { useState, useTransition, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { DateRange } from "@/components/ui/date-range-picker";
 import { formatDateForInput } from "@/lib/utils/timezone";
+import { TRANSACTION_QUERY_KEYS } from "@/hooks/queries/transaction-query-keys";
 
 interface FilterValues {
   type: string;
@@ -17,72 +19,47 @@ interface FilterValues {
   sortOrder: string;
 }
 
+const DEFAULT_FILTER_VALUES: FilterValues = {
+  type: "all",
+  dateFrom: "",
+  dateTo: "",
+  amountMin: "",
+  amountMax: "",
+  categoryIds: [],
+  propertyId: "all",
+  sortBy: "transactionDate",
+  sortOrder: "desc",
+};
+
 interface UseTransactionFiltersProps {
   showPropertyFilter?: boolean;
 }
 
 export function useTransactionFilters({ showPropertyFilter = false }: UseTransactionFiltersProps = {}) {
   const [isPending, startTransition] = useTransition();
-  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
-  const currentFilters = useMemo<FilterValues>(() => ({
-    type: searchParams.get("type") || "all",
-    dateFrom: searchParams.get("dateFrom") || "",
-    dateTo: searchParams.get("dateTo") || "",
-    amountMin: searchParams.get("amountMin") || "",
-    amountMax: searchParams.get("amountMax") || "",
-    categoryIds:
-      searchParams.get("categoryIds")?.split(",").filter(Boolean) || [],
-    propertyId: searchParams.get("propertyId") || "all",
-    sortBy: searchParams.get("sortBy") || "transactionDate",
-    sortOrder: searchParams.get("sortOrder") || "desc",
-  }), [searchParams]);
+  const [pendingFilters, setPendingFilters] = useState<FilterValues>(() => ({
+    type: searchParams.get("type") || DEFAULT_FILTER_VALUES.type,
+    dateFrom: searchParams.get("dateFrom") || DEFAULT_FILTER_VALUES.dateFrom,
+    dateTo: searchParams.get("dateTo") || DEFAULT_FILTER_VALUES.dateTo,
+    amountMin: searchParams.get("amountMin") || DEFAULT_FILTER_VALUES.amountMin,
+    amountMax: searchParams.get("amountMax") || DEFAULT_FILTER_VALUES.amountMax,
+    categoryIds: searchParams.get("categoryIds")?.split(",").filter(Boolean) || DEFAULT_FILTER_VALUES.categoryIds,
+    propertyId: searchParams.get("propertyId") || DEFAULT_FILTER_VALUES.propertyId,
+    sortBy: searchParams.get("sortBy") || DEFAULT_FILTER_VALUES.sortBy,
+    sortOrder: searchParams.get("sortOrder") || DEFAULT_FILTER_VALUES.sortOrder,
+  }));
 
-  const [pendingFilters, setPendingFilters] = useState<FilterValues>(currentFilters);
-  const [hasChanges, setHasChanges] = useState(false);
-
-  const dateRange = useMemo<DateRange | undefined>(() => {
-    const dateFrom = searchParams.get("dateFrom");
-    const dateTo = searchParams.get("dateTo");
-
-    if (!dateFrom && !dateTo) return undefined;
-
-    const range: DateRange = {};
-    if (dateFrom) range.from = new Date(dateFrom);
-    if (dateTo) range.to = new Date(dateTo);
-
-    return range;
-  }, [searchParams]);
-
-  useEffect(() => {
-    setPendingFilters(currentFilters);
-    setHasChanges(false);
-  }, [currentFilters]);
-
-  const updateURL = useCallback(
-    (updates: Record<string, string | undefined>) => {
-      const params = new URLSearchParams(searchParams);
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value && value !== "all") {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
-      });
-
-      params.delete("page");
-
-      router.push(`/dashboard/transactions?${params.toString()}`);
-    },
-    [router, searchParams]
-  );
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleFilterChange = useCallback((key: string, value: string | undefined) => {
-    setPendingFilters((prev) => ({ ...prev, [key]: value }));
-    setHasChanges(true);
+    setPendingFilters((prev) => ({
+      ...prev,
+      [key]: value || "",
+    }));
   }, []);
 
   const toggleCategory = useCallback((categoryId: string) => {
@@ -97,96 +74,97 @@ export function useTransactionFilters({ showPropertyFilter = false }: UseTransac
         categoryIds: newCategories,
       };
     });
-    setHasChanges(true);
   }, []);
+
+  const dateRange = useMemo<DateRange | undefined>(() => {
+    if (!pendingFilters.dateFrom && !pendingFilters.dateTo) return undefined;
+
+    const range: DateRange = {};
+    if (pendingFilters.dateFrom) range.from = new Date(pendingFilters.dateFrom);
+    if (pendingFilters.dateTo) range.to = new Date(pendingFilters.dateTo);
+
+    return range;
+  }, [pendingFilters.dateFrom, pendingFilters.dateTo]);
 
   const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
     if (!range || (range.from && range.to)) {
+      const dateFrom = range?.from ? formatDateForInput(range.from) : "";
+      const dateTo = range?.to ? formatDateForInput(range.to) : "";
+
       setPendingFilters((prev) => ({
         ...prev,
-        dateFrom: range?.from ? formatDateForInput(range.from) : "",
-        dateTo: range?.to ? formatDateForInput(range.to) : "",
+        dateFrom,
+        dateTo,
       }));
-      setHasChanges(true);
     }
   }, []);
 
   const applyFilters = useCallback(() => {
     startTransition(() => {
-      const updates: Record<string, string | undefined> = {};
+      const params = new URLSearchParams(searchParams);
+      const currentPageSize = params.get("pageSize");
 
-      Object.entries(pendingFilters).forEach(([key, value]) => {
-        if (key === "categoryIds") {
-          updates[key] =
-            (value as string[]).length > 0
-              ? (value as string[]).join(",")
-              : undefined;
-        } else {
-          updates[key] = (value as string) || undefined;
-        }
-      });
+      params.delete("type");
+      params.delete("dateFrom");
+      params.delete("dateTo");
+      params.delete("amountMin");
+      params.delete("amountMax");
+      params.delete("categoryIds");
+      params.delete("propertyId");
+      params.delete("sortBy");
+      params.delete("sortOrder");
+      params.delete("page");
 
-      updateURL(updates);
-      setHasChanges(false);
+      if (pendingFilters.type && pendingFilters.type !== "all") params.set("type", pendingFilters.type);
+      if (pendingFilters.dateFrom) params.set("dateFrom", pendingFilters.dateFrom);
+      if (pendingFilters.dateTo) params.set("dateTo", pendingFilters.dateTo);
+      if (pendingFilters.amountMin) params.set("amountMin", pendingFilters.amountMin);
+      if (pendingFilters.amountMax) params.set("amountMax", pendingFilters.amountMax);
+      if (pendingFilters.categoryIds.length > 0) params.set("categoryIds", pendingFilters.categoryIds.join(","));
+      if (pendingFilters.propertyId && pendingFilters.propertyId !== "all") params.set("propertyId", pendingFilters.propertyId);
+      if (pendingFilters.sortBy) params.set("sortBy", pendingFilters.sortBy);
+      if (pendingFilters.sortOrder) params.set("sortOrder", pendingFilters.sortOrder);
+
+      if (currentPageSize) params.set("pageSize", currentPageSize);
+
+      router.push(`/dashboard/transactions?${params.toString()}`);
+      queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.lists() });
     });
-  }, [pendingFilters, updateURL]);
+  }, [pendingFilters, router, searchParams, queryClient]);
 
   const clearAllFilters = useCallback(() => {
-    const defaultFilters: FilterValues = {
-      type: "all",
-      dateFrom: "",
-      dateTo: "",
-      amountMin: "",
-      amountMax: "",
-      categoryIds: [],
-      propertyId: "all",
-      sortBy: "transactionDate",
-      sortOrder: "desc",
-    };
-
-    setPendingFilters(defaultFilters);
+    setPendingFilters(DEFAULT_FILTER_VALUES);
 
     startTransition(() => {
-      router.push(
-        "/dashboard/transactions?sortBy=transactionDate&sortOrder=desc"
-      );
-      setHasChanges(false);
+      const params = new URLSearchParams(searchParams);
+      const currentPageSize = params.get("pageSize");
+
+      const newParams = new URLSearchParams();
+      newParams.set("sortBy", "transactionDate");
+      newParams.set("sortOrder", "desc");
+      if (currentPageSize) newParams.set("pageSize", currentPageSize);
+
+      router.push(`/dashboard/transactions?${newParams.toString()}`);
+      queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.lists() });
     });
-  }, [router]);
+  }, [router, searchParams, queryClient]);
 
   const getActiveFiltersCount = useCallback(() => {
     let count = 0;
-    if (currentFilters.dateFrom || currentFilters.dateTo) count++;
-    if (currentFilters.type && currentFilters.type !== "all") count++;
-    if (currentFilters.amountMin || currentFilters.amountMax) count++;
-    if (currentFilters.categoryIds.length > 0) count++;
-    if (showPropertyFilter && currentFilters.propertyId !== "all") count++;
-
-    if (hasChanges) {
-      let pendingCount = 0;
-      if (pendingFilters.dateFrom || pendingFilters.dateTo) pendingCount++;
-      if (pendingFilters.type && pendingFilters.type !== "all") pendingCount++;
-      if (
-        (pendingFilters.amountMin && pendingFilters.amountMin.trim()) ||
-        (pendingFilters.amountMax && pendingFilters.amountMax.trim())
-      )
-        pendingCount++;
-      if (pendingFilters.categoryIds.length > 0) pendingCount++;
-      if (showPropertyFilter && pendingFilters.propertyId !== "all")
-        pendingCount++;
-      count = Math.max(count, pendingCount);
-    }
+    if (pendingFilters.dateFrom || pendingFilters.dateTo) count++;
+    if (pendingFilters.type && pendingFilters.type !== "all") count++;
+    if (pendingFilters.amountMin || pendingFilters.amountMax) count++;
+    if (pendingFilters.categoryIds.length > 0) count++;
+    if (showPropertyFilter && pendingFilters.propertyId !== "all") count++;
 
     return count;
-  }, [currentFilters, pendingFilters, hasChanges, showPropertyFilter]);
+  }, [pendingFilters, showPropertyFilter]);
 
   return {
     isPending,
     isExpanded,
     setIsExpanded,
-    currentFilters,
     pendingFilters,
-    hasChanges,
     dateRange,
     handleFilterChange,
     toggleCategory,

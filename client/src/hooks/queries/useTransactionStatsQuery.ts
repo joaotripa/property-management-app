@@ -34,7 +34,10 @@ async function fetchTransactionStats(filters: StatsFilters): Promise<Transaction
   return response.json();
 }
 
-export function useTransactionStatsQuery(period: 'current-month' | 'ytd') {
+export function useTransactionStatsQuery(
+  period: 'current-month' | 'ytd',
+  initialData?: TransactionStats
+) {
   // Calculate date ranges based on period - memoized to prevent infinite loops
   const dateRanges = useMemo(() => {
     const now = new Date();
@@ -59,6 +62,7 @@ export function useTransactionStatsQuery(period: 'current-month' | 'ytd') {
       filters.dateTo?.toISOString()
     ),
     queryFn: () => fetchTransactionStats(filters),
+    initialData,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

@@ -3,95 +3,66 @@
 import { useState, useMemo } from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
+  type RowSelectionState,
 } from "@tanstack/react-table";
 import { Transaction } from "@/types/transactions";
-import { useTransactionTableStore } from "../stores/transaction-table-store";
+import { DEFAULT_COLUMN_VISIBILITY } from "../config/transaction-columns";
 
 interface UseTransactionTableProps {
   transactions: Transaction[];
   columns: ColumnDef<Transaction>[];
-  showPropertyColumn: boolean;
   maxRows?: number;
   initialGlobalFilter?: string;
+  columnVisibilityOverrides?: Record<string, boolean>;
 }
 
 export function useTransactionTable({
   transactions,
   columns,
-  showPropertyColumn,
   maxRows,
   initialGlobalFilter = "",
+  columnVisibilityOverrides = {},
 }: UseTransactionTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState(initialGlobalFilter);
-
-  const columnVisibility = useTransactionTableStore((state) => state.columnVisibility);
-  const setColumnVisibility = useTransactionTableStore((state) => state.setColumnVisibility);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const displayTransactions = useMemo(() => {
     return maxRows ? transactions.slice(0, maxRows) : transactions;
   }, [transactions, maxRows]);
 
-  const existingColumnIds = useMemo(() => {
-    return new Set(
-      columns.map((col) => col.id || (col as { accessorKey?: string }).accessorKey)
-    );
-  }, [columns]);
-
-  const tableColumnVisibility = useMemo(() => {
-    const withPropertyColumn = {
-      ...columnVisibility,
-      property: showPropertyColumn,
-    };
-
-    return Object.fromEntries(
-      Object.entries(withPropertyColumn).filter(([key]) =>
-        existingColumnIds.has(key)
-      )
-    );
-  }, [columnVisibility, showPropertyColumn, existingColumnIds]);
+  const initialColumnVisibility = {
+    ...DEFAULT_COLUMN_VISIBILITY,
+    ...columnVisibilityOverrides,
+  };
 
   const table = useReactTable({
     data: displayTransactions,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    state: {
+      rowSelection,
+    },
+    onRowSelectionChange: setRowSelection,
+    initialState: {
+      sorting: [],
+      columnFilters: [],
+      globalFilter: initialGlobalFilter,
+      columnVisibility: initialColumnVisibility,
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility: tableColumnVisibility,
-      rowSelection,
-      globalFilter,
-    },
     globalFilterFn: "includesString",
+    autoResetPageIndex: false
   });
-
-  const getSelectedTransactions = (): Transaction[] => {
-    return table.getFilteredSelectedRowModel().rows.map((row) => row.original);
-  };
 
   return {
     table,
-    sorting,
-    columnFilters,
-    rowSelection,
-    globalFilter,
-    setGlobalFilter,
-    getSelectedTransactions,
-    setRowSelection,
+    globalFilter: table.getState().globalFilter ?? "",
+    setGlobalFilter: (value: string) => table.setGlobalFilter(value),
+    getSelectedTransactions: () =>
+      table.getFilteredSelectedRowModel().rows.map((row) => row.original),
   };
 }

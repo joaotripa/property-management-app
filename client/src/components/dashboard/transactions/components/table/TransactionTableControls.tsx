@@ -16,7 +16,6 @@ interface TransactionTableControlsProps {
   showBulkDelete: boolean;
   globalFilter: string;
   onGlobalFilterChange: (value: string) => void;
-  showPropertyColumn: boolean;
   loading?: boolean;
 }
 
@@ -29,7 +28,6 @@ export function TransactionTableControls({
   showBulkDelete,
   globalFilter,
   onGlobalFilterChange,
-  showPropertyColumn,
   loading = false,
 }: TransactionTableControlsProps) {
   return (
@@ -46,11 +44,7 @@ export function TransactionTableControls({
             <span className="text-sm text-muted-foreground">
               {selectedCount} of {totalCount} row(s) selected
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearSelection}
-            >
+            <Button variant="outline" size="sm" onClick={onClearSelection}>
               Clear selection
             </Button>
             {showBulkDelete && onBulkDelete && (
@@ -67,10 +61,7 @@ export function TransactionTableControls({
           </div>
         )}
       </div>
-      <ColumnSelector
-        table={table}
-        excludeColumns={showPropertyColumn ? [] : ["property"]}
-      />
+      <ColumnSelector table={table} />
     </div>
   );
 }

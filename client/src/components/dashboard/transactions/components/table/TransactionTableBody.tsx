@@ -21,6 +21,7 @@ export function TransactionTableBody({
   emptyMessage,
 }: TransactionTableBodyProps) {
   const rows = table.getRowModel().rows;
+  const headerGroups = table.getHeaderGroups();
 
   if (!rows.length) {
     return (
@@ -36,16 +37,14 @@ export function TransactionTableBody({
     <div className="rounded-lg border">
       <TableUI>
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
+          {headerGroups.map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
                   style={{
                     width:
-                      header.getSize() !== 150
-                        ? header.getSize()
-                        : undefined,
+                      header.getSize() !== 150 ? header.getSize() : undefined,
                   }}
                 >
                   {header.isPlaceholder
@@ -63,14 +62,11 @@ export function TransactionTableBody({
           {rows.map((row) => (
             <TableRow
               key={row.id}
-              data-state={row.getIsSelected() && "selected"}
+              data-state={row.getIsSelected() ? "selected" : undefined}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
-                  {flexRender(
-                    cell.column.columnDef.cell,
-                    cell.getContext()
-                  )}
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
             </TableRow>

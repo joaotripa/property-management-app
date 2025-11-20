@@ -9,13 +9,21 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Button } from "@/components/ui/button";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { useTransactionStatsQuery } from "@/hooks/queries/useTransactionStatsQuery";
+import { TransactionStatsData } from "@/types/transactions";
 
-const TransactionStats = () => {
+interface TransactionStatsProps {
+  initialStats: TransactionStatsData;
+}
+
+const TransactionStats = ({ initialStats }: TransactionStatsProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<"current-month" | "ytd">(
     "current-month"
   );
 
-  const { data: stats, error } = useTransactionStatsQuery(selectedPeriod);
+  const { data: stats, error } = useTransactionStatsQuery(
+    selectedPeriod,
+    selectedPeriod === "current-month" ? initialStats : undefined
+  );
 
   if (error) {
     return (
