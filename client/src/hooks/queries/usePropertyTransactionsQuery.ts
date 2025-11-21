@@ -3,6 +3,8 @@ import { Transaction } from "@/types/transactions";
 import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
 import { QUERY_OPTIONS } from "./queryConfig";
 
+export const RECENT_TRANSACTIONS_LIMIT = 10;
+
 interface PropertyTransactionsResponse {
   transactions: Array<
     Omit<Transaction, "transactionDate" | "createdAt" | "updatedAt"> & {
@@ -17,7 +19,7 @@ async function fetchPropertyTransactions(
   propertyId: string
 ): Promise<Transaction[]> {
   const params = new URLSearchParams();
-  params.append("limit", "25");
+  params.append("pageSize", RECENT_TRANSACTIONS_LIMIT.toString());
   params.append("sortBy", "transactionDate");
   params.append("sortOrder", "desc");
 
@@ -46,7 +48,7 @@ async function fetchPropertyTransactions(
 /**
  * Query hook for property transactions
  *
- * Fetches the last 25 transactions for a property, sorted by date descending.
+ * Fetches recent transactions for a property, sorted by date descending.
  *
  * @param propertyId - The property ID
  * @param options - Optional query options (initialData, enabled)

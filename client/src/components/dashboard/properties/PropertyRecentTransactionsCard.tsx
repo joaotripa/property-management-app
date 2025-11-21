@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { Transaction } from "@/types/transactions";
+import { RECENT_TRANSACTIONS_LIMIT } from "@/hooks/queries/usePropertyTransactionsQuery";
 
 interface PropertyRecentTransactionsCardProps {
   propertyId: string;
@@ -32,7 +33,6 @@ export function PropertyRecentTransactionsCard({
   timezone,
   currencyCode,
 }: PropertyRecentTransactionsCardProps) {
-
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
@@ -40,9 +40,9 @@ export function PropertyRecentTransactionsCard({
           <CardTitle>Recent Transactions</CardTitle>
           <Link href={`/dashboard/transactions?propertyId=${propertyId}`}>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-primary/80 hover:text-primary hover:bg-transparent"
             >
               View all transactions
               <ExternalLink className="h-4 w-4" />
@@ -50,7 +50,7 @@ export function PropertyRecentTransactionsCard({
           </Link>
         </div>
         <CardDescription>
-          Last 25 transactions of this property.
+          Last {RECENT_TRANSACTIONS_LIMIT} transactions of this property.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,7 +66,6 @@ export function PropertyRecentTransactionsCard({
             emptyMessage={`No transactions found for ${propertyName}`}
             readOnly={true}
             showSelection={false}
-            maxRows={25}
             className="space-y-0"
             timezone={timezone}
             currencyCode={currencyCode}

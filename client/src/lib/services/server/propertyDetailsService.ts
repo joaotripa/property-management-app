@@ -5,6 +5,7 @@ import { getTransactions } from "@/lib/db/transactions/queries";
 import type { Property } from "@/types/properties";
 import type { PropertyImage } from "@prisma/client";
 import type { Transaction } from "@/types/transactions";
+import { RECENT_TRANSACTIONS_LIMIT } from "@/hooks/queries/usePropertyTransactionsQuery";
 
 export interface PropertyDetailsData {
   property: Property;
@@ -48,13 +49,13 @@ export async function getPropertyDetailsData(
       ),
       getTransactions(userId, {
         propertyId,
-        limit: 25,
+        limit: RECENT_TRANSACTIONS_LIMIT,
         offset: 0,
         sortBy: "transactionDate",
         sortOrder: "desc",
       }),
     ]);
-
+    
     if (!property) {
       throw new Error("Property not found");
     }

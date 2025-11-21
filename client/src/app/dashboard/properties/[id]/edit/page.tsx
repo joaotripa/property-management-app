@@ -36,7 +36,9 @@ export default async function PropertyEditPage({
   return (
     <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl md:text-4xl font-bold">Edit Property</h2>
+        <h2 className="text-xl md:text-2xl font-bold">
+          Editing <span className="text-primary">{property.name}</span>
+        </h2>
         <p className="text-muted-foreground">
           Update property details and images.
         </p>
