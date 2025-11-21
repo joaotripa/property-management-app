@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -9,8 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
+import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { Transaction } from "@/types/transactions";
+import { RECENT_TRANSACTIONS_LIMIT } from "@/hooks/queries/usePropertyTransactionsQuery";
 
 interface PropertyRecentTransactionsCardProps {
   propertyId: string;
@@ -18,7 +20,8 @@ interface PropertyRecentTransactionsCardProps {
   transactions: Transaction[];
   isLoading: boolean;
   error?: { message: string } | null;
-  onNavigate?: (url: string) => void;
+  timezone: string;
+  currencyCode: string;
 }
 
 export function PropertyRecentTransactionsCard({
@@ -27,32 +30,27 @@ export function PropertyRecentTransactionsCard({
   transactions,
   isLoading,
   error,
-  onNavigate,
+  timezone,
+  currencyCode,
 }: PropertyRecentTransactionsCardProps) {
-  const handleViewAllTransactions = () => {
-    const url = `/dashboard/transactions?propertyId=${propertyId}`;
-    if (onNavigate) {
-      onNavigate(url);
-    }
-  };
-
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Recent Transactions</CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewAllTransactions}
-            className="flex items-center gap-2"
-          >
-            View all transactions
-            <ExternalLink className="h-4 w-4" />
-          </Button>
+          <Link href={`/dashboard/transactions?propertyId=${propertyId}`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 text-primary/80 hover:text-primary hover:bg-transparent"
+            >
+              View all transactions
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
         <CardDescription>
-          Last 25 transactions of this property.
+          Last {RECENT_TRANSACTIONS_LIMIT} transactions of this property.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -61,15 +59,17 @@ export function PropertyRecentTransactionsCard({
             <p className="text-sm text-destructive">{error.message}</p>
           </div>
         ) : (
-          <TransactionTableWithActions
+          <TransactionTable
             transactions={transactions}
             loading={isLoading}
             showPropertyColumn={false}
             emptyMessage={`No transactions found for ${propertyName}`}
             readOnly={true}
             showSelection={false}
-            maxRows={25}
             className="space-y-0"
+            timezone={timezone}
+            currencyCode={currencyCode}
+            columnVisibilityOverrides={{ property: false, actions: false }}
           />
         )}
       </CardContent>

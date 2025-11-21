@@ -32,9 +32,9 @@ export function TransactionTableSkeleton({
               <TableHead>Type</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Recurring</TableHead>
               <TableHead>Category</TableHead>
               {showPropertyColumn && <TableHead>Property</TableHead>}
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -53,9 +53,6 @@ export function TransactionTableSkeleton({
                   <Skeleton className="h-4 w-24 rounded-4xl !bg-muted/50" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-12 rounded-4xl !bg-muted/50" />
-                </TableCell>
-                <TableCell>
                   <Skeleton className="h-4 w-20 rounded-4xl !bg-muted/50" />
                 </TableCell>
                 {showPropertyColumn && (
@@ -63,6 +60,9 @@ export function TransactionTableSkeleton({
                     <Skeleton className="h-4 w-28 rounded-4xl !bg-muted/50" />
                   </TableCell>
                 )}
+                <TableCell>
+                  <Skeleton className="h-4 w-8 rounded-4xl !bg-muted/50" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,5 +1,3 @@
-"use client";
-
 import type { PropertyImage } from "@prisma/client";
 import { Property } from "@/types/properties";
 import { Transaction } from "@/types/transactions";
@@ -22,7 +20,8 @@ interface PropertyDetailsViewProps {
   transactions: Transaction[];
   isLoadingTransactions: boolean;
   transactionError?: { message: string } | null;
-  onNavigateToTransactions?: (url: string) => void;
+  timezone: string;
+  currencyCode: string;
 }
 
 export function PropertyDetailsView({
@@ -33,7 +32,8 @@ export function PropertyDetailsView({
   transactions,
   isLoadingTransactions,
   transactionError,
-  onNavigateToTransactions,
+  timezone,
+  currencyCode,
 }: PropertyDetailsViewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
@@ -60,7 +60,8 @@ export function PropertyDetailsView({
         transactions={transactions}
         isLoading={isLoadingTransactions}
         error={transactionError}
-        onNavigate={onNavigateToTransactions}
+        timezone={timezone}
+        currencyCode={currencyCode}
       />
     </div>
   );

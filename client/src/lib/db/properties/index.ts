@@ -27,9 +27,9 @@ export {
 
 // Re-export validation schemas for convenience
 export {
+  propertyFormInputSchema,
   createPropertySchema,
   updatePropertySchema,
-  propertyFormSchema,
   createPropertyRequestSchema,
   createPropertyResponseSchema,
   errorResponseSchema,
@@ -39,9 +39,9 @@ export {
 
 // Re-export types for convenience
 export type {
+  PropertyFormInput,
   CreatePropertyInput,
   UpdatePropertyInput,
-  PropertyFormInput,
   CreatePropertyRequest,
   CreatePropertyResponse,
   ErrorResponse,

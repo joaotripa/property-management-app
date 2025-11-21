@@ -16,9 +16,9 @@ model User {
   phone          String?
   emailVerified  DateTime?        @map("email_verified")
   image          String?
-  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
   accounts       Account[]
   monthlyMetrics MonthlyMetrics[]
   properties     Property[]
@@ -40,9 +40,7 @@ model Property {
   zipCode        String?          @map("zip_code")
   country        String?
   purchasePrice  Decimal?         @map("purchase_price") @db.Decimal(12, 2)
-  marketValue    Decimal?         @map("market_value") @db.Decimal(12, 2)
   isActive       Boolean          @default(true) @map("is_active")
-  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
   userId         String           @map("user_id") @db.Uuid
@@ -50,6 +48,8 @@ model Property {
   tenants        Int              @default(0)
   type           PropertyType     @default(APARTMENT)
   occupancy      OccupancyStatus  @default(AVAILABLE)
+  deletedAt      DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  marketValue    Decimal?         @map("market_value") @db.Decimal(12, 2)
   monthlyMetrics MonthlyMetrics[]
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   images         PropertyImage[]
@@ -65,16 +65,18 @@ model Property {
 }
 
 model PropertyImage {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  propertyId String    @map("property_id") @db.Uuid
-  filename   String
-  url        String
-  isCover    Boolean   @default(false) @map("is_cover")
-  sortOrder  Int       @default(0) @map("sort_order")
-  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
-  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  propertyId            String    @map("property_id") @db.Uuid
+  filename              String
+  url                   String?
+  isCover               Boolean   @default(false) @map("is_cover")
+  sortOrder             Int       @default(0) @map("sort_order")
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  signed_url            String?
+  signed_url_expires_at DateTime? @db.Timestamptz(6)
+  property              Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
   @@index([propertyId, isCover])
@@ -105,12 +107,12 @@ model Transaction {
   description     String?
   transactionDate DateTime        @map("transaction_date") @db.Date
   isRecurring     Boolean         @default(false) @map("is_recurring")
-  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(6)
   createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
   userId          String          @map("user_id") @db.Uuid
   propertyId      String          @map("property_id") @db.Uuid
   categoryId      String          @map("category_id") @db.Uuid
+  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(6)
   category        Category        @relation(fields: [categoryId], references: [id])
   property        Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -221,9 +223,9 @@ model UserSettings {
   userId                 String   @unique @map("user_id") @db.Uuid
   currencyId             String   @map("currency_id") @db.Uuid
   timezoneId             String   @map("timezone_id") @db.Uuid
-  hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
   createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  hasCompletedOnboarding Boolean  @default(false) @map("has_completed_onboarding")
   currency               Currency @relation(fields: [currencyId], references: [id])
   timezone               Timezone @relation(fields: [timezoneId], references: [id])
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -237,7 +239,6 @@ model Subscription {
   userId                   String             @unique @map("user_id") @db.Uuid
   stripeCustomerId         String?            @map("stripe_customer_id")
   stripeSubscriptionId     String?            @map("stripe_subscription_id")
-  stripeSubscriptionItemId String?            @map("stripe_subscription_item_id")
   status                   SubscriptionStatus @default(TRIAL)
   plan                     SubscriptionPlan   @default(BUSINESS)
   propertyLimit            Int                @default(999) @map("property_limit")
@@ -245,10 +246,11 @@ model Subscription {
   currentPeriodStart       DateTime?          @map("current_period_start") @db.Timestamptz(6)
   currentPeriodEnd         DateTime?          @map("current_period_end") @db.Timestamptz(6)
   cancelAtPeriodEnd        Boolean            @default(false) @map("cancel_at_period_end")
-  scheduledPlan            SubscriptionPlan?  @map("scheduled_plan")
-  scheduledPlanDate        DateTime?          @map("scheduled_plan_date") @db.Timestamptz(6)
   createdAt                DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
+  stripeSubscriptionItemId String?            @map("stripe_subscription_item_id")
+  scheduledPlan            SubscriptionPlan?  @map("scheduled_plan")
+  scheduledPlanDate        DateTime?          @map("scheduled_plan_date") @db.Timestamptz(6)
   user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

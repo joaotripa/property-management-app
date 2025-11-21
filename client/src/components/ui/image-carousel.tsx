@@ -37,11 +37,13 @@ const ImageCarouselComponent = ({
   onImageChange,
   isLoading = false,
 }: ImageCarouselProps) => {
+  const validImages = images.filter((img) => img.url !== null);
+
   const { setMainApi, setThumbnailApi, currentIndex, onThumbnailClick } =
     useImageCarouselSync();
 
   const { handleImageLoad, handleImageError, hasImageError, isImageLoaded } =
-    useImageLoading(images.length);
+    useImageLoading(validImages.length);
 
   const getAspectRatioClass = useCallback(() => {
     switch (aspectRatio) {
@@ -62,24 +64,24 @@ const ImageCarouselComponent = ({
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!images.length) return;
+      if (!validImages.length) return;
 
       switch (e.key) {
         case "ArrowLeft":
           e.preventDefault();
           const prevIndex =
-            currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+            currentIndex > 0 ? currentIndex - 1 : validImages.length - 1;
           onThumbnailClick(prevIndex);
           break;
         case "ArrowRight":
           e.preventDefault();
           const nextIndex =
-            currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+            currentIndex < validImages.length - 1 ? currentIndex + 1 : 0;
           onThumbnailClick(nextIndex);
           break;
       }
     },
-    [currentIndex, images.length, onThumbnailClick]
+    [currentIndex, validImages.length, onThumbnailClick]
   );
 
   useEffect(() => {
@@ -112,7 +114,7 @@ const ImageCarouselComponent = ({
   }
 
   // No images state
-  if (images.length === 0) {
+  if (validImages.length === 0) {
     return (
       <div className={cn("relative", getAspectRatioClass(), className)}>
         <ImageDisplayItem
@@ -128,7 +130,7 @@ const ImageCarouselComponent = ({
   }
 
   // Single image state
-  if (images.length === 1) {
+  if (validImages.length === 1) {
     return (
       <div className={cn("flex flex-col gap-4", className)}>
         <div
@@ -138,7 +140,7 @@ const ImageCarouselComponent = ({
           )}
         >
           <ImageDisplayItem
-            src={images[0].url}
+            src={validImages[0].url!}
             alt={`${propertyName} - Image 1`}
             fill
             priority
@@ -167,7 +169,7 @@ const ImageCarouselComponent = ({
           className="w-full"
         >
           <CarouselContent>
-            {images.map((image, index) => (
+            {validImages.map((image, index) => (
               <CarouselItem key={image.id}>
                 <div
                   className={cn(
@@ -176,7 +178,7 @@ const ImageCarouselComponent = ({
                   )}
                 >
                   <ImageDisplayItem
-                    src={image.url}
+                    src={image.url!}
                     alt={`${propertyName} - Image ${index + 1}`}
                     fill
                     priority={index === 0}
@@ -203,14 +205,14 @@ const ImageCarouselComponent = ({
 
         {/* Image Counter */}
         <div className="absolute bottom-4 right-4 bg-background/80 text-primary px-3 py-1 rounded-full text-xs backdrop-blur-sm border border-border">
-          {currentIndex + 1} / {images.length}
+          {currentIndex + 1} / {validImages.length}
         </div>
       </div>
 
       {/* Thumbnail Navigation */}
-      {showThumbnails && images.length > 1 && (
+      {showThumbnails && validImages.length > 1 && (
         <ThumbnailCarousel
-          images={images}
+          images={validImages}
           currentIndex={currentIndex}
           onThumbnailClick={onThumbnailClick}
           setThumbnailApi={setThumbnailApi}
@@ -221,9 +223,9 @@ const ImageCarouselComponent = ({
       )}
 
       {/* Dot Indicators (alternative to thumbnails) */}
-      {!showThumbnails && images.length > 1 && (
+      {!showThumbnails && validImages.length > 1 && (
         <div className="flex justify-center gap-2">
-          {images.map((image, index) => (
+          {validImages.map((image, index) => (
             <button
               key={image.id}
               onClick={() => onThumbnailClick(index)}

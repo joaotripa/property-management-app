@@ -36,7 +36,6 @@ function formatTimeAgo(date: Date): string {
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
-
   return (
     <Card>
       <CardHeader>
@@ -45,7 +44,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
             Recent Activity
           </CardTitle>
           <Link href="/dashboard/transactions" passHref>
-            <button className="text-sm text-blue-600 hover:text-blue-800 hover:cursor-pointer">
+            <button className="text-sm text-primary/80 hover:text-primary hover:cursor-pointer">
               View All
             </button>
           </Link>

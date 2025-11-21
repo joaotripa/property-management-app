@@ -89,6 +89,14 @@ export interface TransactionsResponse {
   currentPage: number;
 }
 
+export interface TransactionStatsData {
+  totalIncome: number;
+  totalExpenses: number;
+  cashFlow: number;
+  transactionCount: number;
+  recurringCount: number;
+}
+
 export interface CategoryOption {
   id: string;
   name: string;

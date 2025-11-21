@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Transaction } from "@/types/transactions";
+import { PROPERTY_QUERY_KEYS } from "./usePropertyQueries";
+import { QUERY_OPTIONS } from "./queryConfig";
+
+export const RECENT_TRANSACTIONS_LIMIT = 10;
 
 interface PropertyTransactionsResponse {
   transactions: Array<
-    Omit<Transaction, 'transactionDate' | 'createdAt' | 'updatedAt'> & {
+    Omit<Transaction, "transactionDate" | "createdAt" | "updatedAt"> & {
       transactionDate: string;
       createdAt: string;
       updatedAt: string;
@@ -15,11 +19,13 @@ async function fetchPropertyTransactions(
   propertyId: string
 ): Promise<Transaction[]> {
   const params = new URLSearchParams();
-  params.append("limit", "25");
+  params.append("pageSize", RECENT_TRANSACTIONS_LIMIT.toString());
   params.append("sortBy", "transactionDate");
   params.append("sortOrder", "desc");
 
-  const response = await fetch(`/api/properties/${propertyId}/transactions?${params.toString()}`);
+  const response = await fetch(
+    `/api/properties/${propertyId}/transactions?${params.toString()}`
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch transactions: ${response.statusText}`);
@@ -27,22 +33,36 @@ async function fetchPropertyTransactions(
 
   const data: PropertyTransactionsResponse = await response.json();
 
-  const transformedTransactions: Transaction[] = data.transactions.map((transaction) => ({
-    ...transaction,
-    transactionDate: new Date(transaction.transactionDate),
-    createdAt: new Date(transaction.createdAt),
-    updatedAt: new Date(transaction.updatedAt),
-  }));
+  const transformedTransactions: Transaction[] = data.transactions.map(
+    (transaction) => ({
+      ...transaction,
+      transactionDate: new Date(transaction.transactionDate),
+      createdAt: new Date(transaction.createdAt),
+      updatedAt: new Date(transaction.updatedAt),
+    })
+  );
 
   return transformedTransactions;
 }
 
+/**
+ * Query hook for property transactions
+ *
+ * Fetches recent transactions for a property, sorted by date descending.
+ *
+ * @param propertyId - The property ID
+ * @param options - Optional query options (initialData, enabled)
+ * @returns Query result with property transactions
+ */
 export function usePropertyTransactionsQuery(
-  propertyId: string | undefined
+  propertyId: string,
+  options?: { initialData?: Transaction[]; enabled?: boolean }
 ) {
   return useQuery({
-    queryKey: ["property-transactions", propertyId],
-    queryFn: () => fetchPropertyTransactions(propertyId!),
-    enabled: !!propertyId,
+    queryKey: PROPERTY_QUERY_KEYS.transactions(propertyId),
+    queryFn: () => fetchPropertyTransactions(propertyId),
+    initialData: options?.initialData,
+    enabled: options?.enabled ?? !!propertyId,
+    ...QUERY_OPTIONS.transactions,
   });
 }

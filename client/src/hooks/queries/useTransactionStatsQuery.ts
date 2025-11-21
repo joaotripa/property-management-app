@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { TRANSACTION_QUERY_KEYS } from "./transaction-query-keys";
 
 interface TransactionStats {
   totalIncome: number;
@@ -33,7 +34,10 @@ async function fetchTransactionStats(filters: StatsFilters): Promise<Transaction
   return response.json();
 }
 
-export function useTransactionStatsQuery(period: 'current-month' | 'ytd') {
+export function useTransactionStatsQuery(
+  period: 'current-month' | 'ytd',
+  initialData?: TransactionStats
+) {
   // Calculate date ranges based on period - memoized to prevent infinite loops
   const dateRanges = useMemo(() => {
     const now = new Date();
@@ -43,18 +47,23 @@ export function useTransactionStatsQuery(period: 'current-month' | 'ytd') {
         dateTo: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
       },
       'ytd': {
-        dateFrom: new Date(now.getFullYear(), 0, 1), // January 1st of current year
+        dateFrom: new Date(now.getFullYear(), 0, 1),
         dateTo: now,
       },
     };
-  }, []); // Empty deps - stable across renders
+  }, []);
 
   const filters = dateRanges[period];
 
   return useQuery({
-    queryKey: ['transaction-stats', period, filters.dateFrom?.toISOString(), filters.dateTo?.toISOString()],
+    queryKey: TRANSACTION_QUERY_KEYS.stats.period(
+      period,
+      filters.dateFrom?.toISOString(),
+      filters.dateTo?.toISOString()
+    ),
     queryFn: () => fetchTransactionStats(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    initialData,
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }

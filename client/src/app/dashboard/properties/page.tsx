@@ -52,7 +52,7 @@ export default async function PropertiesPage() {
       <PropertiesStats stats={stats} currencyCode={userCurrencyCode} />
 
       <PropertiesClient
-        properties={properties}
+        initialProperties={properties}
         canMutate={accessControl}
         isAtLimit={!propertyLimits.allowed}
       />

@@ -9,17 +9,21 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Button } from "@/components/ui/button";
 import { formatCompactCurrency } from "@/lib/utils/formatting";
 import { useTransactionStatsQuery } from "@/hooks/queries/useTransactionStatsQuery";
+import { TransactionStatsData } from "@/types/transactions";
 
-const TransactionStats = () => {
+interface TransactionStatsProps {
+  initialStats: TransactionStatsData;
+}
+
+const TransactionStats = ({ initialStats }: TransactionStatsProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<"current-month" | "ytd">(
     "current-month"
   );
 
-  const {
-    data: stats,
-    isLoading,
-    error,
-  } = useTransactionStatsQuery(selectedPeriod);
+  const { data: stats, error } = useTransactionStatsQuery(
+    selectedPeriod,
+    selectedPeriod === "current-month" ? initialStats : undefined
+  );
 
   if (error) {
     return (
@@ -31,36 +35,25 @@ const TransactionStats = () => {
     );
   }
 
-  const kpiConfigs: KPICardConfig[] = isLoading || !stats ? [
+  const totalIncome = stats?.totalIncome ?? 0;
+  const totalExpenses = stats?.totalExpenses ?? 0;
+  const cashFlow = stats?.cashFlow ?? 0;
+
+  const kpiConfigs: KPICardConfig[] = [
     {
       title: "Income",
-      value: formatCompactCurrency(0),
+      value: formatCompactCurrency(totalIncome),
     },
     {
       title: "Expenses",
-      value: formatCompactCurrency(0),
-    },
-    {
-      title: "Cash Flow",
-      value: formatCompactCurrency(0),
-    },
-  ] : [
-    {
-      title: "Income",
-      value: formatCompactCurrency(stats.totalIncome),
-    },
-    {
-      title: "Expenses",
-      value: formatCompactCurrency(stats.totalExpenses),
+      value: formatCompactCurrency(totalExpenses),
     },
     {
       title: "Cash Flow",
       value: (
-        <span
-          className={stats.cashFlow >= 0 ? "text-success" : "text-destructive"}
-        >
-          {stats.cashFlow >= 0 ? "+" : ""}
-          {formatCompactCurrency(stats.cashFlow)}
+        <span className={cashFlow >= 0 ? "text-success" : "text-destructive"}>
+          {cashFlow >= 0 ? "+" : ""}
+          {formatCompactCurrency(cashFlow)}
         </span>
       ),
     },

@@ -50,7 +50,7 @@ export async function getPropertyImages(propertyId: string, signal?: AbortSignal
  */
 export async function getPropertyImageUrls(propertyId: string, signal?: AbortSignal): Promise<string[]> {
   const images = await getPropertyImages(propertyId, signal);
-  return images.map(image => image.url);
+  return images.map(image => image.url).filter((url): url is string => url !== null);
 }
 
 /**
@@ -294,103 +294,4 @@ export async function uploadPropertyImage(
     0
   );
   return results.results[0];
-}
-
-/**
- * Check if property has an image in storage via API route
- */
-export async function hasPropertyImage(propertyId: string, signal?: AbortSignal): Promise<boolean> {
-  try {
-    const response = await fetch(`/api/properties/${propertyId}/images?action=check`, {
-      signal
-    });
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const { hasImages } = await response.json();
-    return hasImages || false;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Create a preview URL for a file
- */
-export function createFilePreview(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      resolve(e.target?.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-/**
- * Resize image client-side before upload (optional optimization)
- */
-export function resizeImage(
-  file: File,
-  maxWidth: number = 1200,
-  maxHeight: number = 800,
-  quality: number = 0.8
-): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-
-    img.onload = () => {
-      let { width, height } = img;
-
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-
-      if (height > maxHeight) {
-        width = (width * maxHeight) / height;
-        height = maxHeight;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      ctx?.drawImage(img, 0, 0, width, height);
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const resizedFile = new File([blob], file.name, {
-              type: file.type,
-              lastModified: Date.now(),
-            });
-            resolve(resizedFile);
-          } else {
-            reject(new Error('Failed to resize image'));
-          }
-        },
-        file.type,
-        quality
-      );
-    };
-
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-/**
- * Extract path from Supabase public URL
- */
-export function extractPathFromUrl(url: string): string {
-  if (!url.includes('storage/v1/object/public/property-images/')) {
-    return url;
-  }
-
-  return url.split('storage/v1/object/public/property-images/')[1];
 }

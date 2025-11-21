@@ -1,4 +1,4 @@
-import { getTransactions, getUserCategories, getUserProperties } from "@/lib/db/transactions/queries";
+import { getTransactions, getUserCategories, getUserProperties, getTransactionStats } from "@/lib/db/transactions/queries";
 import { Transaction, CategoryOption, PropertyOption } from "@/types/transactions";
 
 interface TransactionsPageData {
@@ -9,6 +9,14 @@ interface TransactionsPageData {
   pageSize: number;
   categories: CategoryOption[];
   properties: PropertyOption[];
+}
+
+export interface TransactionStats {
+  totalIncome: number;
+  totalExpenses: number;
+  cashFlow: number;
+  transactionCount: number;
+  recurringCount: number;
 }
 
 /**
@@ -84,5 +92,36 @@ export async function getTransactionsPageData(
   } catch (error) {
     console.error('Error fetching transactions page data:', error);
     throw new Error('Failed to fetch transactions page data');
+  }
+}
+
+export async function getTransactionStatsServerSide(
+  userId: string,
+  period: 'current-month' | 'ytd'
+): Promise<TransactionStats> {
+  try {
+    const now = new Date();
+    const dateRanges = {
+      'current-month': {
+        dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
+        dateTo: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
+      },
+      'ytd': {
+        dateFrom: new Date(now.getFullYear(), 0, 1),
+        dateTo: now,
+      },
+    };
+
+    const filters = dateRanges[period];
+
+    const stats = await getTransactionStats(userId, {
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo,
+    });
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching transaction stats server-side:', error);
+    throw new Error('Failed to fetch transaction stats');
   }
 }

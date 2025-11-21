@@ -1,22 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import {
   CategoryOption,
   PropertyOption,
   Transaction,
+  TransactionStatsData,
 } from "@/types/transactions";
-import { TransactionTableWithActions } from "@/components/dashboard/transactions/TransactionTableWithActions";
+import { TransactionTable } from "@/components/dashboard/transactions/components/table/TransactionTable";
 import { TransactionsPagination } from "@/components/dashboard/transactions/TransactionsPagination";
-import { TransactionCreateDialog } from "@/components/dashboard/transactions/TransactionCreateDialog";
-import { TransactionEditDialog } from "@/components/dashboard/transactions/TransactionEditDialog";
-import { TransactionDeleteDialog } from "@/components/dashboard/transactions/TransactionDeleteDialog";
-import { bulkDeleteTransactions } from "@/lib/services/client/transactionsService";
+import { TransactionDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionDialog";
+import { TransactionDeleteDialog } from "@/components/dashboard/transactions/components/dialogs/TransactionDeleteDialog";
+import { useBulkDeleteTransactions } from "@/hooks/queries/useTransactionQueries";
+import TransactionStats from "@/components/dashboard/transactions/TransactionStats";
+import { TransactionFilters } from "@/components/dashboard/filters/TransactionFilters";
+import { useTransactionList } from "./hooks/useTransactionList";
 
 interface TransactionsClientProps {
   transactions: Transaction[];
@@ -27,109 +29,136 @@ interface TransactionsClientProps {
   categories: CategoryOption[];
   properties: PropertyOption[];
   canMutate: boolean;
+  timezone: string;
+  currencyCode: string;
+  initialStats: TransactionStatsData;
 }
 
 export function TransactionsClient({
-  transactions,
-  totalCount,
-  totalPages,
-  currentPage,
-  pageSize,
+  transactions: initialTransactions,
+  totalCount: initialTotalCount,
+  totalPages: initialTotalPages,
+  currentPage: initialCurrentPage,
+  pageSize: initialPageSize,
   categories,
   properties,
   canMutate,
+  timezone,
+  currencyCode,
+  initialStats,
 }: TransactionsClientProps) {
-  const [dialogType, setDialogType] = useState<"create" | "edit" | "delete" | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [dialogType, setDialogType] = useState<"transaction" | "delete" | null>(
+    null
+  );
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const bulkDeleteMutation = useBulkDeleteTransactions();
 
-  const openDialog = (type: "create" | "edit" | "delete", transaction?: Transaction) => {
-    setDialogType(type);
-    setSelectedTransaction(transaction || null);
-  };
+  const { data: transactionListData, isLoading: isLoadingTransactions } =
+    useTransactionList({
+      initialTransactions,
+      initialTotalCount,
+      initialTotalPages,
+      initialCurrentPage,
+      initialPageSize,
+    });
 
-  const closeDialog = () => {
+  const { transactions, totalCount, totalPages, currentPage, pageSize } =
+    transactionListData;
+
+  const openDialog = useCallback(
+    (type: "transaction" | "delete", transaction?: Transaction) => {
+      setDialogType(type);
+      setSelectedTransaction(transaction || null);
+    },
+    []
+  );
+
+  const closeDialog = useCallback(() => {
     setDialogType(null);
-  };
+  }, []);
 
-  const handleDataChange = () => {
-    // Refresh the page to get updated data
-    router.refresh();
-  };
+  const updateUrlParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams);
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value === null) {
+            params.delete(key);
+          } else {
+            params.set(key, value);
+          }
+        });
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [searchParams, router]
+  );
 
   const handlePageChange = (page: number) => {
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams);
-      if (page === 1) {
-        params.delete('page');
-      } else {
-        params.set('page', page.toString());
-      }
-      router.push(`?${params.toString()}`);
-    });
+    updateUrlParams({ page: page === 1 ? null : page.toString() });
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams);
-      params.delete('page'); // Reset to page 1
-      if (newPageSize === 25) {
-        params.delete('pageSize');
-      } else {
-        params.set('pageSize', newPageSize.toString());
-      }
-      router.push(`?${params.toString()}`);
+    updateUrlParams({
+      page: null,
+      pageSize: newPageSize === 25 ? null : newPageSize.toString(),
     });
   };
 
-  const handleBulkDelete = async (selectedTransactions: Transaction[]) => {
-    try {
-      const transactionIds = selectedTransactions.map(t => t.id);
-      const result = await bulkDeleteTransactions(transactionIds);
+  const handleBulkDelete = useCallback(
+    async (selectedTransactions: Transaction[]) => {
+      try {
+        const transactionIds = selectedTransactions.map((t) => t.id);
+        const affectedPropertyIds = [
+          ...new Set(selectedTransactions.map((t) => t.propertyId)),
+        ];
 
-      // Show success message
-      if (result.deletedCount > 0) {
-        toast.success(
-          `${result.deletedCount} transaction${result.deletedCount !== 1 ? 's' : ''} deleted successfully`
-        );
+        await bulkDeleteMutation.mutateAsync({
+          transactionIds,
+          affectedPropertyIds,
+        });
+      } catch (error) {
+        throw error;
       }
-
-      // Show warning for failed deletions
-      if (result.failedCount > 0) {
-        toast.warning(
-          `${result.failedCount} transaction${result.failedCount !== 1 ? 's' : ''} could not be deleted`
-        );
-      }
-
-      // Refresh the data
-      handleDataChange();
-    } catch (error) {
-      console.error("Bulk delete failed:", error);
-      toast.error("Failed to delete transactions. Please try again.");
-      throw error; // Re-throw to let dialog handle loading state
-    }
-  };
+    },
+    [bulkDeleteMutation]
+  );
 
   return (
     <>
+      {/* Summary Cards */}
+      <TransactionStats initialStats={initialStats} />
+
+      {/* Filters */}
+      <TransactionFilters
+        availableCategories={categories}
+        availableProperties={properties}
+        showPropertyFilter={true}
+      />
+
       {/* Transactions Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Transactions</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
-          <TransactionTableWithActions
+          <TransactionTable
             transactions={transactions}
-            loading={isPending}
+            loading={isPending || isLoadingTransactions}
             showPropertyColumn={true}
-            onEdit={(transaction) => openDialog("edit", transaction)}
+            onEdit={(transaction) => openDialog("transaction", transaction)}
             onDelete={(transaction) => openDialog("delete", transaction)}
             onBulkDelete={handleBulkDelete}
             emptyMessage="No transactions found"
             readOnly={!canMutate}
             showSelection={canMutate}
+            initialGlobalFilter={searchParams.get("search") || ""}
+            timezone={timezone}
+            currencyCode={currencyCode}
           />
 
           {/* Pagination */}
@@ -141,7 +170,7 @@ export function TransactionsClient({
               pageSize={pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
-              loading={isPending}
+              loading={isPending || isLoadingTransactions}
             />
           )}
         </CardContent>
@@ -151,7 +180,7 @@ export function TransactionsClient({
       {canMutate && (
         <Button
           size="lg"
-          onClick={() => openDialog("create")}
+          onClick={() => openDialog("transaction")}
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full hover:bg-primary/90 shadow-lg hover:shadow-xl transition-shadow"
         >
           <Plus className="h-6 w-6" />
@@ -159,28 +188,18 @@ export function TransactionsClient({
       )}
 
       {/* Dialogs */}
-      <TransactionCreateDialog
-        isOpen={dialogType === "create"}
+      <TransactionDialog
+        isOpen={dialogType === "transaction"}
         onClose={closeDialog}
-        onTransactionCreated={handleDataChange}
         properties={properties}
         categories={categories}
-      />
-
-      <TransactionEditDialog
         transaction={selectedTransaction}
-        isOpen={dialogType === "edit"}
-        onClose={closeDialog}
-        onTransactionUpdated={handleDataChange}
-        properties={properties}
-        categories={categories}
       />
 
       <TransactionDeleteDialog
         transaction={selectedTransaction}
         isOpen={dialogType === "delete"}
         onClose={closeDialog}
-        onTransactionDeleted={handleDataChange}
       />
     </>
   );

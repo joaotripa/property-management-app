@@ -1,25 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TransactionForm } from "./TransactionForm";
+import { TransactionForm } from "../forms/TransactionForm";
 import { CategoryOption, PropertyOption } from "@/types/transactions";
-import { toast } from "sonner";
-import { createTransaction } from "@/lib/services/client/transactionsService";
 import { TransactionFormOutput } from "@/lib/validations/transaction";
 import { trackEvent } from "@/lib/analytics/tracker";
 import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
 import { useSession } from "next-auth/react";
+import { useCreateTransaction } from "@/hooks/queries/useTransactionQueries";
 
 interface TransactionCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onTransactionCreated: () => void;
   properties: PropertyOption[];
   categories: CategoryOption[];
 }
@@ -27,23 +24,22 @@ interface TransactionCreateDialogProps {
 export function TransactionCreateDialog({
   isOpen,
   onClose,
-  onTransactionCreated,
   properties,
   categories,
 }: TransactionCreateDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session } = useSession();
+  const createTransactionMutation = useCreateTransaction();
 
   const handleSubmit = async (data: TransactionFormOutput) => {
-    setIsSubmitting(true);
     try {
-      await createTransaction(data);
+      await createTransactionMutation.mutateAsync(data);
 
       const userId = session?.user?.id;
       const storageKey = `first_transaction_created_${userId}`;
-      const isFirstTransaction = userId
-        ? !localStorage.getItem(storageKey)
-        : false;
+      const isFirstTransaction =
+        userId && typeof window !== "undefined"
+          ? !localStorage.getItem(storageKey)
+          : false;
 
       trackEvent(TRANSACTION_EVENTS.TRANSACTION_CREATED, {
         type: data.type,
@@ -51,25 +47,18 @@ export function TransactionCreateDialog({
         is_first: isFirstTransaction,
       });
 
-      if (isFirstTransaction && userId) {
+      if (isFirstTransaction && userId && typeof window !== "undefined") {
         localStorage.setItem(storageKey, "true");
       }
 
-      toast.success("Transaction created successfully");
-      onTransactionCreated();
       onClose();
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create transaction"
-      );
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      // Error handling is done in the mutation hook
     }
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && !isSubmitting) {
+    if (!open && !createTransactionMutation.isPending) {
       onClose();
     }
   };
@@ -85,7 +74,7 @@ export function TransactionCreateDialog({
           onCancel={onClose}
           properties={properties}
           categories={categories}
-          isSubmitting={isSubmitting}
+          isSubmitting={createTransactionMutation.isPending}
           submitButtonText="Create Transaction"
         />
       </DialogContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,29 +15,23 @@ import { Badge } from "@/components/ui/badge";
 import { Transaction, TransactionType } from "@/types/transactions";
 import { formatCurrency } from "@/lib/utils/formatting";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { deleteTransaction } from "@/lib/services/client/transactionsService";
 import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { formatDateForUser, getSystemTimezone } from "@/lib/utils/timezone";
-
-import { trackEvent } from "@/lib/analytics/tracker";
-import { TRANSACTION_EVENTS } from "@/lib/analytics/events";
+import { useDeleteTransaction } from "@/hooks/queries/useTransactionQueries";
 
 interface TransactionDeleteDialogProps {
   transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
-  onTransactionDeleted: () => void;
 }
 
 export function TransactionDeleteDialog({
   transaction,
   isOpen,
   onClose,
-  onTransactionDeleted,
 }: TransactionDeleteDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteTransactionMutation = useDeleteTransaction();
   const { data: userTimezone } = useUserTimezone();
   const { data: userCurrency } = useUserCurrency();
   const timezone = userTimezone || getSystemTimezone();
@@ -47,26 +41,15 @@ export function TransactionDeleteDialog({
     if (!transaction) return;
 
     try {
-      setIsDeleting(true);
-      await deleteTransaction(transaction.id);
-
-      trackEvent(TRANSACTION_EVENTS.TRANSACTION_DELETED, {
-        is_bulk: false,
-        count: 1,
+      await deleteTransactionMutation.mutateAsync({
+        id: transaction.id,
+        propertyId: transaction.propertyId,
       });
-
-      toast.success("Transaction deleted successfully");
-      onTransactionDeleted();
       onClose();
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete transaction"
-      );
-    } finally {
-      setIsDeleting(false);
+    } catch {
+      // Error handling and analytics tracking done in the mutation hook
     }
-  }, [transaction, onTransactionDeleted, onClose]);
+  }, [transaction, deleteTransactionMutation, onClose]);
 
   if (!transaction) return null;
 
@@ -154,16 +137,20 @@ export function TransactionDeleteDialog({
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={deleteTransactionMutation.isPending}
+          >
             <X className="h-4 w-4" />
             Cancel
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
-            disabled={isDeleting}
+            disabled={deleteTransactionMutation.isPending}
           >
-            {isDeleting ? (
+            {deleteTransactionMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Deleting...

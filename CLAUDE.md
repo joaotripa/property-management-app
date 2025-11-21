@@ -41,10 +41,16 @@ Important: Always ask before running database migration commands. Never reset th
 
 ## Architecture Overview
 
+**For comprehensive architecture documentation, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
+This section provides a quick overview of the tech stack and project structure. For detailed architecture patterns, state management strategies, rendering strategies, performance optimization, and security best practices, refer to ARCHITECTURE.md.
+
 ### Tech Stack
 
 - **Framework**: Next.js 15 with App Router
 - **Database**: PostgreSQL with Prisma ORM
+- **State Management**: TanStack Query (React Query) for remote state; Zustand for local UI state (see ARCHITECTURE.md for details)
+- **Data Fetching**: React Query (TanStack Query) for client-side caching and mutations
 - **Auth**: NextAuth.js v5 with Google OAuth and credentials
 - **UI**: TailwindCSS v4 (no config file needed) with Radix UI primitives and shadcn/ui
 - **Storage**: Supabase for file uploads and AWS S3
@@ -54,6 +60,8 @@ Important: Always ask before running database migration commands. Never reset th
 - **Forms**: react-hook-form with Zod resolvers
 
 ### Project Structure
+
+**For detailed project structure patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
 
 - **Frontend**: Located in `/client` directory
 - **Database**: Prisma schema at `/client/prisma/schema.prisma`
@@ -100,9 +108,45 @@ Key relationships:
 - Prisma adapter for session management
 - User creation events logged via AuthLogger
 
+### Data Fetching Strategy (Hybrid SSR + React Query)
+
+**Principle**: Use Server-Side Rendering (SSR) for initial page load data, React Query for subsequent updates and mutations.
+
+**For comprehensive architecture documentation, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
+#### Quick Reference
+
+The application uses a **hybrid pattern** that combines:
+
+- **Server-Side Rendering (SSR)**: Fetch initial data in server components for fast first paint
+- **React Query**: Handle subsequent updates, mutations, and cache management on the client
+
+**Key Points:**
+
+- ✅ Server Components fetch initial page data
+- ✅ Pass server data to Client Components as `initialData` to React Query
+- ✅ React Query handles subsequent updates and mutations
+- ❌ **Don't use useEffect for data fetching** (use Server Components or React Query)
+- ❌ **Don't use useState for server data** (use Server Components or React Query)
+- ✅ Always check `isLoading` before rendering content (unless `initialData` is provided)
+- ✅ Use hierarchical query keys for organized cache management
+- ✅ Invalidate queries selectively, not globally
+
+**See ARCHITECTURE.md for:**
+
+- Complete state management strategy (Server, TanStack Query, Zustand, React Context, useState, URL state)
+- Detailed data fetching patterns and examples
+- Query & cache management best practices
+- Loading states, error handling, and performance optimization
+- Security best practices and API architecture patterns
+
 ### API Layer Architecture
 
+**For comprehensive API architecture patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
 #### Services Layer Pattern
+
+**Note**: This services layer is a thin API wrapper pattern, not over-engineering. It provides a clean abstraction for API calls while maintaining simplicity. See ARCHITECTURE.md for API architecture patterns.
 
 All API operations use dedicated service functions:
 
@@ -142,7 +186,7 @@ All API operations use dedicated service functions:
 - **Modularity**: Build components for reuse across contexts
 - **Accessibility**: Ensure ARIA labels and keyboard navigation
 - **Code Formatting**: Use Prettier for consistent formatting
-- **Comments**: No comments allowed except for line comments explaining calculations (e.g., `// Convert Sunday=0 to Monday=0`). Code should be self-explanatory through clear naming and structure
+- **Comments**: No code comments allowed except for line comments explaining calculations (e.g., `// Convert Sunday=0 to Monday=0`). Code should be self-explanatory through clear naming and structure. JSDoc comments are allowed for function/type documentation but should be minimal and focused on essential information only (function purpose, parameters, return value). Avoid verbose explanations or implementation details in JSDoc
 - **Function Complexity**: Any longer and complex function should be split into smaller, modular and simpler functions to avoid complexity and make it easier to read, with clear structure and self-explanatory naming. Ask yourself if the code is self-explanatory - if not, restructure it to be
 
 #### Form Components
@@ -160,10 +204,15 @@ All API operations use dedicated service functions:
 
 #### Data Flow
 
-- Parent components fetch shared data (categories, properties)
-- Data passed as props to child dialogs to eliminate duplicate API calls
-- Custom hooks for data fetching and state management
-- Prefer server components and Next.js caching where possible
+**For comprehensive data flow patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
+- **Server Components**: Fetch initial page data server-side for fast first render
+- **Initial Data Pattern**: Pass server-fetched data to React Query via `initialData` prop
+- **Client Components**: Use React Query hooks for data fetching with automatic caching
+- **Props to Dialogs**: Parent components pass shared data (categories, properties) as props to eliminate duplicate API calls
+- **Mutations**: Use React Query mutations with automatic cache invalidation
+- **Loading States**: Check `isLoading` before showing empty states; `initialData` eliminates loading on first render
+- **Cache Management**: Use hierarchical query keys for organized cache invalidation
 
 ### File Upload System
 
@@ -185,10 +234,11 @@ All API operations use dedicated service functions:
 
 - **Provider**: Umami Cloud for privacy-focused analytics and event tracking
 - **Implementation**: Pure client-side tracking (no server-side API calls)
-- **Architecture**: Single file approach in `/lib/analytics/`
-  - `tracker.ts`: Client-side tracking only (simple, honest implementation)
-  - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
-  - `AnalyticsIdentifier.tsx`: User identification and trial tracking
+- **Architecture**: Separation of concerns with focused components
+  - `/lib/analytics/tracker.ts`: Client-side tracking helper functions
+  - `/lib/analytics/events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
+  - `/components/analytics/UmamiScript.tsx`: User identification (15 lines)
+  - `/components/analytics/TrialEventTracker.tsx`: Trial tracking with useRef (48 lines)
 - **Script Integration**: Umami script tag in `app/layout.tsx` head
 - **Environment Variables**:
   - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: Your Umami website ID
@@ -202,12 +252,13 @@ All API operations use dedicated service functions:
   - Settings: PREFERENCES_UPDATED, PASSWORD_CHANGED, ACCOUNT_DELETED
 - **Best Practices**:
   - Client-side tracking via `window.umami.track()`
-  - Server-side tracking via direct Umami API calls
   - Privacy-first (no PII collection, GDPR compliant)
   - Zero dependencies (script tag only)
   - Type-safe event constants prevent errors
 
 ### Backend Rules & Patterns
+
+**For comprehensive backend architecture patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
 
 #### API Architecture
 
@@ -216,6 +267,7 @@ All API operations use dedicated service functions:
 - **Database Queries**: Prisma queries defined in `/client/src/lib/db`
 - **Validation**: Use `zod` in API routes to validate inputs before database queries
 - **Error Handling**: Always handle errors gracefully - return consistent error shapes
+- **Security**: See ARCHITECTURE.md for authentication, authorization, and security best practices
 
 #### Database Rules
 
@@ -233,12 +285,15 @@ All API operations use dedicated service functions:
 
 ### General Development Rules
 
+**For comprehensive development patterns and file organization, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
 #### Organization
 
 - Group code by domain (transactions/, properties/), not just by type
 - Feature-based component structure in `/components/[feature]/`
 - Barrel exports for clean imports
 - Reusable UI components in `/components/ui/`
+- See ARCHITECTURE.md for detailed file organization patterns and co-location principles
 
 #### Type Safety & Code Quality
 
@@ -246,7 +301,7 @@ All API operations use dedicated service functions:
 - Prisma-generated types for database entities
 - Zod schemas for runtime validation + TypeScript inference
 - Explicit typing for inputs/outputs
-- **No `any` or `unknown` types** - always use proper type definitions
+- **No `any` types** - always use proper type definitions
 - Remove unused imports, variables, and dead code
 
 #### Naming Conventions
@@ -261,11 +316,12 @@ All API operations use dedicated service functions:
 - Only use relative imports for files outside `src` (e.g., configuration files)
 - Examples:
   - ✅ `import { Button } from "@/components/ui/button"`
-  - ✅ `import { ImageServiceError } from "@/lib/services/shared/imageUtils"`
+  - ✅ `import { formatCurrency } from "@/lib/utils/currency"`
   - ❌ `import { Button } from "../../../components/ui/button"`
 
 #### Error Handling
 
+- Use standard Error class with descriptive messages (see ARCHITECTURE.md for error handling patterns)
 - Service layer catches and transforms errors
 - Consistent error response format
 - Client-side error boundaries and toast notifications
@@ -292,18 +348,50 @@ All API operations use dedicated service functions:
 
 ### Key Files to Understand
 
+**Architecture & Patterns:**
+
+- `ARCHITECTURE.md`: Comprehensive architecture guide with industry best practices (state management, data fetching, performance, security)
+
+**Authentication & Configuration:**
+
 - `/client/src/auth.ts`: NextAuth.js configuration with analytics tracking
 - `/client/src/auth.config.ts`: Edge-safe NextAuth configuration (used by middleware)
+
+**Database:**
+
 - `/client/prisma/schema.prisma`: Database schema
 - `/client/src/lib/db/`: Database operation layers
+- `/client/prisma/seed.ts`: Database seeding with property categories
+
+**Services & API:**
+
 - `/client/src/lib/services/`: API service layers
 - `/client/src/lib/validations/`: Zod validation schemas
+
+**Integrations:**
+
 - `/client/src/lib/stripe/`: Stripe subscription and billing logic
 - `/client/src/lib/analytics/`: Umami analytics implementation
-  - `tracker.ts`: Unified client + server event tracking
-  - `events.ts`: Event name constants
-- `/client/src/lib/analytics/AnalyticsIdentifier.tsx`: User identification and trial tracking
-- `/client/prisma/seed.ts`: Database seeding with property categories
+  - `tracker.ts`: Client-side tracking helper functions (identifyUser, resetUser, trackEvent)
+  - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
+- `/client/src/components/analytics/`: Analytics components
+  - `UmamiScript.tsx`: User identification component
+  - `TrialEventTracker.tsx`: Trial tracking with useRef pattern
+
+**Data Fetching:**
+
+- `/client/src/hooks/queries/`: React Query hooks for data fetching and mutations
+  - `usePropertyQueries.ts`: Property data fetching and mutations
+  - `useTransactionQueries.ts`: Transaction mutations with cache invalidation
+  - `usePropertyAnalytics.ts`: Property analytics queries
+- `/client/src/providers/QueryProvider.tsx`: React Query client configuration
+
+**Utilities:**
+
+- `/client/src/lib/utils/prisma-transforms.ts`: Prisma Decimal to number transformations
+
+**Legal & Compliance:**
+
 - `/client/src/app/(nondashboard)/privacy-policy/page.tsx`: Privacy Policy (GDPR/CCPA compliant)
 - `/client/src/app/(nondashboard)/terms-of-service/page.tsx`: Terms of Service with refund policy
 
@@ -336,33 +424,43 @@ All API operations use dedicated service functions:
 
 ## Production Readiness Guidelines
 
+**For comprehensive performance optimization and production best practices, see [ARCHITECTURE.md](./ARCHITECTURE.md).**
+
 - Code must be maintainable, readable, and production-ready
 - Follow Next.js and React best practices for SSR and static generation
-- Optimize queries and components for performance
+- Optimize queries and components for performance (see ARCHITECTURE.md for detailed patterns)
 - Ensure error logging and monitoring are in place
 - Never over-engineer - favor clarity and readability
+- Follow performance optimization patterns from ARCHITECTURE.md (code splitting, image optimization, memoization, etc.)
 
   ## Anti-Over-Engineering Principles
 
   **CRITICAL**: Do not over-engineer any implementation. Follow these strict guidelines:
 
-  **IMPORTANT DISTINCTION**: Industry best practices are NOT over-engineering. Always follow proven industry standards (Next.js Image components, semantic HTML, proper TypeScript patterns, etc.). Over-engineering is when we create unnecessarily complex solutions that don't follow industry standards and provide no real value.
+  **INDUSTRY BEST PRACTICES ALWAYS APPLY**: Always follow industry best practices across all topics (TypeScript, React, Next.js, code quality, etc.), whether covered in ARCHITECTURE.md or not. Industry best practices are NOT over-engineering.
+
+  **ARCHITECTURE.md FOR ARCHITECTURE TOPICS**: For architecture-specific topics (feature-based organization, separation of concerns, state management, data fetching, etc.), ARCHITECTURE.md contains the industry best practices for this codebase. These patterns are the **standard** and should always be followed. Over-engineering rules prevent unnecessary complexity **BEYOND** what ARCHITECTURE.md recommends, not the patterns themselves.
+
+  **IMPORTANT DISTINCTION**: Over-engineering is when we create unnecessarily complex solutions that don't follow industry standards and provide no real value. Following proven patterns (from ARCHITECTURE.md or general industry standards) is always justified.
 
   ### Architecture
 
   - **Follow industry best practices**: Use Next.js Image components, semantic HTML, proper component patterns, etc.
+  - **Follow ARCHITECTURE.md patterns**: ARCHITECTURE.md recommends feature-based organization with separation of concerns (UI, state, data fetching, business logic). This is the **standard structure** for features. Use separate folders (components/, hooks/, stores/, services/) as recommended by ARCHITECTURE.md.
   - **Keep it flat**: Avoid unnecessary abstraction layers (core/, services/, config/, utils/) when they don't add value
-  - **Colocation**: Keep related code together in the same file when it makes sense for small features
-  - **Single file solutions**: If a feature can be implemented in 1 file instead of 5, use 1 file
+    - **Exception**: ARCHITECTURE.md's separation of concerns (UI, state, data fetching, business logic) is the standard structure and should always be followed
+    - **Exception**: `services/` directory is justified when it provides thin API wrappers (see ARCHITECTURE.md API Architecture section)
+  - **Colocation**: ARCHITECTURE.md recommends feature-based organization with separate folders (components/, hooks/, stores/) for larger features. This is the **standard pattern**. Only use single-file solutions for truly simple features.
+  - **Single file solutions**: Only use 1 file for truly simple features. For larger features, follow ARCHITECTURE.md's feature-based organization pattern (components/, hooks/, stores/, services/) which naturally uses multiple files.
   - **No premature abstraction**: Only abstract when you have 3+ concrete use cases
-  - **Question every layer**: Before adding a new layer/directory/pattern, ask "Is this truly necessary?"
-  - **Accept necessary complexity**: When domain complexity is inherent (e.g., payment flows, multi-step workflows), structure appropriately with clear separation of concerns
+  - **Question every layer**: Before adding a new layer/directory/pattern, ask "Is this truly necessary?" (But ARCHITECTURE.md's recommended layers are always necessary)
+  - **Accept necessary complexity**: When domain complexity is inherent (e.g., payment flows, multi-step workflows), structure appropriately with clear separation of concerns as recommended by ARCHITECTURE.md
 
   ### Code Structure
 
   - **Follow industry standards**: Use Next.js Image components, semantic HTML, proper TypeScript patterns, Zod validation, etc.
   - **Direct over indirect**: Use Stripe SDK directly, don't wrap it in custom classes unless you need to abstract multiple payment providers
-  - **Standard over custom**: Prefer built-in types over custom error classes
+  - **Standard over custom**: Prefer built-in types over custom error classes. Use standard Error class with descriptive messages (see ARCHITECTURE.md for error handling patterns)
   - **Minimal files**: Aim for fewer, well-organized files rather than many small ones
   - **Inline simple logic**: Don't extract 3-line functions into separate utilities
   - **No factory patterns**: Unless absolutely required for dependency injection or testing
@@ -388,7 +486,7 @@ All API operations use dedicated service functions:
 
   ### Practical Guidelines
 
-  - **File count**: If a feature needs >5 files, reconsider the architecture (but accept it if domain complexity requires it)
+  - **File count**: ARCHITECTURE.md's feature-based organization (components/, hooks/, stores/, services/) naturally uses 5+ files per feature. This is **expected and correct** when following ARCHITECTURE.md patterns. Over-engineering concerns apply when files don't follow clear separation of concerns or when additional files are added beyond what ARCHITECTURE.md recommends.
   - **Line count**: 200-300 lines in a single file is OK if it's cohesive; split when a file does multiple unrelated things
   - **Dependencies**: Before adding a package, check if the standard library can do it
   - **Patterns**: Only use design patterns when the problem clearly demands them
@@ -399,6 +497,7 @@ All API operations use dedicated service functions:
   - ❌ Creating interfaces for single implementations
   - ❌ Building custom error hierarchies with multiple error classes
   - ❌ Adding "Manager", "Handler", "Service", "Provider" suffixes everywhere
+    - **Exception**: "Service" suffix is acceptable for thin API wrapper layers (e.g., `propertiesService.ts` as API client wrappers per ARCHITECTURE.md)
   - ❌ Wrapping third-party SDKs in custom classes without clear benefit
   - ❌ Creating config objects for values used in one place
   - ❌ Building plugin systems that have 1 plugin
@@ -424,7 +523,7 @@ All API operations use dedicated service functions:
   - ✅ Features that need comprehensive testing (organize for testability)
   - ✅ Abstractions that prevent widespread breaking changes (e.g., wrapping external APIs you don't control)
 
-  **Golden Rule**: Always follow industry best practices - they provide real value and are not over-engineering. Prefer simplicity, but never sacrifice correctness, scalability, clarity, or industry standards when complexity is truly required by the problem domain. Complexity is a liability when avoidable, but following proven patterns is always justified.
+  **Golden Rule**: ARCHITECTURE.md patterns are industry best practices and the **standard** for this codebase. Always follow ARCHITECTURE.md patterns (feature-based organization, separation of concerns, proper state management, etc.) - they provide real value and are not over-engineering. Over-engineering rules prevent deviations from these standards (unnecessary complexity beyond what ARCHITECTURE.md recommends), not the standards themselves. Prefer simplicity, but never sacrifice correctness, scalability, clarity, or industry standards when complexity is truly required by the problem domain. Complexity recommended by ARCHITECTURE.md is always justified.
 
 ## Quality Checklist
 
@@ -434,6 +533,8 @@ When working on this codebase:
 - ✅ Validate all inputs with Zod schemas
 - ✅ Use react-hook-form for all forms
 - ✅ Pass data as props to avoid redundant API calls
+- ✅ Don't use useEffect for data fetching (use Server Components or React Query)
+- ✅ Don't use useState for server data (use Server Components or React Query)
 - ✅ Follow feature-based organization
 - ✅ Use TypeScript strictly - no `any` types
 - ✅ Handle errors gracefully with consistent patterns

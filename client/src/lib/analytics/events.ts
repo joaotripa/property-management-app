@@ -89,12 +89,12 @@ export interface OnboardingCompletedProps {
 }
 
 export interface PropertyCreatedProps {
-  property_count: number;
-  is_first: boolean;
+  property_count?: number;
+  is_first?: boolean;
 }
 
 export interface PropertyDeletedProps {
-  property_count: number;
+  property_count?: number;
 }
 
 export interface TransactionCreatedProps {

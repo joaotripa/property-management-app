@@ -40,4 +40,5 @@ export interface Property {
   rent: number;
   occupancy: OccupancyStatus;
   tenants: number;
+  coverImageUrl?: string | null;
 }
