@@ -234,10 +234,11 @@ All API operations use dedicated service functions:
 
 - **Provider**: Umami Cloud for privacy-focused analytics and event tracking
 - **Implementation**: Pure client-side tracking (no server-side API calls)
-- **Architecture**: Single file approach in `/lib/analytics/`
-  - `tracker.ts`: Client-side tracking only (simple, honest implementation)
-  - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
-  - `AnalyticsIdentifier.tsx`: User identification and trial tracking
+- **Architecture**: Separation of concerns with focused components
+  - `/lib/analytics/tracker.ts`: Client-side tracking helper functions
+  - `/lib/analytics/events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
+  - `/components/analytics/UmamiScript.tsx`: User identification (15 lines)
+  - `/components/analytics/TrialEventTracker.tsx`: Trial tracking with useRef (48 lines)
 - **Script Integration**: Umami script tag in `app/layout.tsx` head
 - **Environment Variables**:
   - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: Your Umami website ID
@@ -371,9 +372,11 @@ All API operations use dedicated service functions:
 
 - `/client/src/lib/stripe/`: Stripe subscription and billing logic
 - `/client/src/lib/analytics/`: Umami analytics implementation
-  - `tracker.ts`: Unified client + server event tracking
-  - `events.ts`: Event name constants
-- `/client/src/lib/analytics/AnalyticsIdentifier.tsx`: User identification and trial tracking
+  - `tracker.ts`: Client-side tracking helper functions (identifyUser, resetUser, trackEvent)
+  - `events.ts`: Event name constants (AUTH_EVENTS, BILLING_EVENTS, etc.)
+- `/client/src/components/analytics/`: Analytics components
+  - `UmamiScript.tsx`: User identification component
+  - `TrialEventTracker.tsx`: Trial tracking with useRef pattern
 
 **Data Fetching:**
 
