@@ -63,7 +63,7 @@ export function calculateDateRange(timeRange: string): {
 
   if (range?.value === 'full') {
     return {
-      dateFrom: new Date(1900, 0, 1),
+      dateFrom: new Date(2025, 0, 1),
       dateTo: today,
       monthsBack: null,
     };
@@ -108,8 +108,8 @@ export function calculatePreviousPeriod(timeRange: string): {
 
   if (monthsBack === null) {
     return {
-      dateFrom: new Date(1900, 0, 1),
-      dateTo: new Date(1900, 11, 31),
+      dateFrom: new Date(2025, 0, 1),
+      dateTo: new Date(2025, 11, 31),
     };
   }
 

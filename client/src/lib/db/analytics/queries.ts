@@ -303,7 +303,7 @@ export async function getCashFlowTrendWeekly(
     const now = new Date();
     const startDate = dateFrom || (monthsBack !== null
       ? new Date(now.getFullYear(), now.getMonth() - monthsBack, 1)
-      : new Date(1900, 0, 1));
+      : new Date(2025, 0, 1));
     const endDate = dateTo || new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     const periods = generateWeeklyPeriods(startDate, endDate);
@@ -396,7 +396,7 @@ export async function getCashFlowTrend(
     const now = new Date();
     const startDate = dateFrom || (monthsBack !== null
       ? new Date(now.getFullYear(), now.getMonth() - monthsBack, 1)
-      : new Date(1900, 0, 1));
+      : new Date(2025, 0, 1));
     const endDate = dateTo || new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     const periods = generateMonthlyPeriods(startDate, endDate);
