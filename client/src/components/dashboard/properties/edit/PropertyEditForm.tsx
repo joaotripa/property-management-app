@@ -27,12 +27,14 @@ interface PropertyEditFormProps {
   property: Property;
   existingImages?: PropertyImage[];
   onChange?: (property: Property) => void;
+  onSuccess?: () => void;
 }
 
 export function PropertyEditForm({
   property,
   existingImages = [],
   onChange,
+  onSuccess,
 }: PropertyEditFormProps) {
   const router = useRouter();
   const updatePropertyMutation = useUpdateProperty();
@@ -75,7 +77,11 @@ export function PropertyEditForm({
   const handleCancel = () => {
     setNewImages([]);
     setImageError(null);
-    router.push(`/dashboard/properties/${property.id}`);
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      router.push(`/dashboard/properties/${property.id}`);
+    }
   };
 
   const handleSave = form.handleSubmit(async (data) => {
@@ -142,7 +148,11 @@ export function PropertyEditForm({
         console.error("Failed to reload images after save:", error);
       }
 
-      router.push(`/dashboard/properties/${property.id}`);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push(`/dashboard/properties/${property.id}`);
+      }
     } catch (error) {
       console.error("Error saving property:", error);
       throw error;

@@ -44,7 +44,7 @@ export default async function PropertyDetailsPage({
       : undefined;
 
     return (
-      <div className="flex flex-col gap-8 px-6 pb-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-6 px-6 pb-6 pt-2 max-w-7xl mx-auto">
         <PropertyErrorBoundary>
           <PropertyDetailsClient
             initialProperty={detailsData.property}

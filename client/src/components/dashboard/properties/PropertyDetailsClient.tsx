@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ArrowLeft } from "lucide-react";
 import { PropertyDetailsView } from "./PropertyDetailsView";
 import { DeletePropertyConfirmDialog } from "./DeletePropertyConfirmDialog";
+import { PropertyEditDialog } from "./PropertyEditDialog";
 import { Property } from "@/types/properties";
 import { usePropertyImages } from "@/hooks/queries/usePropertyQueries";
 import { usePropertyCurrentMonthMetrics } from "@/hooks/queries/usePropertyAnalytics";
@@ -15,6 +16,7 @@ import { useUserCurrency, getDefaultCurrency } from "@/hooks/useUserCurrency";
 import { getSystemTimezone } from "@/lib/utils/timezone";
 import type { PropertyImage } from "@prisma/client";
 import type { Transaction } from "@/types/transactions";
+import Link from "next/link";
 
 interface PropertyDetailsClientProps {
   initialProperty: Property;
@@ -38,6 +40,7 @@ export function PropertyDetailsClient({
 }: PropertyDetailsClientProps) {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: userTimezone } = useUserTimezone();
   const { data: userCurrency } = useUserCurrency();
@@ -79,7 +82,7 @@ export function PropertyDetailsClient({
   }
 
   const handleEdit = () => {
-    router.push(`/dashboard/properties/${initialProperty.id}/edit`);
+    setIsEditDialogOpen(true);
   };
 
   const handleDeleteClick = () => {
@@ -98,16 +101,14 @@ export function PropertyDetailsClient({
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/dashboard/properties")}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Properties
-            </Button>
-          </div>
+          <Link
+            href={"/dashboard/properties"}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary hover:bg-transparent"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Properties
+          </Link>
+
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -151,6 +152,14 @@ export function PropertyDetailsClient({
         property={initialProperty}
         isOpen={isDeleteDialogOpen}
         onClose={handleDeleteClose}
+      />
+
+      {/* Edit Property Dialog */}
+      <PropertyEditDialog
+        property={initialProperty}
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        existingImages={propertyImages}
       />
     </>
   );
