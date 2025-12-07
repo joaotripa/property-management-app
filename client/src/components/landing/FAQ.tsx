@@ -32,45 +32,49 @@ const FAQ = () => {
 
   return (
     <section id="faq" className="py-24 bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-6">
-            <span className="text-sm font-medium text-primary">FAQ</span>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 rounded-full mb-2">
+              <span className="text-sm font-medium text-primary uppercase">
+                FAQ
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-semibold mb-4 leading-snug">
+              Frequently asked <span className="text-primary">questions</span>
+            </h2>
+            <p className="text-lg text-balance">
+              Find clear answers to the questions property investors and
+              landlords ask most.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-lg">
-            Find clear answers to the questions owners, landlords and property
-            managers ask most.
-          </p>
-        </div>
 
-        <Accordion type="single" collapsible className="flex flex-col gap-4">
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="bg-primary-light/20 border border-border rounded-lg px-6"
+          <Accordion type="single" collapsible className="space-y-4">
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+                className="border last:border-b border-border rounded-lg px-6 bg-card"
+              >
+                <AccordionTrigger className="text-left font-semibold hover:text-primary transition-colors">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="leading-relaxed pt-2">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="mt-12 text-center">
+            <p className="text-lg mb-4">Still have questions?</p>
+            <Link
+              href="mailto:support@domari.app"
+              className="text-primary hover:text-primary/80 font-semibold transition-colors"
             >
-              <AccordionTrigger className="text-left text-md font-semibold hover:text-primary transition-colors">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-md leading-relaxed pt-2">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
-        <div className="mt-12 text-center">
-          <p className="mb-4">Still have questions?</p>
-          <Link
-            href="mailto:support@domari.app"
-            className="hover:text-accent font-semibold underline transition-colors"
-          >
-            Contact our support team
-          </Link>
+              Contact our support team →
+            </Link>
+          </div>
         </div>
       </div>
     </section>

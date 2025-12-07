@@ -27,7 +27,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary-light/40">
+    <footer className="bg-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-6 md:gap-8">
           <div className="space-y-6 md:col-span-2">

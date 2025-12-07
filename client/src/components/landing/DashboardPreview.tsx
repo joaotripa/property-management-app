@@ -9,13 +9,13 @@ const DashboardPreview = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="relative animate-fade-in">
           <div
-            className="relative bg-white rounded-3xl shadow-2xl border border-border overflow-hidden"
+            className="relative bg-background rounded-3xl shadow-lg border border-border overflow-hidden"
             style={{
               boxShadow:
-                "0 25px 50px -12px rgba(47, 109, 242, 0.25), 0 0 0 1px rgba(47, 109, 242, 0.1)",
+                "0 10px 25px -5px rgba(47, 109, 242, 0.15), 0 0 0 1px rgba(47, 109, 242, 0.05)",
             }}
           >
-            <div className="bg-gray-50 px-6 py-4 border-b border-border">
+            <div className="bg-muted px-6 py-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-2">
@@ -31,12 +31,12 @@ const DashboardPreview = () => {
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                   Welcome back,
                 </h3>
-                <p className="text-dark mt-1">
+                <p className="text-muted-foreground mt-1">
                   Here&apos;s what&apos;s happening with your properties today
                 </p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                <div className="bg-card border border-border rounded-lg px-6 py-4">
                   <div className="flex flex-col gap-2">
                     <p className="text-base text-muted-foreground">
                       Monthly Income
@@ -49,7 +49,7 @@ const DashboardPreview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                <div className="bg-card border border-border rounded-lg px-6 py-4">
                   <div className="flex flex-col gap-2">
                     <p className="text-base text-muted-foreground">
                       Monthly Expenses
@@ -62,7 +62,7 @@ const DashboardPreview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                <div className="bg-card border border-border rounded-lg px-6 py-4">
                   <div className="flex flex-col gap-2">
                     <p className="text-base text-muted-foreground">
                       Monthly Cash Flow
@@ -75,7 +75,7 @@ const DashboardPreview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white border border-border rounded-lg px-6 py-4">
+                <div className="bg-card border border-border rounded-lg px-6 py-4">
                   <div className="flex flex-col gap-2">
                     <p className="text-base text-muted-foreground">
                       Occupied Properties
@@ -90,12 +90,12 @@ const DashboardPreview = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
-                <div className="bg-white border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-foreground">
                       Cash Flow Trend
                     </h4>
-                    <div className="text-sm text-dark">Last 6 months</div>
+                    <div className="text-sm text-muted-foreground">Last 6 months</div>
                   </div>
                   <div className="h-48 md:h-56 bg-gradient-to-r from-primary/5 to-primary/0 rounded-lg relative overflow-hidden">
                     <svg
@@ -155,17 +155,17 @@ const DashboardPreview = () => {
                   <div className="flex items-center justify-center mt-4 text-sm">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-                      <span className="text-dark">Cash Flow</span>
+                      <span className="text-muted-foreground">Cash Flow</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-foreground">
                       Top Properties
                     </h4>
-                    <div className="text-sm text-dark">This month</div>
+                    <div className="text-sm text-muted-foreground">This month</div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ const DashboardPreview = () => {
                           <div className="font-medium text-foreground">
                             Sunset Apartments
                           </div>
-                          <div className="text-sm text-dark">Rank #1</div>
+                          <div className="text-sm text-muted-foreground">Rank #1</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -196,7 +196,7 @@ const DashboardPreview = () => {
                           <div className="font-medium text-foreground">
                             Downtown Loft
                           </div>
-                          <div className="text-sm text-dark">Rank #2</div>
+                          <div className="text-sm text-muted-foreground">Rank #2</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -215,7 +215,7 @@ const DashboardPreview = () => {
                           <div className="font-medium text-foreground">
                             Harbor View Studio
                           </div>
-                          <div className="text-sm text-dark">Rank #3</div>
+                          <div className="text-sm text-muted-foreground">Rank #3</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -234,7 +234,7 @@ const DashboardPreview = () => {
                           <div className="font-medium text-foreground">
                             Garden Terrace
                           </div>
-                          <div className="text-sm text-dark">Rank #4</div>
+                          <div className="text-sm text-muted-foreground">Rank #4</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -248,7 +248,7 @@ const DashboardPreview = () => {
                 </div>
               </div>
 
-              <div className="bg-white border border-border rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="text-lg font-semibold text-foreground">
                     Recent Activity
@@ -266,11 +266,11 @@ const DashboardPreview = () => {
                       <div className="text-sm font-medium text-foreground">
                         Income transaction added
                       </div>
-                      <div className="text-xs text-dark">
+                      <div className="text-xs text-muted-foreground">
                         Sunset Apartments - Rent Payment - $1,800
                       </div>
                     </div>
-                    <div className="text-xs text-dark">2h ago</div>
+                    <div className="text-xs text-muted-foreground">2h ago</div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="w-8 h-8 bg-purple-500/10 rounded-full flex items-center justify-center">
@@ -280,11 +280,11 @@ const DashboardPreview = () => {
                       <div className="text-sm font-medium text-foreground">
                         New property added
                       </div>
-                      <div className="text-xs text-dark">
+                      <div className="text-xs text-muted-foreground">
                         Harbor View Studio - San Francisco, CA
                       </div>
                     </div>
-                    <div className="text-xs text-dark">5h ago</div>
+                    <div className="text-xs text-muted-foreground">5h ago</div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
@@ -294,11 +294,11 @@ const DashboardPreview = () => {
                       <div className="text-sm font-medium text-foreground">
                         Expense transaction updated
                       </div>
-                      <div className="text-xs text-dark">
+                      <div className="text-xs text-muted-foreground">
                         Downtown Loft - Maintenance - $350
                       </div>
                     </div>
-                    <div className="text-xs text-dark">1d ago</div>
+                    <div className="text-xs text-muted-foreground">1d ago</div>
                   </div>
                 </div>
               </div>

@@ -32,32 +32,35 @@ export function PricingCards({
   return (
     <div className={className}>
       {showToggle && (
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex items-center bg-white p-1 rounded-full border border-border">
-            <button
-              onClick={() => setIsYearly(false)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                !isYearly
-                  ? "bg-primary text-white shadow-sm"
-                  : "hover:text-primary"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIsYearly(true)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                isYearly
-                  ? "bg-primary text-white shadow-sm"
-                  : "hover:text-primary"
-              }`}
-            >
-              Yearly
-              <span className="ml-2 px-2 py-1 bg-success text-white text-xs rounded-full">
-                2 months off
-              </span>
-            </button>
+        <div className="flex flex-col items-center justify-center mb-16 gap-2">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center bg-white p-1 rounded-full border border-border">
+              <button
+                onClick={() => setIsYearly(false)}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  !isYearly
+                    ? "bg-primary text-white shadow-sm"
+                    : "hover:text-primary"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setIsYearly(true)}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  isYearly
+                    ? "bg-primary text-white shadow-sm"
+                    : "hover:text-primary"
+                }`}
+              >
+                Yearly
+              </button>
+            </div>
           </div>
+          <span className="text-sm text-center">
+            <span className="text-primary font-medium">2 months off</span> on
+            annual billing
+          </span>
         </div>
       )}
 

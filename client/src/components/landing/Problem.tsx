@@ -38,8 +38,8 @@ const Problem = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-6">
-              <span className="text-sm font-medium text-primary">
+            <div className="inline-flex items-center px-4 py-2 rounded-full mb-2">
+              <span className="text-sm font-medium text-primary uppercase">
                 Challenges
               </span>
             </div>
@@ -48,10 +48,10 @@ const Problem = () => {
               shouldn&apos;t be this hard
             </h2>
             <p className="text-lg text-balance">
-              If you&apos;ve ever scrambled to find a receipt at tax time, stared at
-              a spreadsheet wondering where your profit went, or realized you
-              have no idea which property actually makes money. You&apos;re exactly
-              who we built this for.
+              If you&apos;ve ever scrambled to find a receipt at tax time,
+              stared at a spreadsheet wondering where your profit went, or
+              realized you have no idea which property actually makes money.
+              You&apos;re exactly who we built this for.
             </p>
           </div>
         </div>
